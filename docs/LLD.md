@@ -41,4 +41,5 @@ Backend:
 - API service with typed client
 - Zod validation for phone input
 - Zustand for recording and submission states
-- Browser Web Speech API for speech-to-text (free, client-side)
+- Browser Web Speech API for speech-to-text
+- EmailJS for client-side email delivery

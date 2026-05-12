@@ -14,28 +14,27 @@ const config: Config = {
     theme: {
         extend: {
             fontFamily: {
-                display: ["Helvetica Neue", "Helvetica", "Arial", "system-ui"],
-                body: ["Helvetica Neue", "Helvetica", "Arial", "system-ui"],
+                heading: ["Sora", "system-ui", "sans-serif"],
+                body: ["Inter", "system-ui", "sans-serif"],
             },
             colors: {
-                background: "#000000",
-                surface: "#000000",
-                primary: "#4b4ba0",
-                secondary: "#ffffff",
-                tertiary: "#8f47ae",
-                textPrimary: "#ffffff",
-                textSecondary: "#000000",
-                border: "#ffffff",
-                accent: "#4b4ba0",
+                background: "#0f1115",
+                surface: "#141922",
+                surfaceAlt: "#1b2230",
+                primary: "#4fd1c5",
+                primaryDark: "#2c8f86",
+                textPrimary: "#f5f7fa",
+                textMuted: "#9aa3b2",
+                error: "#f87171",
+                success: "#34d399",
             },
             borderRadius: {
-                xl: "9999px",
-                lg: "9999px",
-                md: "0px",
+                xl: "16px",
+                lg: "14px",
+                md: "12px",
             },
             boxShadow: {
-                glass:
-                    "0px 0px 0px rgba(0,0,0,0), 0px 0px 0px rgba(0,0,0,0), 0px 12px 32px rgba(255,255,255,0.12)",
+                soft: "0 12px 32px rgba(0,0,0,0.24)",
             },
         },
     },

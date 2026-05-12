@@ -35,7 +35,7 @@ Response 201
 }
 ```
 
-Email Payload Rules (backend responsibility)
+Email Payload Rules (client responsibility via EmailJS)
 - Recipient: support@ulavitech.com
 - Subject: "New Query from {phone_full}"
 - Body lines (labels required):
@@ -57,3 +57,4 @@ Response 200
   "status": "ok"
 }
 ```
+

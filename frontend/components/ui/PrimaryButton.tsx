@@ -10,7 +10,7 @@ export function PrimaryButton({ label, className, ...props }: PrimaryButtonProps
     return (
         <button
             className={cn(
-                "inline-flex h-11 w-full items-center justify-center rounded-full border border-white/15 bg-white px-4 text-sm font-medium text-black transition duration-150 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50",
+                "inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-[#0f1115] transition duration-150 hover:bg-primaryDark disabled:cursor-not-allowed disabled:opacity-50",
                 className
             )}
             {...props}

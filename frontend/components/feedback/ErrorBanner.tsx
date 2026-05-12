@@ -4,7 +4,7 @@ interface ErrorBannerProps {
 
 export function ErrorBanner({ message }: ErrorBannerProps) {
     return (
-        <div className="rounded-none border border-white/20 bg-white/5 p-3 text-sm text-white/80">
+        <div className="rounded-md border border-white/10 bg-surfaceAlt p-3 text-sm text-error">
             {message}
         </div>
     );

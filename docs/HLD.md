@@ -1,8 +1,8 @@
 # High Level Design
 
 ## Architecture Overview
-- Frontend (Next.js) handles recording, translation, validation, and UI using free client-side APIs
-- Backend (FastAPI) handles persistence, email, validation, and security
+- Frontend (Next.js) handles recording, translation, validation, and EmailJS
+- Backend (FastAPI) handles persistence and validation
 - MongoDB Atlas stores submissions
 - Resend free tier sends structured email
 
@@ -11,10 +11,10 @@
 graph TD
   U[User] --> FE[Next.js Web App]
   FE --> STT[Browser Speech API]
-  FE --> TR[Translation Service]
+  FE --> TR[MyMemory Translation API]
   FE --> API[FastAPI API]
   API --> DB[(MongoDB Atlas)]
-  API --> EM[Resend Email]
+  FE --> EM[EmailJS]
   EM --> S[Support Inbox]
 ```
 

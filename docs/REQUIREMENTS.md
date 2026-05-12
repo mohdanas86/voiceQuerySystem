@@ -2,7 +2,7 @@
 
 ## Functional Requirements
 - Record speech up to 60 seconds from browser
-- Convert speech to text in the source language (free, client-side)
+- Convert speech to text in the source language (browser speech API)
 - Translate transcript to English
 - Allow user to edit transcript before submission
 - Collect phone number with country code dropdown and number input side by side
@@ -10,7 +10,7 @@
 - Validate phone number before enabling submit and show inline error on invalid
 - Submit query to backend API
 - Store submission in MongoDB
-- Send structured email to support with fixed subject and body format
+- Send structured email to support using EmailJS (client-side)
 - Show confirmation message on success: "Thank you for your query. Our team will get back to you shortly."
 - Display error messages on failures
 
