@@ -1,10 +1,10 @@
 # High Level Design
 
 ## Architecture Overview
-- Frontend (Next.js) handles recording, translation, validation, and UI
+- Frontend (Next.js) handles recording, translation, validation, and UI using free client-side APIs
 - Backend (FastAPI) handles persistence, email, validation, and security
 - MongoDB Atlas stores submissions
-- Resend sends structured email
+- Resend free tier sends structured email
 
 ## System Diagram
 ```mermaid

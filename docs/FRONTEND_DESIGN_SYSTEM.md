@@ -31,6 +31,9 @@
 - Rounded cards: 16px radius
 - Buttons: 14px radius, 44px height min
 - Inputs: 12px radius
+- Phone field label: "Your Mobile Number"
+- Phone field layout: country code dropdown + number input side by side
+- Phone field placeholder: "98765 43210"
 
 ## Motion
 - Page load fade-in 200ms

@@ -2,15 +2,16 @@
 
 ## Functional Requirements
 - Record speech up to 60 seconds from browser
-- Convert speech to text in the source language
+- Convert speech to text in the source language (free, client-side)
 - Translate transcript to English
 - Allow user to edit transcript before submission
-- Collect phone number with country code dropdown
-- Validate phone number before enabling submit
+- Collect phone number with country code dropdown and number input side by side
+- Label the field "Your Mobile Number" with placeholder "98765 43210"
+- Validate phone number before enabling submit and show inline error on invalid
 - Submit query to backend API
 - Store submission in MongoDB
-- Send structured email to support
-- Show confirmation message on success
+- Send structured email to support with fixed subject and body format
+- Show confirmation message on success: "Thank you for your query. Our team will get back to you shortly."
 - Display error messages on failures
 
 ## Non-Functional Requirements
@@ -37,3 +38,10 @@
 - CORS locked to frontend origins
 - Secrets stored in environment variables
 - Sanitization of user-provided content
+
+## Email Format Requirements
+- Subject: "New Query from {phone_full}"
+- Body lines (labels required):
+	- Query (English): {translated_transcript}
+	- Mobile Number: {phone_full}
+	- Submitted at: {submitted_at_local}

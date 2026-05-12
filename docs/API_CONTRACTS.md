@@ -35,6 +35,14 @@ Response 201
 }
 ```
 
+Email Payload Rules (backend responsibility)
+- Recipient: support@ulavitech.com
+- Subject: "New Query from {phone_full}"
+- Body lines (labels required):
+  - Query (English): {translated_transcript}
+  - Mobile Number: {phone_full}
+  - Submitted at: {submitted_at_local}
+
 Errors
 - 400: validation_error
 - 429: rate_limited

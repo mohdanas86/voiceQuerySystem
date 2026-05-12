@@ -8,11 +8,11 @@
 5. Browser speech-to-text produces transcript
 6. App translates transcript to English
 7. Review screen shows editable transcript
-8. User selects country code and enters phone number
-9. Validation passes and Send button enabled
+8. Below the transcript, user selects country code and enters phone number
+9. Inline validation passes and Send button enabled
 10. User submits query
 11. Backend stores query and sends email
-12. User sees confirmation screen
+12. User sees confirmation screen: "Thank you for your query. Our team will get back to you shortly."
 
 ## Success States
 - Speech recorded and transcript displayed

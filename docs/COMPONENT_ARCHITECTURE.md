@@ -19,7 +19,7 @@
     - RecordingTimer
   - ReviewPage
     - TranscriptEditor
-    - PhoneInput
+    - PhoneInput (below transcript, before Send)
     - PrimaryButton
   - ConfirmationPage
     - SuccessPanel
