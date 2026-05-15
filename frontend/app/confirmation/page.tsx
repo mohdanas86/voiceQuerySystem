@@ -12,7 +12,7 @@ export default function ConfirmationPage() {
                 <SuccessCheckmark />
                 <SuccessPanel
                     align="center"
-                    message="Your request has been delivered to our support team."
+                    message="Thank you for your query. Our team will get back to you shortly."
                 />
                 <Link href="/record" className="w-full max-w-md touch-manipulation">
                     <Button size="lg" className="w-full">

@@ -23,7 +23,7 @@ export function PhoneInput({
                 htmlFor="phone-national"
                 className="text-xs font-light uppercase tracking-[0.2em] text-textMuted"
             >
-                Mobile number
+                Your Mobile Number
             </label>
             <div className="grid min-w-0 grid-cols-1 items-stretch gap-3 sm:grid-cols-[5.5rem_minmax(0,1fr)] sm:items-center">
                 <CountryCodeSelect

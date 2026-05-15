@@ -94,8 +94,8 @@ export default function RecordPage() {
         };
     };
 
-    const handleLanguageChange = (value: string | null) => {
-        if (value) setSourceLanguage(value);
+    const handleLanguageChange = (value: string) => {
+        setSourceLanguage(value);
     };
 
     const handleStart = useCallback(async () => {
