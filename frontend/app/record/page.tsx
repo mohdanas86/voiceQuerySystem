@@ -200,7 +200,7 @@ export default function RecordPage() {
 
     return (
         <AppShell>
-            <div className="flex min-w-0 flex-col gap-8 md:gap-10">
+            <div className="flex min-w-0 flex-col gap-8 md:gap-10 max-w-3xl mx-auto w-full px-4 md:px-0">
 
                 {hasMounted && !mediaSupported ? (
                     <ErrorBanner message="Audio recording is not supported in this browser." />
@@ -209,7 +209,7 @@ export default function RecordPage() {
                 <section className="flex min-w-0 flex-col gap-4" aria-labelledby="record-step-label">
                     <h2
                         id="record-step-label"
-                        className="text-xs font-light uppercase tracking-[0.24em] text-textMuted"
+                        className="text-sm md:text-base font-light uppercase tracking-[0.24em] text-textMuted"
                     >
                         Record your query
                     </h2>
@@ -258,7 +258,7 @@ export default function RecordPage() {
                 <section className="flex min-w-0 flex-col gap-3 sm:gap-4" aria-labelledby="preview-step-label">
                     <h2
                         id="preview-step-label"
-                        className="text-xs font-light uppercase tracking-[0.24em] text-textMuted"
+                        className="text-sm md:text-base font-light uppercase tracking-[0.24em] text-textMuted"
                     >
                         Preview
                     </h2>

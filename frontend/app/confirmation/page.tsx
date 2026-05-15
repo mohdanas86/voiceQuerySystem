@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 
 export default function ConfirmationPage() {
     return (
-        <div className="flex min-h-[82vh] items-center justify-center px-4">
-            <div className="flex w-full max-w-md flex-col items-center justify-center gap-8 text-center">
+        <div className="flex min-h-screen items-center justify-center px-4 md:px-6">
+            <div className="flex w-full max-w-lg flex-col items-center justify-center gap-8 text-center">
 
                 <SuccessCheckmark />
 

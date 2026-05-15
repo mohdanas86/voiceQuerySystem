@@ -114,8 +114,8 @@ export default function ReviewPage() {
     };
 
     return (
-        <div className="flex min-h-[82vh] items-center justify-center p-6">
-            <div className="flex w-full flex-col gap-8 md:gap-10">
+        <div className="flex min-h-screen items-center justify-center p-6">
+            <div className="flex w-full flex-col gap-8 md:gap-10 max-w-3xl mx-auto">
                 {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
                 <div className="flex w-full flex-col gap-6 pb-2 sm:pb-0">
                     <TranscriptEditor

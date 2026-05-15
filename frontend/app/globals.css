@@ -30,6 +30,7 @@ body {
 }
 
 @layer base {
+
     textarea,
     input,
     select,
@@ -133,6 +134,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     .success-check-circle,
     .success-check-path,
     .success-check-ring {
@@ -142,4 +144,19 @@ body {
     .success-check-path {
         stroke-dashoffset: 0;
     }
+}
+
+/* Hide scrollbar for Chrome, Safari and Edge */
+::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for Firefox */
+html {
+    scrollbar-width: none;
+}
+
+/* Hide scrollbar for IE and old Edge */
+body {
+    -ms-overflow-style: none;
 }
