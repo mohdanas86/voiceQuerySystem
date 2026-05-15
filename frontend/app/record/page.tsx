@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 
 import { AppShell } from "@/components/layout/AppShell";
@@ -15,8 +15,6 @@ export default function RecordPage() {
     const router = useRouter();
     const maxSeconds = 60;
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
-    const [hasMounted, setHasMounted] = useState(false);
-    const [mediaSupported, setMediaSupported] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -34,6 +32,16 @@ export default function RecordPage() {
         setErrorMessage,
     } = useQueryStore();
     const activeTranscript = originalTranscript;
+    const hasMounted = useSyncExternalStore(
+        () => () => {},
+        () => true,
+        () => false
+    );
+    const mediaSupported =
+        hasMounted &&
+        typeof window !== "undefined" &&
+        !!window.MediaRecorder &&
+        !!navigator.mediaDevices?.getUserMedia;
 
     useEffect(() => {
         if (!isRecording) {
@@ -44,15 +52,6 @@ export default function RecordPage() {
         }, 1000);
         return () => window.clearInterval(interval);
     }, [isRecording]);
-
-    useEffect(() => {
-        setHasMounted(true);
-        setMediaSupported(
-            typeof window !== "undefined" &&
-            !!window.MediaRecorder &&
-            !!navigator.mediaDevices?.getUserMedia
-        );
-    }, []);
 
     const pickMimeType = () => {
         const types = [
@@ -82,7 +81,7 @@ export default function RecordPage() {
             try {
                 const data = (await response.json()) as { error?: string; detail?: string };
                 detail = data.detail || data.error || detail;
-            } catch (err) {
+            } catch {
                 detail = detail;
             }
             throw new Error(detail);
@@ -157,7 +156,7 @@ export default function RecordPage() {
             };
             recorder.start();
             setIsRecording(true);
-        } catch (err) {
+        } catch {
             setErrorMessage("Microphone access blocked. Allow mic permissions and retry.");
             setRecordingStatus("idle");
             stopTracks();

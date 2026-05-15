@@ -46,7 +46,7 @@ export async function GET(request: Request) {
             responseStatus: data.responseStatus,
             responseDetails: data.responseDetails,
         });
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             {
                 translatedText: text,

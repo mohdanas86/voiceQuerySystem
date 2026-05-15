@@ -19,13 +19,12 @@ const getInitialTheme = () => {
 };
 
 export function ThemeToggle() {
-    const [theme, setTheme] = useState<Theme>("dark");
+    const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
     useEffect(() => {
-        const initial = getInitialTheme();
-        setTheme(initial);
-        document.documentElement.setAttribute("data-theme", initial);
-    }, []);
+        document.documentElement.setAttribute("data-theme", theme);
+        window.localStorage.setItem("theme", theme);
+    }, [theme]);
 
     const handleToggle = () => {
         const next = theme === "dark" ? "light" : "dark";

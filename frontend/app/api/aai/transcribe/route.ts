@@ -19,10 +19,10 @@ const readErrorDetail = async (response: Response) => {
     try {
         const data = (await response.json()) as { error?: string };
         return data.error ?? JSON.stringify(data);
-    } catch (err) {
+    } catch {
         try {
             return await response.text();
-        } catch (textErr) {
+        } catch {
             return "Unknown error";
         }
     }
@@ -49,7 +49,6 @@ export async function POST(request: Request) {
             "content-type": audio.type || "application/octet-stream",
         },
         body: audio.stream(),
-        duplex: "half",
     });
 
     if (!uploadResponse.ok) {
