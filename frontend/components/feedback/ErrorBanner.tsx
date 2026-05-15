@@ -4,7 +4,11 @@ interface ErrorBannerProps {
 
 export function ErrorBanner({ message }: ErrorBannerProps) {
     return (
-        <div className="rounded-md border border-white/10 bg-surfaceAlt p-3 text-sm text-error">
+        <div
+            role="alert"
+            aria-live="polite"
+            className="rounded-none border border-white/20 bg-surfaceAlt p-3 text-sm leading-relaxed text-error focus-within:ring-2 focus-within:ring-ring/40 sm:p-4"
+        >
             {message}
         </div>
     );

@@ -1,23 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import emailjs from "@emailjs/browser";
 import { z } from "zod";
 
 import { AppShell } from "@/components/layout/AppShell";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { ErrorBanner } from "@/components/feedback/ErrorBanner";
 import { TranscriptEditor } from "@/components/forms/TranscriptEditor";
 import { PhoneInput } from "@/components/forms/PhoneInput";
-import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { Button } from "@/components/ui/button";
 import { submitQuery } from "@/services/api";
-import { translateToEnglish } from "@/services/translation";
 import { useQueryStore } from "@/store/useQueryStore";
 import { getClientTimestamp } from "@/lib/time";
 
 export default function ReviewPage() {
+    const EMAILJS_PUBLIC_KEY =
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ?? "ceZ-8up4ncmOqBsoB";
+    const EMAILJS_SERVICE_ID =
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ?? "service_yb1ljvg";
+    const EMAILJS_TEMPLATE_ID =
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ?? "template_zq22oa2";
     const router = useRouter();
     const {
         sourceLanguage,
@@ -31,7 +35,6 @@ export default function ReviewPage() {
         setTranslatedTranscript,
         setPhoneCountryCode,
         setPhoneNumber,
-        setIsTranslating,
         setIsSubmitting,
         setErrorMessage,
         reset,
@@ -66,33 +69,6 @@ export default function ReviewPage() {
         !isSubmitting &&
         !isTranslating;
 
-    useEffect(() => {
-        const runTranslation = async () => {
-            if (!originalTranscript || translatedTranscript || isTranslating) {
-                return;
-            }
-            setIsTranslating(true);
-            setErrorMessage(null);
-            try {
-                const translated = await translateToEnglish(originalTranscript, sourceLanguage);
-                setTranslatedTranscript(translated);
-            } catch (err) {
-                setErrorMessage("Translation failed. Please edit the transcript manually.");
-            } finally {
-                setIsTranslating(false);
-            }
-        };
-        runTranslation();
-    }, [
-        originalTranscript,
-        translatedTranscript,
-        isTranslating,
-        sourceLanguage,
-        setTranslatedTranscript,
-        setIsTranslating,
-        setErrorMessage,
-    ]);
-
     const handleSubmit = async () => {
         if (!phoneValidation) {
             setPhoneError("Please enter a valid number with country code.");
@@ -107,14 +83,11 @@ export default function ReviewPage() {
         setErrorMessage(null);
         try {
             const { timestamp, timezone } = getClientTimestamp();
-            const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ?? "";
-            const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ?? "";
-            const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ?? "";
-            if (!publicKey || !serviceId || !templateId) {
+            if (!EMAILJS_PUBLIC_KEY || !EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID) {
                 throw new Error("EmailJS is not configured");
             }
-            emailjs.init(publicKey);
-            await emailjs.send(serviceId, templateId, {
+            emailjs.init(EMAILJS_PUBLIC_KEY);
+            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
                 original_query: originalTranscript,
                 translated_query: translatedTranscript,
                 phone: phoneFull,
@@ -133,7 +106,9 @@ export default function ReviewPage() {
             reset();
             router.push("/confirmation");
         } catch (err) {
-            setErrorMessage("Submission failed. Please check EmailJS and try again.");
+            const message = err instanceof Error ? err.message : "Submission failed.";
+            console.error("[submit] failed", err);
+            setErrorMessage(message);
         } finally {
             setIsSubmitting(false);
         }
@@ -141,20 +116,16 @@ export default function ReviewPage() {
 
     return (
         <AppShell>
-            <div className="flex flex-col gap-10">
-                <PageHeader
-                    title="Review and submit"
-                    subtitle="Check the English transcript, add your mobile number, and send when ready."
-                />
+            <div className="flex min-w-0 flex-col gap-8 md:gap-10">
                 {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
-                <div className="flex flex-col gap-6">
+                <div className="flex min-w-0 flex-col gap-6 pb-2 sm:pb-0">
                     <TranscriptEditor
                         value={translatedTranscript}
                         onChange={setTranslatedTranscript}
                         placeholder={
                             isTranslating
-                                ? "Translating..."
-                                : "Your translated message will appear here..."
+                                ? "Translating…"
+                                : "Your translated message will appear here…"
                         }
                     />
                     <PhoneInput
@@ -168,15 +139,24 @@ export default function ReviewPage() {
                         error={phoneError ?? undefined}
                     />
                 </div>
-                <div className="flex flex-col gap-4">
-                    <PrimaryButton
-                        label={isSubmitting ? "Sending..." : "Send"}
-                        disabled={!canSubmit}
-                        onClick={handleSubmit}
-                    />
-                    <Link href="/record" className="text-xs uppercase tracking-[0.2em] text-textMuted">
-                        Back to recording
-                    </Link>
+                <div className="sticky bottom-0 z-10 -mx-4 mt-auto border-t border-white/10 bg-surface/95 px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur-md supports-[backdrop-filter]:bg-surface/90 sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:pb-0 sm:pt-0 sm:backdrop-blur-none">
+                    <div className="mx-auto flex w-full min-w-0 max-w-full flex-col gap-3">
+                        <Button
+                            size="lg"
+                            className="w-full touch-manipulation"
+                            disabled={!canSubmit}
+                            onClick={handleSubmit}
+                            aria-busy={isSubmitting}
+                        >
+                            {isSubmitting ? "Sending…" : "Send"}
+                        </Button>
+                        <Link
+                            href="/record"
+                            className="flex min-h-11 items-center justify-center rounded-none text-center text-xs uppercase tracking-[0.2em] text-textMuted transition-colors hover:text-textPrimary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 sm:min-h-0 sm:justify-start sm:py-1"
+                        >
+                            Back to recording
+                        </Link>
+                    </div>
                 </div>
             </div>
         </AppShell>

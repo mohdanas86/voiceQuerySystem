@@ -1,21 +1,23 @@
 import Link from "next/link";
 
 import { AppShell } from "@/components/layout/AppShell";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { SuccessCheckmark } from "@/components/feedback/SuccessCheckmark";
 import { SuccessPanel } from "@/components/feedback/SuccessPanel";
-import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { Button } from "@/components/ui/button";
 
 export default function ConfirmationPage() {
     return (
         <AppShell>
-            <div className="flex flex-col gap-10">
-                <PageHeader
-                    title="Submission received"
-                    subtitle="Thank you for your query. Our team will get back to you shortly."
+            <div className="flex min-w-0 flex-col items-center gap-8 text-center md:gap-10">
+                <SuccessCheckmark />
+                <SuccessPanel
+                    align="center"
+                    message="Your request has been delivered to our support team."
                 />
-                <SuccessPanel message="Your request has been delivered to our support team." />
-                <Link href="/record" className="w-full">
-                    <PrimaryButton label="Submit another query" />
+                <Link href="/record" className="w-full max-w-md touch-manipulation">
+                    <Button size="lg" className="w-full">
+                        Submit another query
+                    </Button>
                 </Link>
             </div>
         </AppShell>

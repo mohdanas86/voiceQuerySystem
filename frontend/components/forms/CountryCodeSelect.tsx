@@ -1,22 +1,39 @@
-const COUNTRY_CODES = ["+91", "+1", "+44", "+61", "+81"];
+import { ThemedDropdown } from "@/components/ui/themed-dropdown";
+import { cn } from "@/lib/utils";
+
+const COUNTRY_CODE_OPTIONS = [
+    { value: "+91", label: "+91" },
+    { value: "+1", label: "+1" },
+    { value: "+44", label: "+44" },
+    { value: "+61", label: "+61" },
+    { value: "+81", label: "+81" },
+];
 
 interface CountryCodeSelectProps {
     value?: string;
     onChange?: (value: string) => void;
+    className?: string;
+    id?: string;
+    disabled?: boolean;
 }
 
-export function CountryCodeSelect({ value, onChange }: CountryCodeSelectProps) {
+export function CountryCodeSelect({
+    value,
+    onChange,
+    className,
+    id,
+    disabled,
+}: CountryCodeSelectProps) {
     return (
-        <select
-            className="h-11 w-24 rounded-md border border-white/10 bg-surface px-3 text-sm text-textPrimary focus:outline-none"
+        <ThemedDropdown
+            id={id}
+            size="compact"
+            aria-label="Country calling code"
             value={value ?? "+91"}
-            onChange={(event) => onChange?.(event.target.value)}
-        >
-            {COUNTRY_CODES.map((code) => (
-                <option key={code} value={code} className="text-black">
-                    {code}
-                </option>
-            ))}
-        </select>
+            onValueChange={(next) => onChange?.(next)}
+            options={COUNTRY_CODE_OPTIONS}
+            disabled={disabled}
+            className={cn("touch-manipulation", className)}
+        />
     );
 }

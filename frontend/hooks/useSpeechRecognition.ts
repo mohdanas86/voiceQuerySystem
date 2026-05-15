@@ -8,38 +8,33 @@ interface SpeechHookState {
     interimText: string;
     finalText: string;
     error: string | null;
-    start: () => void;
+    start: (language?: string) => void;
     stop: () => void;
     reset: () => void;
 }
 
-type SpeechRecognitionType = typeof window.SpeechRecognition | typeof window.webkitSpeechRecognition;
+type SpeechRecognitionConstructor = new () => SpeechRecognition;
 
 export function useSpeechRecognition(): SpeechHookState {
+    const isSupported =
+        typeof window !== "undefined" &&
+        window.isSecureContext &&
+        !!(window.SpeechRecognition || window.webkitSpeechRecognition);
     const recognitionRef = useRef<SpeechRecognition | null>(null);
-    const wantsToRecordRef = useRef(false);
-    const stopRequestedRef = useRef(false);
-    const [isSupported, setIsSupported] = useState(true);
     const [isRecording, setIsRecording] = useState(false);
     const [interimText, setInterimText] = useState("");
     const [finalText, setFinalText] = useState("");
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (typeof window === "undefined") {
-            return;
-        }
-        if (!window.isSecureContext) {
-            setIsSupported(false);
-            setError("Speech recognition requires HTTPS or localhost.");
+        if (!isSupported || typeof window === "undefined") {
             return;
         }
         const SpeechRecognitionConstructor =
-            (window.SpeechRecognition || window.webkitSpeechRecognition) as SpeechRecognitionType | undefined;
-
+            (window.SpeechRecognition || window.webkitSpeechRecognition) as
+            | SpeechRecognitionConstructor
+            | undefined;
         if (!SpeechRecognitionConstructor) {
-            setIsSupported(false);
-            setError("Speech recognition is not supported in this browser.");
             return;
         }
 
@@ -66,33 +61,28 @@ export function useSpeechRecognition(): SpeechHookState {
             if (errorType === "network") {
                 setError("Speech service unavailable on this network. Try again or switch networks.");
                 setIsRecording(false);
-                wantsToRecordRef.current = false;
                 recognition.stop();
                 return;
             }
             if (errorType === "not-allowed" || errorType === "service-not-allowed") {
                 setError("Microphone access blocked. Allow mic permissions and retry.");
                 setIsRecording(false);
-                wantsToRecordRef.current = false;
                 recognition.stop();
                 return;
             }
             if (errorType === "audio-capture") {
                 setError("No microphone found. Check your input device settings.");
                 setIsRecording(false);
-                wantsToRecordRef.current = false;
                 recognition.stop();
                 return;
             }
             if (errorType === "no-speech") {
                 setError("No speech detected. Please speak closer to the mic.");
                 setIsRecording(false);
-                wantsToRecordRef.current = false;
                 return;
             }
             setError(errorType);
             setIsRecording(false);
-            wantsToRecordRef.current = false;
         };
         recognition.onend = () => {
             setIsRecording(false);
@@ -103,30 +93,28 @@ export function useSpeechRecognition(): SpeechHookState {
         return () => {
             recognition.stop();
         };
-    }, []);
+    }, [isSupported]);
 
-    const start = () => {
+    const start = (language?: string) => {
         if (!recognitionRef.current || !isSupported || isRecording) {
             return;
         }
         setError(null);
         setInterimText("");
-        stopRequestedRef.current = false;
-        wantsToRecordRef.current = true;
+        if (language) {
+            recognitionRef.current.lang = language;
+        }
         try {
             recognitionRef.current.start();
-        } catch (err) {
+        } catch {
             setError("Unable to start recording. Please allow microphone access.");
             setIsRecording(false);
-            wantsToRecordRef.current = false;
         }
     };
 
     const stop = () => {
         recognitionRef.current?.stop();
         setIsRecording(false);
-        wantsToRecordRef.current = false;
-        stopRequestedRef.current = true;
     };
 
     const reset = () => {

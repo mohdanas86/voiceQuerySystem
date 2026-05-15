@@ -14,10 +14,26 @@ function formatTime(totalSeconds: number) {
 }
 
 export function RecordingTimer({ elapsedSeconds = 0, maxSeconds = 60 }: RecordingTimerProps) {
+    const safeElapsed = Math.min(Math.max(elapsedSeconds, 0), maxSeconds);
+
     return (
-        <div className="flex items-center justify-between rounded-lg border border-white/10 bg-surfaceAlt px-4 py-2 text-xs uppercase tracking-[0.2em] text-textMuted">
-            <span>{formatTime(elapsedSeconds)}</span>
-            <span>{formatTime(maxSeconds)}</span>
+        <div
+            className="flex w-full min-w-0 flex-col gap-1 rounded-none border border-white/20 bg-surfaceAlt px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-2.5"
+            role="timer"
+            aria-live="polite"
+            aria-label={`Elapsed time ${formatTime(safeElapsed)}, limit ${formatTime(maxSeconds)}`}
+        >
+            <span className="text-[10px] font-light uppercase tracking-[0.2em] text-textMuted sm:text-xs lg:hidden">
+                Timer
+            </span>
+            <div className="flex items-baseline gap-2 tabular-nums">
+                <span className="text-xl font-light leading-none text-textPrimary sm:text-2xl">
+                    {formatTime(safeElapsed)}
+                </span>
+                <span className="text-xs font-light uppercase tracking-[0.16em] text-textMuted">
+                    / {formatTime(maxSeconds)}
+                </span>
+            </div>
         </div>
     );
 }
