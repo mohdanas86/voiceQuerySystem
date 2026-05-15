@@ -255,20 +255,7 @@ export default function RecordPage() {
                         </div>
                     </div>
                 </section>
-                <section className="flex min-w-0 flex-col gap-3 sm:gap-4" aria-labelledby="preview-step-label">
-                    <h2
-                        id="preview-step-label"
-                        className="text-sm md:text-base font-light uppercase tracking-[0.24em] text-textMuted"
-                    >
-                        Preview
-                    </h2>
-                    <div className="min-h-[6rem] max-w-full break-words rounded-none border border-white/20 bg-surface p-3 text-base leading-relaxed text-textMuted sm:min-h-[5.5rem] sm:p-4 sm:text-sm">
-                        {activeTranscript ? (
-                            <p className="whitespace-pre-wrap break-words text-textPrimary">{activeTranscript}</p>
-                        ) : (
-                            <p className="text-textMuted">Transcript appears here after you record.</p>
-                        )}
-                    </div>
+                <div className="flex min-w-0 flex-col gap-3 sm:gap-4">
                     <Button
                         size="lg"
                         className="w-full touch-manipulation bg-white text-black hover:bg-gray-100 rounded-md"
@@ -277,7 +264,7 @@ export default function RecordPage() {
                     >
                         Continue to review
                     </Button>
-                </section>
+                </div>
             </div>
         </AppShell>
     );

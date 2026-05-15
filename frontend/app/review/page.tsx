@@ -117,6 +117,23 @@ export default function ReviewPage() {
         <div className="flex min-h-screen items-center justify-center p-6">
             <div className="flex w-full flex-col gap-8 md:gap-10 max-w-3xl mx-auto">
                 {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
+
+                <section className="flex min-w-0 flex-col gap-3 sm:gap-4" aria-labelledby="preview-step-label">
+                    <h2
+                        id="preview-step-label"
+                        className="text-sm md:text-base font-light uppercase tracking-[0.24em] text-textMuted"
+                    >
+                        Preview
+                    </h2>
+                    <div className="min-h-[6rem] max-w-full break-words rounded-none border border-white/20 bg-surface p-3 text-base leading-relaxed text-textMuted sm:min-h-[5.5rem] sm:p-4 sm:text-sm">
+                        {originalTranscript ? (
+                            <p className="whitespace-pre-wrap break-words text-textPrimary">{originalTranscript}</p>
+                        ) : (
+                            <p className="text-textMuted">Transcript appears here after you record.</p>
+                        )}
+                    </div>
+                </section>
+
                 <div className="flex w-full flex-col gap-6 pb-2 sm:pb-0">
                     <TranscriptEditor
                         value={translatedTranscript}
