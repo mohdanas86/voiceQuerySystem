@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import emailjs from "@emailjs/browser";
 import { z } from "zod";
 
-import { AppShell } from "@/components/layout/AppShell";
 import { ErrorBanner } from "@/components/feedback/ErrorBanner";
 import { TranscriptEditor } from "@/components/forms/TranscriptEditor";
 import { PhoneInput } from "@/components/forms/PhoneInput";
@@ -17,11 +16,11 @@ import { getClientTimestamp } from "@/lib/time";
 
 export default function ReviewPage() {
     const EMAILJS_PUBLIC_KEY =
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ?? "ceZ-8up4ncmOqBsoB";
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
     const EMAILJS_SERVICE_ID =
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ?? "service_yb1ljvg";
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
     const EMAILJS_TEMPLATE_ID =
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ?? "template_zq22oa2";
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
     const router = useRouter();
     const {
         sourceLanguage,
@@ -115,10 +114,10 @@ export default function ReviewPage() {
     };
 
     return (
-        <AppShell>
-            <div className="flex min-w-0 flex-col gap-8 md:gap-10">
+        <div className="flex min-h-[82vh] items-center justify-center p-6">
+            <div className="flex w-full flex-col gap-8 md:gap-10">
                 {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
-                <div className="flex min-w-0 flex-col gap-6 pb-2 sm:pb-0">
+                <div className="flex w-full flex-col gap-6 pb-2 sm:pb-0">
                     <TranscriptEditor
                         value={translatedTranscript}
                         onChange={setTranslatedTranscript}
@@ -143,7 +142,7 @@ export default function ReviewPage() {
                     <div className="mx-auto flex w-full min-w-0 max-w-full flex-col gap-3">
                         <Button
                             size="lg"
-                            className="w-full touch-manipulation"
+                            className="w-full touch-manipulation bg-white text-black hover:bg-gray-100 rounded-md"
                             disabled={!canSubmit}
                             onClick={handleSubmit}
                             aria-busy={isSubmitting}
@@ -152,13 +151,13 @@ export default function ReviewPage() {
                         </Button>
                         <Link
                             href="/record"
-                            className="flex min-h-11 items-center justify-center rounded-none text-center text-xs uppercase tracking-[0.2em] text-textMuted transition-colors hover:text-textPrimary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 sm:min-h-0 sm:justify-start sm:py-1"
+                            className="flex min-h-11 items-center justify-center rounded-none text-center text-xs uppercase tracking-[0.2em] text-textMuted transition-colors hover:text-textPrimary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 sm:min-h-0 sm:justify-start sm:py-1 underline underline-offset-5 cursor-pointer"
                         >
                             Back to recording
                         </Link>
                     </div>
                 </div>
             </div>
-        </AppShell>
+        </div>
     );
 }
