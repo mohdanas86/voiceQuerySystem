@@ -48,7 +48,7 @@ export async function POST(request: Request) {
             authorization: apiKey,
             "content-type": audio.type || "application/octet-stream",
         },
-        body: audio.stream(),
+        body: audio,
     });
 
     if (!uploadResponse.ok) {
