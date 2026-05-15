@@ -82,6 +82,10 @@ wheels/
 .installed.cfg
 *.egg
 
+# Keep the frontend app's shared utilities tracked for Next.js/Netlify builds.
+!frontend/lib/
+!frontend/lib/**
+
 # installer logs
 pip-log.txt
 pip-delete-this-directory.txt
