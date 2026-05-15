@@ -271,7 +271,7 @@ export default function RecordPage() {
                     </div>
                     <Button
                         size="lg"
-                        className="w-full touch-manipulation"
+                        className="w-full touch-manipulation bg-white text-black hover:bg-gray-100 rounded-md"
                         disabled={!canContinue}
                         onClick={() => router.push("/review")}
                     >

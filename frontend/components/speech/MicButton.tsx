@@ -1,4 +1,4 @@
-import { Mic } from "lucide-react";
+import { Loader2, Mic, Square } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -9,43 +9,104 @@ interface MicButtonProps {
 }
 
 const statusCopy: Record<NonNullable<MicButtonProps["status"]>, string> = {
-    idle: "Tap to record",
-    recording: "Recording",
-    done: "Done — tap to record again",
-    processing: "Converting speech to text…",
+    idle: "Tap to start speaking",
+    recording: "Recording... tap to stop",
+    done: "Recording completed",
+    processing: "Converting speech to text...",
 };
 
 const ariaLabel: Record<NonNullable<MicButtonProps["status"]>, string> = {
     idle: "Start recording",
     recording: "Stop recording",
-    done: "Start a new recording",
-    processing: "Converting speech to text, please wait",
+    done: "Start recording again",
+    processing: "Processing recording",
 };
 
-export function MicButton({ status = "idle", onClick, disabled }: MicButtonProps) {
+export function MicButton({
+    status = "idle",
+    onClick,
+    disabled,
+}: MicButtonProps) {
+    const isRecording = status === "recording";
+    const isProcessing = status === "processing";
+
     return (
-        <div className="flex w-full max-w-sm flex-col items-center gap-3 sm:gap-4">
+        <div className="flex w-full flex-col items-center justify-center gap-5">
             <button
-                className={cn(
-                    "flex h-[4.5rem] w-[4.5rem] shrink-0 touch-manipulation items-center justify-center rounded-none border border-white/20 bg-surface text-textPrimary transition duration-150 hover:bg-surfaceAlt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 disabled:cursor-not-allowed disabled:opacity-60 sm:h-20 sm:w-20",
-                    status === "recording" ? "ring-2 ring-primary/50" : null,
-                    status === "processing" ? "opacity-80" : null
-                )}
                 type="button"
-                aria-label={ariaLabel[status]}
-                aria-busy={status === "processing"}
-                aria-pressed={status === "recording"}
                 onClick={onClick}
                 disabled={disabled}
+                aria-label={ariaLabel[status]}
+                aria-busy={isProcessing}
+                aria-pressed={isRecording}
+                className={cn(
+                    "group relative flex h-24 w-24 touch-manipulation items-center justify-center overflow-hidden rounded-full transition-all duration-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50",
+
+                    // Idle
+                    status === "idle" &&
+                    "bg-gradient-to-br from-primary to-primary/80 shadow-[0_0_40px_rgba(59,130,246,0.35)] hover:scale-105",
+
+                    // Recording
+                    isRecording &&
+                    "bg-red-500 shadow-[0_0_60px_rgba(239,68,68,0.55)] scale-110",
+
+                    // Processing
+                    isProcessing &&
+                    "bg-amber-500 shadow-[0_0_60px_rgba(245,158,11,0.45)]",
+
+                    // Done
+                    status === "done" &&
+                    "bg-green-500 shadow-[0_0_60px_rgba(34,197,94,0.45)]"
+                )}
             >
-                <Mic className="h-7 w-7 shrink-0" aria-hidden />
+                {/* Recording pulse rings */}
+                {isRecording && (
+                    <>
+                        <span className="absolute inset-0 rounded-full border-4 border-red-300 animate-ping" />
+                        <span className="absolute inset-[-10px] rounded-full border border-red-400/40 animate-pulse" />
+                    </>
+                )}
+
+                {/* Glow */}
+                <div className="absolute inset-0 rounded-full bg-white/10" />
+
+                {/* Icon */}
+                <div className="relative z-10 flex items-center justify-center">
+                    {isProcessing ? (
+                        <Loader2 className="h-10 w-10 animate-spin text-white" />
+                    ) : isRecording ? (
+                        <Square className="h-8 w-8 fill-white text-white" />
+                    ) : (
+                        <Mic className="h-10 w-10 text-white" />
+                    )}
+                </div>
             </button>
-            <p
-                className="min-h-[2.75rem] w-full max-w-[16rem] text-center text-sm leading-snug text-textMuted"
-                aria-live="polite"
-            >
-                {statusCopy[status]}
-            </p>
+
+            {/* Status text */}
+            <div className="flex flex-col items-center gap-1 text-center">
+                <p
+                    className={cn(
+                        "text-sm font-medium transition-all duration-300",
+                        isRecording
+                            ? "text-red-500"
+                            : status === "done"
+                                ? "text-green-500"
+                                : "text-textMuted"
+                    )}
+                    aria-live="polite"
+                >
+                    {statusCopy[status]}
+                </p>
+
+                {/* Live recording dots */}
+                {isRecording && (
+                    <div className="flex items-center gap-1">
+                        <span className="h-2 w-2 rounded-full bg-red-500 animate-bounce" />
+                        <span className="h-2 w-2 rounded-full bg-red-500 animate-bounce [animation-delay:120ms]" />
+                        <span className="h-2 w-2 rounded-full bg-red-500 animate-bounce [animation-delay:240ms]" />
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
