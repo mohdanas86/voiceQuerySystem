@@ -33,7 +33,7 @@ export default function RecordPage() {
     } = useQueryStore();
     const activeTranscript = originalTranscript;
     const hasMounted = useSyncExternalStore(
-        () => () => {},
+        () => () => { },
         () => true,
         () => false
     );
