@@ -1,25 +1,30 @@
 import Link from "next/link";
 
-import { AppShell } from "@/components/layout/AppShell";
 import { SuccessCheckmark } from "@/components/feedback/SuccessCheckmark";
 import { SuccessPanel } from "@/components/feedback/SuccessPanel";
 import { Button } from "@/components/ui/button";
 
 export default function ConfirmationPage() {
     return (
-        <AppShell>
-            <div className="flex min-w-0 flex-col items-center gap-8 text-center md:gap-10">
+        <div className="flex min-h-[82vh] items-center justify-center px-4">
+            <div className="flex w-full max-w-md flex-col items-center justify-center gap-8 text-center">
+
                 <SuccessCheckmark />
+
                 <SuccessPanel
                     align="center"
                     message="Thank you for your query. Our team will get back to you shortly."
                 />
-                <Link href="/record" className="w-full max-w-md touch-manipulation">
-                    <Button size="lg" className="w-full">
+
+                <Link
+                    href="/record"
+                    className="w-full touch-manipulation"
+                >
+                    <Button size="lg" className="w-full bg-white text-black hover:bg-gray-100 rounded-md">
                         Submit another query
                     </Button>
                 </Link>
             </div>
-        </AppShell>
+        </div>
     );
 }
