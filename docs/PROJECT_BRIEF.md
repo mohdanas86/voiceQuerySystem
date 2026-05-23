@@ -31,10 +31,10 @@ Users who struggle to type long queries — especially in their own language —
 
 ## 2. Who uses it?
 
-| User | Need |
-|------|------|
-| Website visitor / customer | Open app, record, review, enter number, send |
-| Support team | Receive emails with query, mobile number, timestamp |
+| User                       | Need                                                |
+| -------------------------- | --------------------------------------------------- |
+| Website visitor / customer | Open app, record, review, enter number, send        |
+| Support team               | Receive emails with query, mobile number, timestamp |
 
 The UI must stay simple for non-technical users.
 
@@ -42,27 +42,27 @@ The UI must stay simple for non-technical users.
 
 ## 3. Required features (6)
 
-| # | Feature | Requirement |
-|---|---------|-------------|
-| 1 | Voice input | Mic button, max 60 seconds |
-| 2 | Speech-to-text | Text in the language spoken |
-| 3 | Auto-translation | English before send |
-| 4 | Mobile number | Country code + number, validated before submit |
-| 5 | Email submission | English query, full phone, timestamp to support |
-| 6 | Confirmation | *"Thank you for your query. Our team will get back to you shortly."* |
+| #   | Feature          | Requirement                                                          |
+| --- | ---------------- | -------------------------------------------------------------------- |
+| 1   | Voice input      | Mic button, max 60 seconds                                           |
+| 2   | Speech-to-text   | Text in the language spoken                                          |
+| 3   | Auto-translation | English before send                                                  |
+| 4   | Mobile number    | Country code + number, validated before submit                       |
+| 5   | Email submission | English query, full phone, timestamp to support                      |
+| 6   | Confirmation     | *"Thank you for your query. Our team will get back to you shortly."* |
 
 ---
 
 ## 4. Mobile number field
 
-| Requirement | Detail |
-|-------------|--------|
-| Screen | Review — below transcript, above Send |
-| Label | **Your Mobile Number** |
-| Layout | Country code dropdown + number field side by side |
-| Placeholder | e.g. `98765 43210` |
-| Validation | Not empty; valid format; inline error; block submit if invalid |
-| Email | Full number with code, e.g. `+91 98765 43210` |
+| Requirement | Detail                                                         |
+| ----------- | -------------------------------------------------------------- |
+| Screen      | Review — below transcript, above Send                          |
+| Label       | **Your Mobile Number**                                         |
+| Layout      | Country code dropdown + number field side by side              |
+| Placeholder | e.g. `98765 43210`                                             |
+| Validation  | Not empty; valid format; inline error; block submit if invalid |
+| Email       | Full number with code, e.g. `+91 98765 43210`                  |
 
 Send must stay disabled or show an error until the number is valid.
 
@@ -70,79 +70,71 @@ Send must stay disabled or show an error until the number is valid.
 
 ## 5. Screens (3)
 
-| Screen | Content |
-|--------|---------|
-| **Record** | Mic, status (idle / recording / done), timer (max 60s) |
+| Screen     | Content                                                          |
+| ---------- | ---------------------------------------------------------------- |
+| **Record** | Mic, status (idle / recording / done), timer (max 60s)           |
 | **Review** | Editable English text, mobile field, Send (disabled until valid) |
-| **Confirmation** | Required thank-you message |
+# Internship Project Brief — Voice-Based Query Submission System
+
+Ulavi Technologies · Web platform
 
 ---
 
-## 6. Email
+Notes from my implementation (Anas Alam — SDE):
 
-Support provides the destination address. The email body must include on separate labelled lines:
+I implemented a mobile-first web app that lets users speak their query in a supported language, converts speech to text, translates to English, collects a mobile number with country code, and sends a structured email to support.
 
-- **Query (English):** translated text  
-- **Mobile Number:** country code + number  
-- **Submitted at:** timestamp when Send was clicked  
+Key points:
 
-Example subject: `New Query from +91 98765 43210`
-
----
-
-## 7. Suggested tools
-
-Bolt.new, Claude, Cursor, Firebase (optional storage) — team chooses what fits.
+- Recording is limited to 60 seconds in the UI.
+- Server-side transcription uses AssemblyAI via `/api/aai/transcribe` and the server polls the transcript endpoint until the job completes (the poll window is ~90 seconds in my implementation).
+- If AssemblyAI doesn't provide a translated English text, the client can request `/api/translate` which proxies MyMemory as a fallback.
 
 ---
 
-## 8. Four-week plan
+## What I built
 
-| Week | Goal |
-|------|------|
-| 1 | Plan and design (3 screens, number field placement) |
-| 2 | Build record, speech-to-text, translation, phone field + validation |
-| 3 | Email integration, confirmation, cross-country testing |
-| 4 | Polish, documentation, live demo |
+Core flow the app implements:
 
----
-
-## 9. Team roles (5 students)
-
-| Role | Owns |
-|------|------|
-| App Builder | All 6 features end-to-end |
-| Designer & Planner | Flow, layouts, number field UX |
-| Email & Number | Validation, EmailJS, confirmation |
-| Tester | E2E tests, email verification |
-| Demo & Docs | Presentation, README, demo video |
+1. Tap mic and speak (max 60s)
+2. App uploads audio and requests transcription/translation
+3. User reviews and edits the English text on `/review`
+4. User enters mobile number with country code
+5. User taps **Send** and the app attempts to deliver the payload (EmailJS + optional backend)
+6. Confirmation screen appears with a success message
 
 ---
 
-## 10. Final submission
+## Mobile number & email
 
-- Working web app (link testable on phones)  
-- Code (Git or shared folder)  
-- Short write-up (what you built, challenges, learnings)  
-- Live demo with real voice query, phone number, and received email  
-
----
-
-## 11. Grading criteria
-
-| Criterion | Good outcome |
-|-----------|----------------|
-| App works | All 6 features without major errors |
-| Phone field | Dropdown works, bad input rejected, correct in email |
-| Ease of use | New user completes flow in under 2 minutes |
-| Teamwork | All members contributed |
-| Problem solving | Issues debugged with or without AI |
-| Beyond scope | Optional extras (e.g. Firebase, auto country code) |
+- The Review screen contains the `Your Mobile Number` field (country code + national number). The default country code in the store is `+91`.
+- I included a small set of country codes in the dropdown: `+91`, `+1`, `+44`, `+61`, `+81`.
+- Email content (via EmailJS template) should include labeled lines for the English query, mobile number, and `submitted_at` timestamp.
 
 ---
 
-## Intellectual property
+## Screens
 
-This project and all materials are the exclusive property of **Ulavi Technologies**. Unauthorised use, reproduction, or distribution may result in legal action.
+- **Record** — mic, timer, status, language select
+- **Review** — editable English transcript, phone input, Send
+- **Confirmation** — checkmark and required thank-you text
 
-*Confidential — Ulavi Technologies*
+---
+
+## Development notes
+
+- The client uses `NEXT_PUBLIC_API_BASE_URL` for an external backend; when I develop locally the client falls back to the built-in `POST /api/queries` route if the external API is not reachable.
+- Translation fallback is kept intentionally simple (MyMemory) for demos; replace with a paid translation API for production-quality translation.
+
+---
+
+## Deliverables
+
+- Working web app (deployable to Vercel)
+- Documentation and demo checklist in `docs/`
+
+---
+
+## Confidentiality
+
+This project and materials are the property of Ulavi Technologies.

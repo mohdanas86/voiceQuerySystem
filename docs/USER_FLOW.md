@@ -1,101 +1,99 @@
-# User Flow
+## User Flow (notes by Anas Alam)
 
-## Overview
+Overview:
 
-```
-/record  →  /review  →  /confirmation
-   │            │              │
- Record      Edit + Send    Thank you
-```
+`/record  →  /review  →  /confirmation`
 
 ---
 
-## Screen 1 — Record (`/record`)
+### Screen 1 — Record (`/record`)
 
-**User actions**
+What I expect the user to do:
 
-1. Choose spoken language (Auto-detect, English, Hindi, Urdu, Tamil, Telugu, Marathi, Kannada, Gujarati, Bengali).
-2. Tap mic to start recording; tap again to stop (or wait for 60s auto-stop).
-3. Wait while audio is processed (status: processing).
-4. Read the transcript preview in the original language.
-5. Tap **Continue to review** (enabled only when transcript is non-empty).
+1. Choose a spoken language (the UI supports `auto` detection and common languages).
+2. Tap the mic to start recording and tap again to stop (or wait for the 60s auto-stop).
+3. Wait while the app uploads audio and polls the transcription service.
+4. See the original-language transcript preview.
+5. Tap **Continue to review** when the transcript is available.
 
-**UI elements**
+Key UI elements:
 
 - Language dropdown (`LanguageSelect`)
-- Recording timer (`00:00 / 01:00`)
-- Mic button with states: idle, recording, processing, done
+- Recording timer (max `00:60` shown as `00:00 / 01:00`)
+- Mic button states: idle, recording, processing, done
 - Transcript preview panel
-- Error banner on mic or API failure
+- Error banner on mic/API failures
 
-**Technical notes**
+Technical notes:
 
-- Audio captured via `MediaRecorder` (WebM/Opus when supported).
-- `POST /api/aai/transcribe` returns `text` and `translated_texts.en`.
-- Original text stored in Zustand; English translation stored for the review screen.
+- Audio is captured with `MediaRecorder` (WebM/Opus when supported).
+- The server route `/api/aai/transcribe` uploads audio to AssemblyAI and polls the transcript endpoint until completion (I use ~30 polls at 3s intervals).
+- When AssemblyAI provides `translated_texts.en` we prefer that; otherwise the app also supports a fallback translation endpoint (`/api/translate`) which proxies MyMemory.
+- I persist state in `useQueryStore` so the review screen can use both the original and translated text.
 
 ---
 
-## Screen 2 — Review (`/review`)
+### Screen 2 — Review (`/review`)
 
-**User actions**
+What the user does here:
 
-1. Edit the **Transcript (English)** textarea.
-2. Select country code and enter the national number.
-3. Tap **Send** when enabled.
+1. Edit the **Transcript (English)** textarea if needed.
+2. Select the country code and enter the national number.
+3. Tap **Send** when the form validates.
 
-**Validation**
+Validation rules (as implemented):
 
 - Transcript must not be empty.
-- Country code: `+` and 1–4 digits.
-- Number: 6–15 digits (spaces allowed).
-- Invalid submit attempt shows: *"Please enter a valid number with country code."*
+- Country code expects `+` followed by 1–4 digits.
+- National number accepts 6–15 digits (spaces allowed).
 
-**Send behaviour**
+Send behaviour implemented in the code:
 
-1. Build `phone_full` (e.g. `+91 98765 43210`).
-2. EmailJS sends `original_query`, `translated_query`, `phone`, `submitted_at`.
-3. Optional `submitQuery` to backend or `/api/queries` fallback.
-4. Clear store and navigate to confirmation.
+1. We build a `phone_full` string (for example `+91 98765 43210`).
+2. The client attempts to send via `submitQuery` to the configured `NEXT_PUBLIC_API_BASE_URL` (default I use in dev: `http://localhost:8000/api/v1`).
+3. If that backend is local/unavailable, the client falls back to `POST /api/queries` implemented inside the Next.js app.
+4. Email is sent via EmailJS from the client and contains `original_query`, `translated_query`, `phone`, and `submitted_at`.
+5. On success we reset `useQueryStore` and navigate to `/confirmation`.
 
-**Mobile layout**
+UI notes:
 
-- Send button is sticky at the bottom on small screens for easier reach.
-
----
-
-## Screen 3 — Confirmation (`/confirmation`)
-
-**User sees**
-
-- Green animated checkmark
-- Message: *"Thank you for your query. Our team will get back to you shortly."*
-- **Submit another query** → returns to `/record`
-
-No form fields on this screen.
+- Country code dropdown options include: `+91`, `+1`, `+44`, `+61`, `+81` (see `CountryCodeSelect`).
+- The `Send` button is sticky on mobile to make it reachable.
 
 ---
 
-## State between screens
+### Screen 3 — Confirmation (`/confirmation`)
 
-| Field | Set on | Used on |
-|-------|--------|---------|
-| `sourceLanguage` | Record | Email / API payload |
-| `originalTranscript` | Record | Email |
-| `translatedTranscript` | Record, editable on Review | Email, validation |
-| `phoneCountryCode` | Review (default `+91`) | Validation, email |
-| `phoneNumber` | Review | Validation, email |
+Shown to the user:
 
-State lives in `useQueryStore` and resets after successful send.
+- A green animated checkmark component
+- The exact message: "Thank you for your query. Our team will get back to you shortly."
+- A button labelled **Submit another query** which navigates back to `/record` and resets state.
+
+No inputs on this screen.
 
 ---
 
-## Error paths
+### State between screens
 
-| Situation | User feedback |
-|-----------|----------------|
-| Browser has no `MediaRecorder` | Banner on record screen |
-| Mic permission denied | Error message, recording idle |
-| Transcription API error | Banner with API detail when available |
-| Invalid phone on Send | Inline error under phone field |
-| EmailJS / network failure | Banner on review screen |
+State (in `useQueryStore`) that flows through the screens:
+
+- `sourceLanguage` — set on Record, included in payloads
+- `originalTranscript` — set on Record, included in email
+- `translatedTranscript` — set on Record or via translation; editable on Review
+- `phoneCountryCode` — default `+91`, changeable on Review
+- `phoneNumber` — national number entered on Review
+
+The store is reset after a successful send.
+
+---
+
+### Error paths (what I implemented)
+
+| Situation                      | User feedback                            |
+| ------------------------------ | ---------------------------------------- |
+| Browser has no `MediaRecorder` | Banner on the record screen              |
+| Mic permission denied          | Inline error and idle state              |
+| Transcription API error        | Error banner with details when available |
+| Invalid phone on Send          | Inline error under phone field           |
+| EmailJS/network failure        | Error banner on review screen            |
