@@ -142,6 +142,16 @@ export default function RecordPage() {
                         sourceLanguage !== "auto"
                             ? sourceLanguage
                             : result.language_code ?? "auto";
+
+                    // If transcription returned no text (user was silent), prompt to retry
+                    if (!original) {
+                        setOriginalTranscript("");
+                        setTranslatedTranscript("");
+                        setErrorMessage("No speech detected. Please try recording again.");
+                        setRecordingStatus("idle");
+                        return;
+                    }
+
                     setOriginalTranscript(original);
                     setTranslatedTranscript(translated);
                     setSourceLanguage(resolvedLanguage);
