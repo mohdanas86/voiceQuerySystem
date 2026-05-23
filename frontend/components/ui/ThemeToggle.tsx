@@ -19,19 +19,44 @@ const getInitialTheme = () => {
 };
 
 export function ThemeToggle() {
-    const [theme, setTheme] = useState<Theme>(getInitialTheme);
+    const [mounted, setMounted] = useState(false);
+    const [theme, setTheme] = useState<Theme>("dark");
 
     useEffect(() => {
+        setMounted(true);
+        const stored = window.localStorage.getItem("theme") as Theme;
+        if (stored === "light" || stored === "dark") {
+            setTheme(stored);
+        } else {
+            const systemPref = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+            setTheme(systemPref);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
         document.documentElement.setAttribute("data-theme", theme);
         window.localStorage.setItem("theme", theme);
-    }, [theme]);
+    }, [theme, mounted]);
 
     const handleToggle = () => {
-        const next = theme === "dark" ? "light" : "dark";
-        setTheme(next);
-        window.localStorage.setItem("theme", next);
-        document.documentElement.setAttribute("data-theme", next);
+        setTheme((prev) => (prev === "dark" ? "light" : "dark"));
     };
+
+    if (!mounted) {
+        return (
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="border border-border/20 opacity-0"
+                disabled
+                aria-label="Toggle theme"
+            >
+                <span className="h-4 w-4" />
+            </Button>
+        );
+    }
 
     return (
         <Button

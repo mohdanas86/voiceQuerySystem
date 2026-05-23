@@ -4,6 +4,8 @@ Notes and maintainer details (Anas Alam — SDE)
 
 This is a mobile-first web app that lets visitors submit support queries by voice. Users record up to 60 seconds, review an English translation, enter a validated mobile number, and send a structured email to support.
 
+Each successful submission is also stored in MongoDB Atlas through the local `POST /api/queries` route.
+
 ---
 
 ## What it does
@@ -11,7 +13,7 @@ This is a mobile-first web app that lets visitors submit support queries by voic
 1. Voice input on `/record` (60s limit)
 2. Speech-to-text via AssemblyAI (`POST /api/aai/transcribe`) with server-side polling
 3. English translation: prefer AssemblyAI's `translated_texts.en`, fallback to `/api/translate` (MyMemory)
-4. Mobile number input on `/review` with country code dropdown
+4. Name + mobile number input on `/review` with country code dropdown
 5. Email submission via EmailJS from the client (template variables below)
 6. Confirmation screen with required thank-you message
 
@@ -20,7 +22,7 @@ This is a mobile-first web app that lets visitors submit support queries by voic
 ## Screens
 
 - `/record` — language select, mic, timer, transcript preview
-- `/review` — edit English transcript, mobile number, Send
+- `/review` — edit English transcript, name, mobile number, Send
 - `/confirmation` — success message after send
 
 The root route redirects to `/record`.
@@ -64,10 +66,12 @@ Required:
 - `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY` — EmailJS public key
 - `NEXT_PUBLIC_EMAILJS_SERVICE_ID` — EmailJS service ID
 - `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` — EmailJS template ID
+- `MONGODB_URI` — MongoDB Atlas connection string
+- `MONGODB_DB` — MongoDB database name
 
 Optional:
 
-- `NEXT_PUBLIC_API_BASE_URL` — external API base; client falls back to `/api/queries` for local development if unreachable
+- `NEXT_PUBLIC_API_BASE_URL` — retained for older integrations; the current submit flow posts directly to `/api/queries`
 
 See `docs/SETUP.md` for details.
 
@@ -77,6 +81,7 @@ See `docs/SETUP.md` for details.
 
 Include these variables in your EmailJS template:
 
+- `name` — User name
 - `translated_query` — English query (editable on review)
 - `original_query` — Original-language transcript
 - `phone` — Full phone with country code
@@ -87,7 +92,7 @@ Include these variables in your EmailJS template:
 ## API routes (Next.js)
 
 - `POST /api/aai/transcribe` — uploads audio to AssemblyAI, returns transcript + translations when ready
-- `POST /api/queries` — local fallback endpoint that accepts and acknowledges submissions
+- `POST /api/queries` — stores accepted submissions in MongoDB Atlas and returns the submitted record ID
 
 ---
 

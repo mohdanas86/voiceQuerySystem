@@ -24,6 +24,9 @@ ASSEMBLYAI_API_KEY=your_assemblyai_key
 NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=your_public_key
 NEXT_PUBLIC_EMAILJS_SERVICE_ID=your_service_id
 NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=your_template_id
+
+MONGODB_URI=your_mongodb_atlas_connection_string
+MONGODB_DB=voiceQuerySystem
 ```
 
 ### Optional
@@ -32,7 +35,7 @@ NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=your_template_id
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1
 ```
 
-Notes: the app prefers `NEXT_PUBLIC_API_BASE_URL` when submitting to an external backend. If this points to localhost (the default I use in development) and that backend is unreachable, the client will fall back to the built-in `POST /api/queries` route provided by the Next.js app.
+Note: the current submit flow posts directly to the built-in `POST /api/queries` route, which stores each submission in MongoDB Atlas. Keep `NEXT_PUBLIC_API_BASE_URL` only if you still use it elsewhere in the app.
 
 ---
 
@@ -52,6 +55,7 @@ I configured the app to send email via EmailJS on the client. Make a template th
 
 | Template variable      | Source                                                |
 | ---------------------- | ----------------------------------------------------- |
+| `{{name}}`             | User name                                             |
 | `{{translated_query}}` | English (editable) transcript                         |
 | `{{original_query}}`   | Original-language transcript                          |
 | `{{phone}}`            | Full phone with country code (e.g. `+91 98765 43210`) |
@@ -66,6 +70,8 @@ Suggested subject and body:
 **Body:**
 
 ```
+Name: {{name}}
+
 Query (English): {{translated_query}}
 
 Mobile Number: {{phone}}
@@ -75,9 +81,25 @@ Submitted at: {{submitted_at}}
 
 Set the template destination to your support inbox (e.g. support@ulavitech.com).
 
+If you want the subject/body to match the app data exactly, keep the `name`, `translated_query`, `phone`, and `submitted_at` variables in your template.
+
 ---
 
-## 5. Run locally
+## 5. MongoDB Atlas
+
+The built-in `POST /api/queries` route now writes each accepted submission to MongoDB Atlas.
+
+1. Create a cluster in Atlas and copy the connection string into `MONGODB_URI`.
+2. Set `MONGODB_DB` to the database name you want to use.
+3. Restart the dev server after changing either variable.
+
+The app stores submissions in a `query_submissions` collection.
+
+If writes are failing, verify the Atlas user has insert permissions on the target database and the IP allowlist includes your current network.
+
+---
+
+## 6. Run locally
 
 ```bash
 npm run dev
@@ -93,7 +115,7 @@ Recording requires a secure context. `localhost` is treated as secure for develo
 
 ---
 
-## 6. Deploy (example: Vercel)
+## 7. Deploy (example: Vercel)
 
 1. Use `frontend` as the project root when importing to Vercel.
 2. Add the same environment variables in the hosting dashboard.

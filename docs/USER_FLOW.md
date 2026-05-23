@@ -38,8 +38,9 @@ Technical notes:
 What the user does here:
 
 1. Edit the **Transcript (English)** textarea if needed.
-2. Select the country code and enter the national number.
-3. Tap **Send** when the form validates.
+2. Enter your name.
+3. Select the country code and enter the national number.
+4. Tap **Send** when the form validates.
 
 Validation rules (as implemented):
 
@@ -50,9 +51,9 @@ Validation rules (as implemented):
 Send behaviour implemented in the code:
 
 1. We build a `phone_full` string (for example `+91 98765 43210`).
-2. The client attempts to send via `submitQuery` to the configured `NEXT_PUBLIC_API_BASE_URL` (default I use in dev: `http://localhost:8000/api/v1`).
-3. If that backend is local/unavailable, the client falls back to `POST /api/queries` implemented inside the Next.js app.
-4. Email is sent via EmailJS from the client and contains `original_query`, `translated_query`, `phone`, and `submitted_at`.
+2. The client sends directly to `POST /api/queries` implemented inside the Next.js app.
+3. The route stores the submission in MongoDB Atlas and returns the inserted record ID.
+4. Email is sent via EmailJS from the client and contains `name`, `original_query`, `translated_query`, `phone`, and `submitted_at`.
 5. On success we reset `useQueryStore` and navigate to `/confirmation`.
 
 UI notes:
@@ -83,6 +84,7 @@ State (in `useQueryStore`) that flows through the screens:
 - `translatedTranscript` — set on Record or via translation; editable on Review
 - `phoneCountryCode` — default `+91`, changeable on Review
 - `phoneNumber` — national number entered on Review
+- `userName` — entered on Review and included in email + MongoDB record
 
 The store is reset after a successful send.
 

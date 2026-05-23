@@ -1,6 +1,7 @@
 export type RecordingStatus = "idle" | "recording" | "processing" | "done";
 
 export interface QueryPayload {
+    user_name: string;
     source_language: string;
     original_transcript: string;
     translated_transcript: string;

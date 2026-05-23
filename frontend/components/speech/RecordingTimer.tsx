@@ -18,7 +18,7 @@ export function RecordingTimer({ elapsedSeconds = 0, maxSeconds = 60 }: Recordin
 
     return (
         <div
-            className="flex w-full min-w-0 flex-col gap-1 rounded-none border border-white/20 bg-surfaceAlt px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-2.5"
+            className="flex w-full min-w-0 flex-col gap-1 rounded-none border border-border/20 bg-surfaceAlt px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-2.5"
             role="timer"
             aria-live="polite"
             aria-label={`Elapsed time ${formatTime(safeElapsed)}, limit ${formatTime(maxSeconds)}`}

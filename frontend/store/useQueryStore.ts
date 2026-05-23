@@ -4,6 +4,7 @@ import type { RecordingStatus } from "@/types/query";
 
 interface QueryState {
     recordingStatus: RecordingStatus;
+    userName: string;
     sourceLanguage: string;
     originalTranscript: string;
     translatedTranscript: string;
@@ -13,6 +14,7 @@ interface QueryState {
     isSubmitting: boolean;
     errorMessage: string | null;
     setRecordingStatus: (status: RecordingStatus) => void;
+    setUserName: (value: string) => void;
     setSourceLanguage: (language: string) => void;
     setOriginalTranscript: (value: string) => void;
     setTranslatedTranscript: (value: string) => void;
@@ -26,6 +28,7 @@ interface QueryState {
 
 const initialState = {
     recordingStatus: "idle" as RecordingStatus,
+    userName: "",
     sourceLanguage: "auto",
     originalTranscript: "",
     translatedTranscript: "",
@@ -39,6 +42,7 @@ const initialState = {
 export const useQueryStore = create<QueryState>((set) => ({
     ...initialState,
     setRecordingStatus: (recordingStatus) => set({ recordingStatus }),
+    setUserName: (userName) => set({ userName }),
     setSourceLanguage: (sourceLanguage) => set({ sourceLanguage }),
     setOriginalTranscript: (originalTranscript) => set({ originalTranscript }),
     setTranslatedTranscript: (translatedTranscript) => set({ translatedTranscript }),

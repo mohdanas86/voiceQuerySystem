@@ -7,7 +7,7 @@ export function ErrorBanner({ message }: ErrorBannerProps) {
         <div
             role="alert"
             aria-live="polite"
-            className="rounded-none border border-white/20 bg-surfaceAlt p-3 text-sm leading-relaxed text-error focus-within:ring-2 focus-within:ring-ring/40 sm:p-4"
+            className="rounded-none border border-border/20 bg-surfaceAlt p-3 text-sm leading-relaxed text-error focus-within:ring-2 focus-within:ring-ring/40 sm:p-4"
         >
             {message}
         </div>

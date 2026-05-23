@@ -21,8 +21,8 @@ Users who struggle to type long queries — especially in their own language —
 2. App converts speech to text
 3. App translates to English
 4. User reviews and edits the English text
-5. User enters mobile number with country code
-6. User taps **Send** — support receives a structured email
+5. User enters name and mobile number with country code
+6. User taps **Send** — support receives a structured email and the submission is stored in MongoDB Atlas
 7. User sees a confirmation message
 
 **Example:** A user in Tamil Nadu speaks in Tamil for 30 seconds. The app transcribes, translates to English, captures `+91` phone number, and ops receives a clean English email.
@@ -48,7 +48,7 @@ The UI must stay simple for non-technical users.
 | 2   | Speech-to-text   | Text in the language spoken                                          |
 | 3   | Auto-translation | English before send                                                  |
 | 4   | Mobile number    | Country code + number, validated before submit                       |
-| 5   | Email submission | English query, full phone, timestamp to support                      |
+| 5   | Email submission | Name, English query, full phone, timestamp to support + MongoDB save |
 | 6   | Confirmation     | *"Thank you for your query. Our team will get back to you shortly."* |
 
 ---
@@ -108,8 +108,9 @@ Core flow the app implements:
 ## Mobile number & email
 
 - The Review screen contains the `Your Mobile Number` field (country code + national number). The default country code in the store is `+91`.
+- The Review screen also contains a `Your Name` field above the transcript preview.
 - I included a small set of country codes in the dropdown: `+91`, `+1`, `+44`, `+61`, `+81`.
-- Email content (via EmailJS template) should include labeled lines for the English query, mobile number, and `submitted_at` timestamp.
+- Email content (via EmailJS template) should include labeled lines for the user name, English query, mobile number, and `submitted_at` timestamp.
 
 ---
 
@@ -123,7 +124,7 @@ Core flow the app implements:
 
 ## Development notes
 
-- The client uses `NEXT_PUBLIC_API_BASE_URL` for an external backend; when I develop locally the client falls back to the built-in `POST /api/queries` route if the external API is not reachable.
+- The client now posts directly to the built-in `POST /api/queries` route, which stores accepted submissions in MongoDB Atlas.
 - Translation fallback is kept intentionally simple (MyMemory) for demos; replace with a paid translation API for production-quality translation.
 
 ---

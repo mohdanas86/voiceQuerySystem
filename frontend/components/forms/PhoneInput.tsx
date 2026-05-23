@@ -33,7 +33,7 @@ export function PhoneInput({
                 />
                 <input
                     id="phone-national"
-                    className="h-12 min-h-12 w-full min-w-0 rounded-none border border-white/20 bg-surface px-3 text-base text-textPrimary placeholder:text-textMuted focus:outline-none focus:ring-2 focus:ring-primary/40 sm:h-11 sm:min-h-11 sm:text-sm"
+                    className="h-12 min-h-12 w-full min-w-0 rounded-none border border-border/20 bg-surface px-3 text-base text-textPrimary placeholder:text-textMuted focus:outline-none focus:ring-2 focus:ring-primary/40 sm:h-11 sm:min-h-11 sm:text-sm"
                     placeholder="98765 43210"
                     type="tel"
                     inputMode="tel"

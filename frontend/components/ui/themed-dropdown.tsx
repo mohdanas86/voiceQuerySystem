@@ -12,7 +12,7 @@ export type ThemedDropdownOption = {
 };
 
 const triggerVariants = cva(
-    "w-full min-w-0 cursor-pointer appearance-none rounded-none border border-white/20 bg-surface text-textPrimary outline-none transition hover:border-white/30 focus:border-primary/30 focus:ring-2 focus:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50",
+    "w-full min-w-0 cursor-pointer appearance-none rounded-none border border-border/20 bg-surface text-textPrimary outline-none transition hover:border-border/30 focus:border-primary/30 focus:ring-2 focus:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50",
     {
         variants: {
             size: {

@@ -7,6 +7,7 @@ import emailjs from "@emailjs/browser";
 import { z } from "zod";
 
 import { ErrorBanner } from "@/components/feedback/ErrorBanner";
+import { Input } from "@/components/ui/input";
 import { TranscriptEditor } from "@/components/forms/TranscriptEditor";
 import { PhoneInput } from "@/components/forms/PhoneInput";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ export default function ReviewPage() {
         process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
     const router = useRouter();
     const {
+        userName,
         sourceLanguage,
         originalTranscript,
         translatedTranscript,
@@ -31,6 +33,7 @@ export default function ReviewPage() {
         isTranslating,
         isSubmitting,
         errorMessage,
+        setUserName,
         setTranslatedTranscript,
         setPhoneCountryCode,
         setPhoneNumber,
@@ -39,6 +42,7 @@ export default function ReviewPage() {
         reset,
     } = useQueryStore();
     const [phoneError, setPhoneError] = useState<string | null>(null);
+    const [nameError, setNameError] = useState<string | null>(null);
 
     const phoneSchema = useMemo(
         () =>
@@ -48,6 +52,10 @@ export default function ReviewPage() {
             }),
         []
     );
+
+    const nameSchema = useMemo(() => z.string().trim().min(2, "Please enter your name."), []);
+
+    const normalizedUserName = useMemo(() => userName.trim(), [userName]);
 
     const phoneValidation = useMemo(() => {
         const result = phoneSchema.safeParse({
@@ -63,16 +71,24 @@ export default function ReviewPage() {
     );
 
     const canSubmit =
+        normalizedUserName.length > 1 &&
         phoneValidation &&
         translatedTranscript.trim().length > 0 &&
         !isSubmitting &&
         !isTranslating;
 
     const handleSubmit = async () => {
+        const nameResult = nameSchema.safeParse(userName);
+        if (!nameResult.success) {
+            setNameError(nameResult.error.issues[0]?.message ?? "Please enter your name.");
+            return;
+        }
+
         if (!phoneValidation) {
             setPhoneError("Please enter a valid number with country code.");
             return;
         }
+        setNameError(null);
         setPhoneError(null);
         if (!translatedTranscript.trim()) {
             setErrorMessage("Please provide a transcript before sending.");
@@ -87,12 +103,15 @@ export default function ReviewPage() {
             }
             emailjs.init(EMAILJS_PUBLIC_KEY);
             await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                name: normalizedUserName,
+                user_name: normalizedUserName,
                 original_query: originalTranscript,
                 translated_query: translatedTranscript,
                 phone: phoneFull,
                 submitted_at: timestamp,
             });
             await submitQuery({
+                user_name: normalizedUserName,
                 source_language: sourceLanguage,
                 original_transcript: originalTranscript,
                 translated_transcript: translatedTranscript,
@@ -123,14 +142,41 @@ export default function ReviewPage() {
                         id="preview-step-label"
                         className="text-sm md:text-base font-light uppercase tracking-[0.24em] text-textMuted"
                     >
-                        Preview
+                        Review details
                     </h2>
-                    <div className="min-h-[6rem] max-w-full break-words rounded-none border border-white/20 bg-surface p-3 text-base leading-relaxed text-textMuted sm:min-h-[5.5rem] sm:p-4 sm:text-sm">
-                        {originalTranscript ? (
-                            <p className="whitespace-pre-wrap break-words text-textPrimary">{originalTranscript}</p>
-                        ) : (
-                            <p className="text-textMuted">Transcript appears here after you record.</p>
-                        )}
+                    <div className="grid gap-4 rounded-none border border-white/20 bg-surface p-3 sm:p-4">
+                        <div className="flex min-w-0 flex-col gap-2 sm:gap-3">
+                            <label
+                                htmlFor="review-user-name"
+                                className="text-xs font-light uppercase tracking-[0.2em] text-textMuted"
+                            >
+                                Your Name
+                            </label>
+                            <Input
+                                id="review-user-name"
+                                name="user_name"
+                                type="text"
+                                autoComplete="name"
+                                placeholder="Enter your name"
+                                aria-invalid={nameError ? true : undefined}
+                                className="h-12 rounded-none border-border/20 bg-surface text-textPrimary placeholder:text-textMuted focus-visible:ring-2 focus-visible:ring-primary/40"
+                                value={userName}
+                                onChange={(event) => {
+                                    setUserName(event.target.value);
+                                    setNameError(null);
+                                }}
+                            />
+                            {nameError ? (
+                                <p className="text-sm leading-snug text-error sm:text-xs">{nameError}</p>
+                            ) : null}
+                        </div>
+                        <div className="min-h-[6rem] max-w-full break-words rounded-none border border-white/20 bg-surface p-3 text-base leading-relaxed text-textMuted sm:min-h-[5.5rem] sm:p-4 sm:text-sm">
+                            {originalTranscript ? (
+                                <p className="whitespace-pre-wrap break-words text-textPrimary">{originalTranscript}</p>
+                            ) : (
+                                <p className="text-textMuted">Transcript appears here after you record.</p>
+                            )}
+                        </div>
                     </div>
                 </section>
 

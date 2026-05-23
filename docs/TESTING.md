@@ -8,6 +8,7 @@ This is the practical checklist I use before a demo or submission. Follow it ste
 
 - [ ] `.env.local` contains a valid `ASSEMBLYAI_API_KEY`
 - [ ] `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY`, `NEXT_PUBLIC_EMAILJS_SERVICE_ID`, `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` are set
+- [ ] `MONGODB_URI` and `MONGODB_DB` are set
 - [ ] Dev server restarted after env changes
 - [ ] Testing on `localhost` or over `HTTPS` (microphone requires a secure context)
 
@@ -34,6 +35,7 @@ This is the practical checklist I use before a demo or submission. Follow it ste
 ## Feature 3 — English translation
 
 - [ ] Review screen shows English text in the transcript field
+- [ ] Review screen shows a name field above the transcript preview
 - [ ] For non-English input, either AssemblyAI provides `translated_texts.en` or the fallback `/api/translate` (MyMemory) returns a reasonable translation
 
 ---
@@ -53,9 +55,12 @@ This is the practical checklist I use before a demo or submission. Follow it ste
 
 - [ ] Send shows “Sending…” while in progress
 - [ ] Email arrives at the configured support inbox
+- [ ] Email contains the user name (`name`)
 - [ ] Email contains the English query (`translated_query`)
 - [ ] Email contains the full phone with country code
 - [ ] Email contains the timestamp (`submitted_at`)
+
+- [ ] Submission is stored in the `query_submissions` collection in MongoDB Atlas
 
 Notes: EmailJS sends from the browser; check EmailJS quota and template variable names if delivery fails.
 
