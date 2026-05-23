@@ -12,9 +12,9 @@ cp .env.example .env.local
 npm run dev
 ```
 
-| Script | Command |
-|--------|---------|
-| Development | `npm run dev` |
+| Script           | Command         |
+| ---------------- | --------------- |
+| Development      | `npm run dev`   |
 | Production build | `npm run build` |
-| Start production | `npm start` |
-| Lint | `npm run lint` |
+| Start production | `npm start`     |
+| Lint             | `npm run lint`  |
