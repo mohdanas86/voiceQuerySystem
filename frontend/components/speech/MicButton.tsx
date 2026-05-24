@@ -4,7 +4,7 @@
 
 "use client";
 
-import { Loader2, Mic, Square } from "lucide-react";
+import { Loader2, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MicButtonProps {
@@ -27,7 +27,10 @@ export function MicButton({ status = "idle", onClick, disabled }: MicButtonProps
 
     return (
         <div className="flex flex-col items-center gap-5 select-none">
-            <div className="relative flex items-center justify-center">
+            <div
+                className="relative flex items-center justify-center"
+                style={{ width: 168, height: 168 }}
+            >
 
                 {/* Recording pulse rings — three concentric orange rings */}
                 {isRecording && (
@@ -35,21 +38,21 @@ export function MicButton({ status = "idle", onClick, disabled }: MicButtonProps
                         <span
                             className="absolute rounded-full border-2 border-brand-accent/40"
                             style={{
-                                width: "148px", height: "148px",
+                                width: "136px", height: "136px",
                                 animation: "pulse-ring 1.6s cubic-bezier(0.4,0,0.6,1) infinite",
                             }}
                         />
                         <span
                             className="absolute rounded-full border border-brand-accent/25"
                             style={{
-                                width: "180px", height: "180px",
+                                width: "152px", height: "152px",
                                 animation: "pulse-ring 1.6s cubic-bezier(0.4,0,0.6,1) 0.4s infinite",
                             }}
                         />
                         <span
                             className="absolute rounded-full border border-brand-accent/12"
                             style={{
-                                width: "212px", height: "212px",
+                                width: "168px", height: "168px",
                                 animation: "pulse-ring 1.6s cubic-bezier(0.4,0,0.6,1) 0.8s infinite",
                             }}
                         />
@@ -114,9 +117,28 @@ export function MicButton({ status = "idle", onClick, disabled }: MicButtonProps
                     )}
                 >
                     {isProcessing ? (
-                        <Loader2 className="h-9 w-9 animate-spin text-brand-muted" />
+                        <Loader2 className="h-9 w-9 animate-spin text-[#6B6A68]" />
                     ) : isRecording ? (
-                        <Square className="h-7 w-7 fill-white text-white" />
+                        /* Animated waveform bars — 4 bars, staggered bounce */
+                        <div className="flex items-end gap-[3px]" aria-hidden>
+                            {[
+                                { h: "60%", delay: "0ms" },
+                                { h: "100%", delay: "120ms" },
+                                { h: "45%", delay: "240ms" },
+                                { h: "80%", delay: "60ms" },
+                            ].map((bar, i) => (
+                                <span
+                                    key={i}
+                                    className="w-[4px] rounded-full bg-white"
+                                    style={{
+                                        height: "28px",
+                                        animation: `waveform-bar 0.7s ease-in-out ${bar.delay} infinite alternate`,
+                                        transform: `scaleY(${bar.h === "100%" ? 1 : bar.h === "80%" ? 0.8 : bar.h === "60%" ? 0.6 : 0.45})`,
+                                        transformOrigin: "bottom",
+                                    }}
+                                />
+                            ))}
+                        </div>
                     ) : isDone ? (
                         <Mic className="h-9 w-9 text-green-500" />
                     ) : (

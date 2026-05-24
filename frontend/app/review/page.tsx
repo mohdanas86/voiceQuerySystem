@@ -101,7 +101,7 @@ export default function ReviewPage() {
             router.push("/confirmation");
         } catch (err) {
             console.error("[submit] failed", err);
-            setErrorMessage(err instanceof Error ? err.message : "Submission failed.");
+            setErrorMessage("Something went wrong. Please check your details and try again.");
         } finally {
             setIsSubmitting(false);
         }

@@ -75,8 +75,8 @@ export default function RecordPage() {
     };
 
     const handleStart = useCallback(async () => {
-        if (!mediaSupported) { setErrorMessage("Audio recording is not supported in this browser."); return; }
-        if (!window.isSecureContext) { setErrorMessage("Recording requires HTTPS or localhost."); return; }
+        if (!mediaSupported) { setErrorMessage("Your browser doesn't support audio recording. Try Chrome or Safari."); return; }
+        if (!window.isSecureContext) { setErrorMessage("Recording is only available on secure connections."); return; }
         if (isRecording) return;
 
         setElapsedSeconds(0);
@@ -111,7 +111,7 @@ export default function RecordPage() {
                     const lang = sourceLanguage !== "auto" ? sourceLanguage : result.language_code ?? "auto";
 
                     if (!original) {
-                        setErrorMessage("No speech detected. Please try recording again.");
+                        setErrorMessage("We couldn't catch that. Please try speaking again.");
                         setRecordingStatus("idle");
                         return;
                     }
@@ -121,7 +121,8 @@ export default function RecordPage() {
                     setSourceLanguage(lang);
                     setRecordingStatus("done");
                 } catch (err) {
-                    setErrorMessage(err instanceof Error ? err.message : "Transcription failed.");
+                    console.error("[transcribe] failed", err);
+                    setErrorMessage("Something went wrong. Please try recording again.");
                     setRecordingStatus("idle");
                 } finally {
                     setIsTranslating(false);
@@ -131,7 +132,7 @@ export default function RecordPage() {
             recorder.start();
             setIsRecording(true);
         } catch {
-            setErrorMessage("Microphone access blocked. Allow mic permissions and retry.");
+            setErrorMessage("Microphone access is blocked. Please allow mic permissions and try again.");
             setRecordingStatus("idle");
             stopTracks();
         }
