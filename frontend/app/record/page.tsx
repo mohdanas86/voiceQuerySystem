@@ -152,100 +152,90 @@ export default function RecordPage() {
 
     return (
         <div className="pt-12 min-h-screen">
-            <div className="max-w-[1920px] mx-auto border-x border-brand-border min-h-screen">
+            <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-10 flex flex-col gap-8">
 
-                {/* ── Page header ── */}
-                <div className="border-b border-brand-border px-6 py-8 lg:px-16">
-                    <div className="flex items-center gap-4 font-mono text-xs font-bold tracking-widest text-brand-muted mb-3">
-                        <div className="w-3 h-3 bg-brand-accent" aria-hidden />
+                {/* Page header */}
+                <div>
+                    <div className="flex items-center gap-3 font-mono text-xs font-bold tracking-widest text-brand-muted mb-3">
+                        <div className="w-2 h-2 bg-brand-accent" aria-hidden />
                         <span>// STEP 01 OF 03</span>
                     </div>
-                    <h1 className="font-sans text-4xl font-black uppercase tracking-tighter text-brand-text md:text-5xl">
+                    <h1 className="font-sans text-3xl font-black uppercase tracking-tighter text-brand-text sm:text-4xl">
                         Record your query
                     </h1>
                 </div>
 
-                {/* ── Errors ── */}
-                {((hasMounted && !mediaSupported) || errorMessage) && (
-                    <div className="border-b border-brand-border px-6 py-5 lg:px-16">
-                        {hasMounted && !mediaSupported && (
-                            <ErrorBanner message="Audio recording is not supported in this browser." />
-                        )}
-                        {errorMessage && <ErrorBanner message={errorMessage} />}
-                    </div>
+                {/* Errors */}
+                {hasMounted && !mediaSupported && (
+                    <ErrorBanner message="Audio recording is not supported in this browser." />
                 )}
+                {errorMessage && <ErrorBanner message={errorMessage} />}
 
-                {/* ── Recording card ── */}
-                <div className="border-b border-brand-border px-6 py-10 lg:px-16">
-                    <div className="flex border-brutal bg-brand-bg shadow-brutal max-w-2xl">
-
-                        {/* White inner */}
-                        <div className="flex-1 bg-brand-surface p-6 sm:p-8 flex flex-col gap-6">
-                            {/* Language + Timer */}
-                            <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
-                                <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="spoken-language"
-                                        className="font-mono text-xs font-bold uppercase tracking-widest text-brand-muted"
-                                    >
-                                        Select language
-                                    </label>
-                                    <LanguageSelect value={sourceLanguage} onChange={setSourceLanguage} />
-                                </div>
-                                <div className="w-full md:w-44">
-                                    <RecordingTimer elapsedSeconds={elapsedSeconds} maxSeconds={maxSeconds} />
-                                </div>
-                            </div>
-                            {/* Mic */}
-                            <div className="flex min-h-[13rem] w-full items-center justify-center py-4">
-                                <MicButton
-                                    status={
-                                        recordingStatus === "recording" ? "recording" :
-                                            recordingStatus === "processing" ? "processing" :
-                                                recordingStatus === "done" ? "done" : "idle"
-                                    }
-                                    onClick={handleToggle}
-                                    disabled={!hasMounted || !mediaSupported || recordingStatus === "processing"}
-                                />
-                            </div>
+                {/* Recording card */}
+                <div className="w-full border-brutal shadow-brutal bg-brand-surface p-6 sm:p-8 flex flex-col gap-6">
+                    {/* Language + Timer */}
+                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 sm:items-end">
+                        <div className="flex flex-col gap-2">
+                            <label
+                                htmlFor="spoken-language"
+                                className="font-mono text-xs font-bold uppercase tracking-widest text-brand-muted"
+                            >
+                                Select language
+                            </label>
+                            <LanguageSelect value={sourceLanguage} onChange={setSourceLanguage} />
                         </div>
+                        <RecordingTimer elapsedSeconds={elapsedSeconds} maxSeconds={maxSeconds} />
+                    </div>
+                    {/* Mic — centered */}
+                    <div className="flex w-full items-center justify-center py-6">
+                        <MicButton
+                            status={
+                                recordingStatus === "recording"  ? "recording"  :
+                                recordingStatus === "processing" ? "processing" :
+                                recordingStatus === "done"       ? "done"       : "idle"
+                            }
+                            onClick={handleToggle}
+                            disabled={!hasMounted || !mediaSupported || recordingStatus === "processing"}
+                        />
                     </div>
                 </div>
 
-                {/* ── Transcript preview (only when available) ── */}
+                {/* Transcript preview */}
                 {originalTranscript && (
-                    <div className="border-b border-brand-border px-6 py-10 lg:px-16">
-                        <div className="flex items-center gap-4 font-mono text-xs font-bold tracking-widest text-brand-muted mb-5">
+                    <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-3 font-mono text-xs font-bold tracking-widest text-brand-muted">
                             <div className="w-2 h-2 bg-brand-muted" aria-hidden />
                             <span>// TRANSCRIPT PREVIEW</span>
                         </div>
-                        <div className="flex border-brutal shadow-brutal-sm bg-brand-bg max-w-2xl">
-                            <div className="w-2 bg-brand-muted shrink-0" />
-                            <div className="flex-1 bg-brand-surface p-4 sm:p-6">
-                                <p className="font-mono text-sm leading-relaxed text-brand-text whitespace-pre-wrap break-words">
-                                    {originalTranscript}
-                                </p>
-                            </div>
+                        <div className="w-full border-brutal shadow-brutal-sm bg-brand-surface p-4 sm:p-5">
+                            <p className="font-mono text-sm leading-relaxed text-brand-text whitespace-pre-wrap break-words">
+                                {originalTranscript}
+                            </p>
                         </div>
                     </div>
                 )}
 
-                {/* ── Continue CTA ── */}
-                <div className="px-6 py-10 lg:px-16">
-                    <div className="max-w-2xl">
-                        <Button
-                            size="lg"
-                            className="w-full touch-manipulation text-black"
-                            disabled={!canContinue}
-                            onClick={() => router.push("/review")}
-                        >
-                            Continue to review →
-                        </Button>
-                    </div>
-                    <div className="mt-6 border-t border-brand-border pt-2 font-mono text-[10px] text-brand-muted flex justify-between tracking-widest max-w-2xl">
-                        <span>+ STEP 01 OF 03</span>
-                        <span>/ / / / / / / / / / / +</span>
-                    </div>
+                {/* Continue CTA */}
+                <div className="flex flex-col gap-3">
+                    <Button
+                        size="lg"
+                        className="w-full touch-manipulation"
+                        disabled={!canContinue}
+                        onClick={() => router.push("/review")}
+                    >
+                        Continue to review →
+                    </Button>
+                    {!canContinue && (
+                        <p className="font-mono text-xs text-brand-muted tracking-widest text-center">
+                            // Record a query above to continue
+                        </p>
+                    )}
+                </div>
+
+                {/* Bottom ticker */}
+                <div className="border-t border-brand-border pt-2 font-mono text-[10px] text-brand-muted flex justify-between tracking-widest">
+                    <span>+ STEP 01 OF 03</span>
+                    <span>/ / / / / / / +</span>
                 </div>
 
             </div>

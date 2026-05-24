@@ -31,11 +31,10 @@ export default function ReviewPage() {
     const [phoneError, setPhoneError] = useState<string | null>(null);
     const [nameError, setNameError] = useState<string | null>(null);
 
-    const phoneSchema = useMemo(() =>
-        z.object({
-            countryCode: z.string().regex(/^\+\d{1,4}$/),
-            number: z.string().regex(/^[\d\s]{6,15}$/),
-        }), []);
+    const phoneSchema = useMemo(() => z.object({
+        countryCode: z.string().regex(/^\+\d{1,4}$/),
+        number: z.string().regex(/^[\d\s]{6,15}$/),
+    }), []);
 
     const nameSchema = useMemo(() => z.string().trim().min(2, "Please enter your name."), []);
     const normalizedUserName = useMemo(() => userName.trim(), [userName]);
@@ -109,125 +108,105 @@ export default function ReviewPage() {
 
     return (
         <div className="pt-12 min-h-screen">
-            <div className="max-w-[1920px] mx-auto border-x border-brand-border min-h-screen">
+            <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-10 flex flex-col gap-8">
 
-                {/* ── Page header ── */}
-                <div className="border-b border-brand-border px-6 py-8 lg:px-16">
-                    <div className="flex items-center gap-4 font-mono text-xs font-bold tracking-widest text-brand-muted mb-3">
-                        <div className="w-3 h-3 bg-brand-tertiary" aria-hidden />
+                {/* Page header */}
+                <div>
+                    <div className="flex items-center gap-3 font-mono text-xs font-bold tracking-widest text-brand-muted mb-3">
+                        <div className="w-2 h-2 bg-brand-tertiary" aria-hidden />
                         <span>// STEP 02 OF 03</span>
                     </div>
-                    <h1 className="font-sans text-4xl font-black uppercase tracking-tighter text-brand-text md:text-5xl">
+                    <h1 className="font-sans text-3xl font-black uppercase tracking-tighter text-brand-text sm:text-4xl">
                         Review &amp; submit
                     </h1>
                 </div>
 
-                {/* ── Error ── */}
-                {errorMessage && (
-                    <div className="border-b border-brand-border px-6 py-5 lg:px-16">
-                        <ErrorBanner message={errorMessage} />
-                    </div>
-                )}
+                {/* Error */}
+                {errorMessage && <ErrorBanner message={errorMessage} />}
 
-                {/* ── Details card ── */}
-                <div className="border-b border-brand-border px-6 py-10 lg:px-16">
-                    <div className="flex border-brutal bg-brand-bg shadow-brutal max-w-2xl">
-                        {/* Tertiary accent strip */}
-                        <div className="w-12 bg-brand-tertiary border-r border-brand-border flex flex-col items-center py-4 justify-between shrink-0">
-                            <span className="text-white font-bold font-mono text-sm">02</span>
-                            <span className="text-white text-[10px] tracking-widest rotate-[-90deg] whitespace-nowrap mb-6 font-mono opacity-80 select-none">
-                                REVIEW
+                {/* Details card */}
+                <div className="w-full border-brutal shadow-brutal bg-brand-surface p-6 sm:p-8 flex flex-col gap-5">
+
+                    {/* Name */}
+                    <div className="flex flex-col gap-2">
+                        <label
+                            htmlFor="review-user-name"
+                            className="font-mono text-xs font-bold uppercase tracking-widest text-brand-muted"
+                        >
+                            Your Name
+                        </label>
+                        <input
+                            id="review-user-name"
+                            name="user_name"
+                            type="text"
+                            autoComplete="name"
+                            placeholder="Enter your name"
+                            aria-invalid={nameError ? true : undefined}
+                            className="h-11 w-full border border-brand-border bg-brand-bg px-3 font-mono text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/30 transition-colors"
+                            value={userName}
+                            onChange={(e) => { setUserName(e.target.value); setNameError(null); }}
+                        />
+                        {nameError && (
+                            <p className="font-mono text-xs text-brand-error">{nameError}</p>
+                        )}
+                    </div>
+
+                    {/* Original transcript (read-only) */}
+                    {originalTranscript && (
+                        <div className="flex flex-col gap-2">
+                            <span className="font-mono text-xs font-bold uppercase tracking-widest text-brand-muted">
+                                Original transcript
                             </span>
-                        </div>
-                        {/* White inner */}
-                        <div className="flex-1 bg-brand-surface p-6 sm:p-8 flex flex-col gap-5">
-                            {/* Name */}
-                            <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="review-user-name"
-                                    className="font-mono text-xs font-bold uppercase tracking-widest text-brand-muted"
-                                >
-                                    Your Name
-                                </label>
-                                <input
-                                    id="review-user-name"
-                                    name="user_name"
-                                    type="text"
-                                    autoComplete="name"
-                                    placeholder="Enter your name"
-                                    aria-invalid={nameError ? true : undefined}
-                                    className="h-12 w-full border border-brand-border bg-brand-bg px-3 font-mono text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/30 sm:h-11 transition-colors"
-                                    value={userName}
-                                    onChange={(e) => { setUserName(e.target.value); setNameError(null); }}
-                                />
-                                {nameError && <p className="font-mono text-xs text-brand-error">{nameError}</p>}
+                            <div className="border border-brand-border bg-brand-bg p-3 sm:p-4">
+                                <p className="font-mono text-sm leading-relaxed text-brand-text whitespace-pre-wrap break-words">
+                                    {originalTranscript}
+                                </p>
                             </div>
-
-                            {/* Original transcript (read-only) */}
-                            {originalTranscript && (
-                                <div className="flex flex-col gap-2">
-                                    <span className="font-mono text-xs font-bold uppercase tracking-widest text-brand-muted">
-                                        Original transcript
-                                    </span>
-                                    <div className="border border-brand-border bg-brand-bg p-3 sm:p-4">
-                                        <p className="font-mono text-sm leading-relaxed text-brand-text whitespace-pre-wrap break-words">
-                                            {originalTranscript}
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
                         </div>
+                    )}
+                </div>
+
+                {/* Translated transcript */}
+                <TranscriptEditor
+                    value={translatedTranscript}
+                    onChange={setTranslatedTranscript}
+                    placeholder={isTranslating ? "Translating…" : "Your translated message will appear here…"}
+                />
+
+                {/* Phone */}
+                <PhoneInput
+                    countryCode={phoneCountryCode}
+                    number={phoneNumber}
+                    onCountryCodeChange={setPhoneCountryCode}
+                    onNumberChange={(v) => { setPhoneNumber(v); setPhoneError(null); }}
+                    error={phoneError ?? undefined}
+                />
+
+                {/* Send CTA — sticky on mobile */}
+                <div className="sticky bottom-0 z-10 -mx-4 sm:-mx-6 border-t border-brand-border bg-brand-bg/95 px-4 sm:px-6 py-4 backdrop-blur-sm sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                        <Button
+                            size="lg"
+                            className="w-full sm:flex-1 touch-manipulation"
+                            disabled={!canSubmit}
+                            onClick={handleSubmit}
+                            aria-busy={isSubmitting}
+                        >
+                            {isSubmitting ? "Sending…" : "Send query →"}
+                        </Button>
+                        <Link
+                            href="/record"
+                            className="flex items-center justify-center sm:justify-start font-mono text-sm font-bold gap-2 border-b-2 border-brand-accent pb-1 hover:text-brand-accent transition-colors whitespace-nowrap"
+                        >
+                            ← Back
+                        </Link>
                     </div>
                 </div>
 
-                {/* ── Transcript editor + Phone ── */}
-                <div className="border-b border-brand-border px-6 py-10 lg:px-16">
-                    <div className="flex items-center gap-4 font-mono text-xs font-bold tracking-widest text-brand-muted mb-6">
-                        <div className="w-3 h-3 bg-brand-accent" aria-hidden />
-                        <span>// ENGLISH TRANSCRIPT &amp; CONTACT</span>
-                    </div>
-                    <div className="flex flex-col gap-6 max-w-2xl">
-                        <TranscriptEditor
-                            value={translatedTranscript}
-                            onChange={setTranslatedTranscript}
-                            placeholder={isTranslating ? "Translating…" : "Your translated message will appear here…"}
-                        />
-                        <PhoneInput
-                            countryCode={phoneCountryCode}
-                            number={phoneNumber}
-                            onCountryCodeChange={setPhoneCountryCode}
-                            onNumberChange={(v) => { setPhoneNumber(v); setPhoneError(null); }}
-                            error={phoneError ?? undefined}
-                        />
-                    </div>
-                </div>
-
-                {/* ── Send CTA ── */}
-                <div className="px-6 py-10 lg:px-16">
-                    {/* Sticky on mobile, static on desktop */}
-                    <div className="sticky bottom-0 z-10 -mx-6 border-t border-brand-border bg-brand-bg/95 px-6 py-5 backdrop-blur-sm sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 max-w-2xl">
-                            <Button
-                                size="lg"
-                                className="w-full sm:w-auto touch-manipulation text-black"
-                                disabled={!canSubmit}
-                                onClick={handleSubmit}
-                                aria-busy={isSubmitting}
-                            >
-                                {isSubmitting ? "Sending…" : "Send query →"}
-                            </Button>
-                            <Link
-                                href="/record"
-                                className="font-mono text-sm font-bold flex items-center gap-2 border-b-2 border-brand-accent pb-1 hover:text-brand-accent transition-colors"
-                            >
-                                ← Back to recording
-                            </Link>
-                        </div>
-                    </div>
-                    <div className="mt-6 border-t border-brand-border pt-2 font-mono text-[10px] text-brand-muted flex justify-between tracking-widest max-w-2xl">
-                        <span>+ STEP 02 OF 03</span>
-                        <span>/ / / / / / / / / / / +</span>
-                    </div>
+                {/* Bottom ticker */}
+                <div className="border-t border-brand-border pt-2 font-mono text-[10px] text-brand-muted flex justify-between tracking-widest">
+                    <span>+ STEP 02 OF 03</span>
+                    <span>/ / / / / / / +</span>
                 </div>
 
             </div>
