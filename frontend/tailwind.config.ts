@@ -1,5 +1,10 @@
 import type { Config } from "tailwindcss";
 
+// Student Career Visibility Blueprint — Light Mode
+// Primary: #E85D22 (orange) · Tertiary: #F0F024 (yellow)
+// Background: #F4F1EB · Surface: #FFFFFF
+// Inter font · Inter 200-600 weights
+
 const config: Config = {
     content: [
         "./app/**/*.{ts,tsx}",
@@ -19,29 +24,39 @@ const config: Config = {
             },
             colors: {
                 brand: {
-                    // ─── from style.html tailwind config ───────────────
-                    bg:       "#F4F1EB",  // cream parchment (body background)
-                    text:     "#111111",  // near-black (body text, brutal borders)
-                    accent:   "#EA4313",  // orange-red (cta, highlights)
-                    border:   "#D1CDAB",  // warm tan (nav / section structural dividers)
-                    muted:    "#6B6A68",  // warm grey (secondary labels)
-                    grid:     "#E8E5DF",  // lighter grid lines
+                    // ── Surfaces (light mode) ──
+                    bg:      "#F4F1EB",   // cream background
+                    surface: "#FFFFFF",   // card surface (white)
 
-                    // ─── supporting values used across style.html ───────
-                    surface:  "#FFFFFF",  // white card interior
-                    tertiary: "#1E3A5F",  // deep navy (used on card accents)
-                    error:    "#DC2626",
-                    success:  "#16A34A",
+                    // ── Text ──
+                    text:    "#111111",   // primary text
+                    muted:   "#6B6A68",   // muted/secondary text (slightly warmer)
+
+                    // ── Stitch palette accents ──
+                    accent:    "#E85D22", // primary orange (Stitch primary)
+                    primary:   "#E85D22", // alias
+                    tertiary:  "#F0F024", // yellow tertiary
+                    secondary: "#D44E1A", // darker orange for hover
+
+                    // ── Borders ──
+                    border: "#E5E2DA",   // subtle warm border
+
+                    // ── Semantic ──
+                    error:   "#DC2626",
+                    success: "#16A34A",
                 },
             },
             boxShadow: {
-                // from style.html tailwind config exactly
-                brutal:        "4px 4px 0px 0px rgba(17,17,17,1)",
-                "brutal-sm":   "2px 2px 0px 0px rgba(17,17,17,1)",
-                "brutal-lg":   "6px 6px 0px 0px rgba(17,17,17,1)",
+                // Elevation through shadow (not brutal) — Stitch light mode
+                card:    "0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",
+                "card-hover": "0 4px 12px rgba(0,0,0,0.1), 0 12px 32px rgba(0,0,0,0.08)",
+                // Orange glow — for active mic state
+                "glow-sm": "0 0 0 4px rgba(232,93,34,0.15)",
+                "glow":    "0 0 0 4px rgba(232,93,34,0.2), 0 8px 32px rgba(232,93,34,0.25)",
             },
-            transitionDuration: {
-                fast: "150ms",
+            letterSpacing: {
+                display: "-0.025em",
+                caps:    "0.05em",
             },
         },
     },

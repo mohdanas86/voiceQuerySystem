@@ -1,38 +1,37 @@
+// Student Career Visibility Blueprint — Light Mode
+// Primary: filled orange #E85D22, white text, rounded-full pill
+// Clearly visible against #F4F1EB cream background
+
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-// Matches style.html button exactly:
-// "bg-brand-accent text-white font-bold py-5 px-8 flex items-center gap-4
-//  shadow-brutal hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(17,17,17,1)]
-//  transition-all uppercase tracking-wider text-sm"
-// NOTE: primary button has NO border — only brutal shadow.
-
 const buttonVariants = cva(
-    "inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap font-mono text-sm font-bold uppercase tracking-widest transition-all duration-[150ms] ease-[cubic-bezier(0.4,0,0.2,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 disabled:pointer-events-none disabled:opacity-40",
+    // Base: Inter, 14px, medium weight, pill shape
+    "inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium tracking-wide transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40",
     {
         variants: {
             variant: {
-                // Primary — accent bg, brutal shadow, NO border (matches style.html button)
+                // Primary — vivid orange fill, always visible on any light surface
                 default:
-                    "bg-brand-accent text-white shadow-brutal hover:-translate-y-1 hover:shadow-brutal-lg active:translate-y-0 active:shadow-brutal",
+                    "bg-[#E85D22] text-white hover:bg-[#D44E1A] hover:shadow-[0_4px_20px_rgba(232,93,34,0.35)] active:scale-[0.98]",
 
-                // Outline — bg-brand-bg with brutal border + shadow (matches style.html receipt card style)
+                // Outline — white bg, solid orange border, orange text
                 outline:
-                    "border-brutal bg-brand-bg text-brand-text shadow-brutal hover:-translate-y-1 hover:shadow-brutal-lg active:translate-y-0",
+                    "bg-white text-[#E85D22] border-2 border-[#E85D22] hover:bg-[#E85D22] hover:text-white active:scale-[0.98]",
 
-                // Secondary — white surface card style
+                // Secondary — cream bg, dark text, visible border
                 secondary:
-                    "border-brutal bg-brand-surface text-brand-text shadow-brutal-sm hover:-translate-y-px hover:shadow-brutal",
+                    "bg-[#F4F1EB] text-[#111111] border border-[#D5D0C4] hover:border-[#E85D22] hover:text-[#E85D22] active:scale-[0.98]",
 
-                // Ghost — no border, subtle hover
+                // Ghost — transparent, orange text
                 ghost:
-                    "bg-transparent text-brand-text hover:bg-black/5",
+                    "bg-transparent text-[#E85D22] hover:bg-[#E85D22]/10",
             },
             size: {
-                default: "h-11 min-h-11 px-6",
-                lg:      "h-12 min-h-12 px-8 text-base sm:text-sm",
-                icon:    "h-11 min-h-11 w-11",
+                default: "h-11 px-6",
+                lg:      "h-12 px-8 text-[15px]",
+                icon:    "h-11 w-11",
             },
         },
         defaultVariants: {

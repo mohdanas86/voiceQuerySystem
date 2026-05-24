@@ -1,50 +1,37 @@
 /* Google Fonts must come before @import "tailwindcss" */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
 
 @import "tailwindcss";
 
 /* ============================================================
-   MARCUS REED DESIGN SYSTEM — Voice Query System
-   Matches style.html exactly
+   STUDENT CAREER VISIBILITY BLUEPRINT — Light Mode
+   Primary: #E85D22 (orange) · Tertiary: #F0F024 (yellow)
+   Background: #F4F1EB cream · Surfaces: white
+   Inter font · 0px card radius · 9999px pill chips
    ============================================================ */
 
-/* ── Body (matches style.html body block) ───────────────────── */
+/* ── Body ── */
 body {
     background-color: #F4F1EB;
     color: #111111;
-    /* Exact grid pattern from style.html */
-    background-image: 
-        linear-gradient(to right,  #E8E5DF 1px, transparent 1px),
-        linear-gradient(to bottom, #E8E5DF 1px, transparent 1px);
-    background-size: 20px 20px;
     font-family: "Inter", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Selection matches style.html body class */
+/* ── Selection ── */
 ::selection {
-    background-color: #EA4313;
+    background-color: #E85D22;
     color: #ffffff;
 }
 
-/* ── .border-brutal (from style.html custom CSS) ────────────── */
-/* Used on CARDS and BUTTONS only — NOT on nav/section dividers */
-.border-brutal {
-    border: 1px solid #111111;
+/* ── Orange glow — for mic button active state ── */
+.glow-primary {
+    box-shadow: 0 0 0 1px rgba(232, 93, 34, 0.2),
+                0 4px 24px rgba(232, 93, 34, 0.3);
 }
 
-/* ── .grid-bg-overlay (from style.html custom CSS) ──────────── */
-.grid-bg-overlay {
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(#D1CDAB 1px, transparent 1px);
-    background-size: 8px 8px;
-    opacity: 0.5;
-    z-index: 0;
-    pointer-events: none;
-}
-
-/* ── Reset ──────────────────────────────────────────────────── */
+/* ── Reset ── */
 *,
 *::before,
 *::after {
@@ -66,21 +53,28 @@ button {
     outline: none;
 }
 
-/* ── Animations ─────────────────────────────────────────────── */
+/* ── Animations ── */
 
 @keyframes fade-up {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .reveal {
     animation: fade-up 150ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Mic pulse rings — expressive, orange */
+@keyframes pulse-ring {
+    0%   { transform: scale(1);    opacity: 0.7; }
+    50%  { transform: scale(1.2);  opacity: 0.2; }
+    100% { transform: scale(1);    opacity: 0.7; }
+}
+
+/* Idle breathing glow */
+@keyframes breathe {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(232,93,34,0.08); }
+    50%       { box-shadow: 0 0 0 12px rgba(232,93,34,0.15); }
 }
 
 /* Success checkmark */
@@ -96,32 +90,21 @@ button {
 
 @keyframes success-ring-pulse {
     from { opacity: 0.55; transform: scale(1); }
-    to   { opacity: 0; transform: scale(1.4); }
+    to   { opacity: 0;    transform: scale(1.4); }
 }
 
-.success-check-circle {
-    animation: success-circle-in 420ms cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-
+.success-check-circle { animation: success-circle-in 420ms cubic-bezier(0.4, 0, 0.2, 1) both; }
 .success-check-path {
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
     animation: success-check-draw 480ms cubic-bezier(0.4, 0, 0.2, 1) 220ms both;
 }
-
-.success-check-ring {
-    animation: success-ring-pulse 700ms cubic-bezier(0.4, 0, 0.2, 1) 180ms both;
-}
+.success-check-ring { animation: success-ring-pulse 700ms cubic-bezier(0.4, 0, 0.2, 1) 180ms both; }
 
 @media (prefers-reduced-motion: reduce) {
     .success-check-circle,
     .success-check-path,
     .success-check-ring,
-    .reveal {
-        animation: none;
-    }
-
-    .success-check-path {
-        stroke-dashoffset: 0;
-    }
+    .reveal { animation: none; }
+    .success-check-path { stroke-dashoffset: 0; }
 }

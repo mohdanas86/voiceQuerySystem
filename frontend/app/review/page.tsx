@@ -10,6 +10,7 @@ import { ErrorBanner } from "@/components/feedback/ErrorBanner";
 import { TranscriptEditor } from "@/components/forms/TranscriptEditor";
 import { PhoneInput } from "@/components/forms/PhoneInput";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { submitQuery } from "@/services/api";
 import { useQueryStore } from "@/store/useQueryStore";
 import { getClientTimestamp } from "@/lib/time";
@@ -107,25 +108,27 @@ export default function ReviewPage() {
     };
 
     return (
-        <div className="pt-12 min-h-screen">
-            <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-10 flex flex-col gap-8">
+        <div className="pt-12 min-h-screen bg-[#F4F1EB]">
+            <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-10 flex flex-col gap-6">
 
                 {/* Page header */}
-                <div>
-                    <div className="flex items-center gap-3 font-mono text-xs font-bold tracking-widest text-brand-muted mb-3">
-                        <div className="w-2 h-2 bg-brand-tertiary" aria-hidden />
-                        <span>// STEP 02 OF 03</span>
+                <div className="flex flex-col gap-1.5">
+                    <div className="inline-flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-[#E85D22]" aria-hidden />
+                        <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
+                            Step 02 of 03
+                        </span>
                     </div>
-                    <h1 className="font-sans text-3xl font-black uppercase tracking-tighter text-brand-text sm:text-4xl">
-                        Review &amp; submit
+                    <h1 className="text-3xl font-semibold tracking-[-0.025em] text-[#111111] sm:text-4xl">
+                        Review &amp; <span className="text-[#E85D22]">submit.</span>
                     </h1>
                 </div>
 
                 {/* Error */}
                 {errorMessage && <ErrorBanner message={errorMessage} />}
 
-                {/* Details card */}
-                <div className="w-full border-brutal shadow-brutal bg-brand-surface p-6 sm:p-8 flex flex-col gap-5">
+                {/* Details card — uses shared Card component */}
+                <Card padding="lg">
 
                     {/* Name */}
                     <div className="flex flex-col gap-2">
@@ -164,7 +167,7 @@ export default function ReviewPage() {
                             </div>
                         </div>
                     )}
-                </div>
+                </Card>
 
                 {/* Translated transcript */}
                 <TranscriptEditor
@@ -204,9 +207,9 @@ export default function ReviewPage() {
                 </div>
 
                 {/* Bottom ticker */}
-                <div className="border-t border-brand-border pt-2 font-mono text-[10px] text-brand-muted flex justify-between tracking-widest">
-                    <span>+ STEP 02 OF 03</span>
-                    <span>/ / / / / / / +</span>
+                <div className="border-t border-[#E8E5DF] pt-3 flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-[#9CA3AF] tracking-[0.05em] uppercase">Step 02 of 03</span>
+                    <span className="text-[11px] text-[#D5D0C4] tracking-widest">/ / / / /</span>
                 </div>
 
             </div>

@@ -1,3 +1,9 @@
+// Student Career Visibility Blueprint — Light Mode
+// Primary: #E85D22 (orange) · 9999px circle · Inter labels
+// Expressive pulse rings · breathing idle · 150ms motion
+
+"use client";
+
 import { Loader2, Mic, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -7,103 +13,139 @@ interface MicButtonProps {
     disabled?: boolean;
 }
 
-const statusCopy: Record<NonNullable<MicButtonProps["status"]>, string> = {
+const statusLabel: Record<NonNullable<MicButtonProps["status"]>, string> = {
     idle:       "Tap to start speaking",
-    recording:  "Recording... tap to stop",
-    done:       "Recording completed",
-    processing: "Converting speech to text...",
+    recording:  "Recording — tap to stop",
+    done:       "Done — tap to record again",
+    processing: "Converting speech…",
 };
 
-const ariaLabel: Record<NonNullable<MicButtonProps["status"]>, string> = {
-    idle:       "Start recording",
-    recording:  "Stop recording",
-    done:       "Start recording again",
-    processing: "Processing recording",
-};
-
-export function MicButton({
-    status = "idle",
-    onClick,
-    disabled,
-}: MicButtonProps) {
+export function MicButton({ status = "idle", onClick, disabled }: MicButtonProps) {
     const isRecording  = status === "recording";
     const isProcessing = status === "processing";
     const isDone       = status === "done";
 
     return (
-        <div className="flex w-full flex-col items-center justify-center gap-6">
-            {/* Button */}
-            <button
-                type="button"
-                onClick={onClick}
-                disabled={disabled}
-                aria-label={ariaLabel[status]}
-                aria-busy={isProcessing}
-                aria-pressed={isRecording}
-                className={cn(
-                    "group relative flex h-28 w-28 touch-manipulation items-center justify-center overflow-hidden border-2 border-brand-border transition-all duration-[150ms] ease-[cubic-bezier(0.4,0,0.2,1)] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40",
+        <div className="flex flex-col items-center gap-5 select-none">
+            <div className="relative flex items-center justify-center">
 
-                    // Idle — accent fill, brutal shadow
-                    status === "idle" &&
-                        "bg-brand-accent shadow-brutal hover:-translate-y-px hover:shadow-brutal-lg",
-
-                    // Recording — dark brutal, accent ring pulse
-                    isRecording &&
-                        "bg-brand-text shadow-brutal scale-105",
-
-                    // Processing — tertiary
-                    isProcessing &&
-                        "bg-brand-tertiary shadow-brutal",
-
-                    // Done — success green
-                    isDone &&
-                        "bg-brand-success shadow-brutal"
-                )}
-            >
-                {/* Recording pulse rings */}
+                {/* Recording pulse rings — three concentric orange rings */}
                 {isRecording && (
                     <>
-                        <span className="absolute inset-[-8px] border-2 border-brand-accent/60 animate-[ping_1.4s_ease-in-out_infinite]" />
-                        <span className="absolute inset-[-16px] border border-brand-accent/30 animate-[ping_1.4s_ease-in-out_0.3s_infinite]" />
+                        <span
+                            className="absolute rounded-full border-2 border-brand-accent/40"
+                            style={{
+                                width: "148px", height: "148px",
+                                animation: "pulse-ring 1.6s cubic-bezier(0.4,0,0.6,1) infinite",
+                            }}
+                        />
+                        <span
+                            className="absolute rounded-full border border-brand-accent/25"
+                            style={{
+                                width: "180px", height: "180px",
+                                animation: "pulse-ring 1.6s cubic-bezier(0.4,0,0.6,1) 0.4s infinite",
+                            }}
+                        />
+                        <span
+                            className="absolute rounded-full border border-brand-accent/12"
+                            style={{
+                                width: "212px", height: "212px",
+                                animation: "pulse-ring 1.6s cubic-bezier(0.4,0,0.6,1) 0.8s infinite",
+                            }}
+                        />
                     </>
                 )}
 
-                {/* Icon */}
-                <div className="relative z-10 flex items-center justify-center">
-                    {isProcessing ? (
-                        <Loader2 className="h-10 w-10 animate-spin text-white" />
-                    ) : isRecording ? (
-                        <Square className="h-8 w-8 fill-white text-white" />
-                    ) : (
-                        <Mic className="h-10 w-10 text-white" />
-                    )}
-                </div>
-            </button>
+                {/* Idle breathing glow ring */}
+                {status === "idle" && !disabled && (
+                    <span
+                        className="absolute rounded-full"
+                        style={{
+                            width: "116px", height: "116px",
+                            animation: "breathe 3s ease-in-out infinite",
+                        }}
+                    />
+                )}
 
-            {/* Status text */}
-            <div className="flex flex-col items-center gap-2 text-center">
+                {/* Button circle — 9999px radius */}
+                <button
+                    type="button"
+                    onClick={onClick}
+                    disabled={disabled}
+                    aria-label={
+                        isRecording  ? "Stop recording"       :
+                        isProcessing ? "Processing"           :
+                        isDone       ? "Start new recording"  :
+                                       "Start recording"
+                    }
+                    aria-pressed={isRecording}
+                    aria-busy={isProcessing}
+                    className={cn(
+                        // Base — 9999px circle, 112px
+                        "relative flex h-28 w-28 items-center justify-center rounded-full",
+                        "transition-all duration-[150ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+                        "touch-manipulation focus-visible:outline-none",
+                        "disabled:cursor-not-allowed disabled:opacity-40",
+
+                        // Idle — white surface, orange border ring, hover glow
+                        status === "idle" && [
+                            "bg-white border-2 border-brand-accent/30",
+                            "hover:border-brand-accent hover:shadow-glow",
+                            "active:scale-95",
+                        ],
+
+                        // Recording — filled orange, white icon, glow
+                        isRecording && [
+                            "bg-brand-accent border-2 border-brand-accent",
+                            "shadow-glow scale-105 active:scale-100",
+                        ],
+
+                        // Processing — light cream surface, muted
+                        isProcessing && [
+                            "bg-brand-bg border-2 border-brand-border cursor-wait",
+                        ],
+
+                        // Done — light green tint
+                        isDone && [
+                            "bg-green-50 border-2 border-green-400/60",
+                            "hover:border-green-500 hover:shadow-[0_0_0_4px_rgba(74,222,128,0.15)]",
+                            "active:scale-95",
+                        ]
+                    )}
+                >
+                    {isProcessing ? (
+                        <Loader2 className="h-9 w-9 animate-spin text-brand-muted" />
+                    ) : isRecording ? (
+                        <Square className="h-7 w-7 fill-white text-white" />
+                    ) : isDone ? (
+                        <Mic className="h-9 w-9 text-green-500" />
+                    ) : (
+                        <Mic className="h-9 w-9 text-brand-accent" />
+                    )}
+                </button>
+            </div>
+
+            {/* Status label — Inter 14px weight 300 */}
+            <div className="flex flex-col items-center gap-2">
                 <p
                     className={cn(
-                        "font-mono text-xs font-bold uppercase tracking-widest transition-all duration-[150ms]",
-                        isRecording
-                            ? "text-brand-accent"
-                            : isDone
-                                ? "text-brand-success"
-                                : isProcessing
-                                    ? "text-brand-tertiary"
-                                    : "text-brand-muted"
+                        "text-sm font-light tracking-wide text-center transition-colors duration-150",
+                        isRecording  ? "text-brand-accent font-medium"  :
+                        isDone       ? "text-green-600 font-medium"     :
+                        isProcessing ? "text-brand-muted"               :
+                                       "text-brand-muted"
                     )}
                     aria-live="polite"
                 >
-                    {statusCopy[status]}
+                    {statusLabel[status]}
                 </p>
 
-                {/* Recording live dots */}
+                {/* Recording bounce dots */}
                 {isRecording && (
                     <div className="flex items-center gap-1.5">
-                        <span className="h-1.5 w-1.5 bg-brand-accent animate-bounce" />
-                        <span className="h-1.5 w-1.5 bg-brand-accent animate-bounce [animation-delay:120ms]" />
-                        <span className="h-1.5 w-1.5 bg-brand-accent animate-bounce [animation-delay:240ms]" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-brand-accent animate-bounce" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-brand-accent animate-bounce [animation-delay:150ms]" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-brand-accent animate-bounce [animation-delay:300ms]" />
                     </div>
                 )}
             </div>

@@ -8,6 +8,7 @@ import { MicButton } from "@/components/speech/MicButton";
 import { RecordingTimer } from "@/components/speech/RecordingTimer";
 import { LanguageSelect } from "@/components/forms/LanguageSelect";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useQueryStore } from "@/store/useQueryStore";
 
 export default function RecordPage() {
@@ -151,18 +152,24 @@ export default function RecordPage() {
     const canContinue = originalTranscript.trim().length > 0;
 
     return (
-        <div className="pt-12 min-h-screen">
-            <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-10 flex flex-col gap-8">
+        <div className="pt-12 min-h-screen bg-[#F4F1EB]">
+            <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-10 flex flex-col gap-6">
 
                 {/* Page header */}
-                <div>
-                    <div className="flex items-center gap-3 font-mono text-xs font-bold tracking-widest text-brand-muted mb-3">
-                        <div className="w-2 h-2 bg-brand-accent" aria-hidden />
-                        <span>// STEP 01 OF 03</span>
+                <div className="flex flex-col gap-1.5">
+                    <div className="inline-flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-[#E85D22]" aria-hidden />
+                        <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
+                            Step 01 of 03
+                        </span>
                     </div>
-                    <h1 className="font-sans text-3xl font-black uppercase tracking-tighter text-brand-text sm:text-4xl">
-                        Record your query
+                    <h1 className="text-3xl font-semibold tracking-[-0.025em] text-[#111111] sm:text-4xl">
+                        Record your{" "}
+                        <span className="text-[#E85D22]">query.</span>
                     </h1>
+                    <p className="text-sm font-light text-[#6B6A68] mt-1">
+                        Speak in any language — up to 60 seconds.
+                    </p>
                 </div>
 
                 {/* Errors */}
@@ -171,47 +178,78 @@ export default function RecordPage() {
                 )}
                 {errorMessage && <ErrorBanner message={errorMessage} />}
 
-                {/* Recording card */}
-                <div className="w-full border-brutal shadow-brutal bg-brand-surface p-6 sm:p-8 flex flex-col gap-6">
+                {/* Recording Card — uses shared Card component */}
+                <Card padding="lg">
                     {/* Language + Timer */}
                     <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 sm:items-end">
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1.5">
                             <label
                                 htmlFor="spoken-language"
-                                className="font-mono text-xs font-bold uppercase tracking-widest text-brand-muted"
+                                className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]"
                             >
-                                Select language
+                                Spoken language
                             </label>
                             <LanguageSelect value={sourceLanguage} onChange={setSourceLanguage} />
                         </div>
                         <RecordingTimer elapsedSeconds={elapsedSeconds} maxSeconds={maxSeconds} />
                     </div>
-                    {/* Mic — centered */}
+
+                    {/* Divider */}
+                    <div className="h-px bg-[#E8E5DF] my-6" />
+
+                    {/* Mic button — centered */}
                     <div className="flex w-full items-center justify-center py-6">
                         <MicButton
                             status={
-                                recordingStatus === "recording"  ? "recording"  :
-                                recordingStatus === "processing" ? "processing" :
-                                recordingStatus === "done"       ? "done"       : "idle"
+                                recordingStatus === "recording" ? "recording" :
+                                    recordingStatus === "processing" ? "processing" :
+                                        recordingStatus === "done" ? "done" : "idle"
                             }
                             onClick={handleToggle}
                             disabled={!hasMounted || !mediaSupported || recordingStatus === "processing"}
                         />
                     </div>
-                </div>
 
-                {/* Transcript preview */}
+                    {/* Divider */}
+                    <div className="h-px bg-[#E8E5DF] mb-4" />
+
+                    {/* Status row */}
+                    <div className="flex items-center justify-between">
+                        <span className="text-[12px] font-medium text-[#6B6A68]">
+                            Max 60 seconds
+                        </span>
+                        <span
+                            className="text-[12px] font-semibold transition-colors duration-150"
+                            style={{
+                                color:
+                                    recordingStatus === "recording" ? "#E85D22" :
+                                        recordingStatus === "processing" ? "#6B6A68" :
+                                            recordingStatus === "done" ? "#16A34A" :
+                                                "#9CA3AF",
+                            }}
+                        >
+                            {recordingStatus === "recording" ? "● Live" :
+                                recordingStatus === "processing" ? "◌ Processing…" :
+                                    recordingStatus === "done" ? "✓ Complete" :
+                                        "○ Ready"}
+                        </span>
+                    </div>
+                </Card>
+
+                {/* Transcript preview — uses Card with accent bar */}
                 {originalTranscript && (
-                    <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-3 font-mono text-xs font-bold tracking-widest text-brand-muted">
-                            <div className="w-2 h-2 bg-brand-muted" aria-hidden />
-                            <span>// TRANSCRIPT PREVIEW</span>
+                    <div className="flex flex-col gap-2 reveal">
+                        <div className="flex items-center gap-2">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#6B6A68]" aria-hidden />
+                            <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
+                                Transcript preview
+                            </span>
                         </div>
-                        <div className="w-full border-brutal shadow-brutal-sm bg-brand-surface p-4 sm:p-5">
-                            <p className="font-mono text-sm leading-relaxed text-brand-text whitespace-pre-wrap break-words">
+                        <Card accent padding="md">
+                            <p className="text-sm font-light leading-relaxed text-[#111111] whitespace-pre-wrap break-words">
                                 {originalTranscript}
                             </p>
-                        </div>
+                        </Card>
                     </div>
                 )}
 
@@ -226,16 +264,20 @@ export default function RecordPage() {
                         Continue to review →
                     </Button>
                     {!canContinue && (
-                        <p className="font-mono text-xs text-brand-muted tracking-widest text-center">
-                            // Record a query above to continue
+                        <p className="text-[12px] font-light text-[#6B6A68] text-center">
+                            Record a query above to continue
                         </p>
                     )}
                 </div>
 
                 {/* Bottom ticker */}
-                <div className="border-t border-brand-border pt-2 font-mono text-[10px] text-brand-muted flex justify-between tracking-widest">
-                    <span>+ STEP 01 OF 03</span>
-                    <span>/ / / / / / / +</span>
+                <div className="border-t border-[#E8E5DF] pt-3 flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-[#9CA3AF] tracking-[0.05em] uppercase">
+                        Step 01 of 03
+                    </span>
+                    <span className="text-[11px] text-[#D5D0C4] tracking-widest">
+                        / / / / /
+                    </span>
                 </div>
 
             </div>

@@ -7,14 +7,17 @@ export function ErrorBanner({ message }: ErrorBannerProps) {
         <div
             role="alert"
             aria-live="polite"
-            className="border-l-4 border-brand-accent bg-brand-surface px-4 py-3 shadow-brutal-sm"
+            className="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3"
         >
-            <span className="font-mono text-xs font-bold uppercase tracking-widest text-brand-accent">
-                // ERROR
-            </span>
-            <p className="mt-1 font-mono text-sm leading-relaxed text-brand-text">
-                {message}
-            </p>
+            <span className="mt-0.5 text-red-500 text-base leading-none select-none" aria-hidden>⚠</span>
+            <div>
+                <span className="block text-[11px] font-semibold tracking-[0.06em] uppercase text-red-500 mb-0.5">
+                    Error
+                </span>
+                <p className="text-sm font-light leading-relaxed text-red-700">
+                    {message}
+                </p>
+            </div>
         </div>
     );
 }
