@@ -18,10 +18,10 @@ export function PhoneInput({
     const errorId = "phone-input-error";
 
     return (
-        <div className="flex min-w-0 flex-col gap-2 sm:gap-3">
+        <div className="flex min-w-0 flex-col gap-1.5">
             <label
                 htmlFor="phone-national"
-                className="font-mono text-xs font-bold uppercase tracking-widest text-brand-muted"
+                className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]"
             >
                 Your Mobile Number
             </label>
@@ -33,7 +33,7 @@ export function PhoneInput({
                 />
                 <input
                     id="phone-national"
-                    className="h-12 min-h-12 w-full min-w-0 border border-brand-border bg-brand-bg px-3 font-mono text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/30 sm:h-11 sm:min-h-11 transition-colors"
+                    className="h-11 w-full min-w-0 rounded-xl border border-[#E8E5DF] bg-white px-4 text-sm font-light text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#E85D22] focus:ring-2 focus:ring-[#E85D22]/20 transition-colors"
                     placeholder="98765 43210"
                     type="tel"
                     inputMode="tel"
@@ -44,11 +44,11 @@ export function PhoneInput({
                     onChange={(event) => onNumberChange(event.target.value)}
                 />
             </div>
-            {error ? (
-                <p id={errorId} className="font-mono text-xs text-brand-error">
+            {error && (
+                <p id={errorId} className="text-[12px] font-light text-red-600">
                     {error}
                 </p>
-            ) : null}
+            )}
         </div>
     );
 }
