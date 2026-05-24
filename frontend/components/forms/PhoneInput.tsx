@@ -21,11 +21,11 @@ export function PhoneInput({
         <div className="flex min-w-0 flex-col gap-2 sm:gap-3">
             <label
                 htmlFor="phone-national"
-                className="text-xs font-light uppercase tracking-[0.2em] text-textMuted"
+                className="font-mono text-xs font-bold uppercase tracking-widest text-brand-muted"
             >
                 Your Mobile Number
             </label>
-            <div className="grid min-w-0 grid-cols-1 items-stretch gap-3 sm:grid-cols-[5.5rem_minmax(0,1fr)] sm:items-center">
+            <div className="grid min-w-0 grid-cols-1 items-stretch gap-3 sm:grid-cols-[5.5rem_minmax(0,1fr)]">
                 <CountryCodeSelect
                     id="phone-country-code"
                     value={countryCode}
@@ -33,7 +33,7 @@ export function PhoneInput({
                 />
                 <input
                     id="phone-national"
-                    className="h-12 min-h-12 w-full min-w-0 rounded-none border border-border/20 bg-surface px-3 text-base text-textPrimary placeholder:text-textMuted focus:outline-none focus:ring-2 focus:ring-primary/40 sm:h-11 sm:min-h-11 sm:text-sm"
+                    className="h-12 min-h-12 w-full min-w-0 border border-brand-border bg-brand-bg px-3 font-mono text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/30 sm:h-11 sm:min-h-11 transition-colors"
                     placeholder="98765 43210"
                     type="tel"
                     inputMode="tel"
@@ -45,7 +45,7 @@ export function PhoneInput({
                 />
             </div>
             {error ? (
-                <p id={errorId} className="text-sm leading-snug text-error sm:text-xs">
+                <p id={errorId} className="font-mono text-xs text-brand-error">
                     {error}
                 </p>
             ) : null}

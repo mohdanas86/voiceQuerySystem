@@ -3,7 +3,6 @@
 import type { SelectHTMLAttributes } from "react";
 import { ChevronDown } from "lucide-react";
 import { cva, type VariantProps } from "class-variance-authority";
-
 import { cn } from "@/lib/utils";
 
 export type ThemedDropdownOption = {
@@ -12,14 +11,14 @@ export type ThemedDropdownOption = {
 };
 
 const triggerVariants = cva(
-    "w-full min-w-0 cursor-pointer appearance-none rounded-none border border-border/20 bg-surface text-textPrimary outline-none transition hover:border-border/30 focus:border-primary/30 focus:ring-2 focus:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50",
+    // Structural border (brand-border = warm tan #D1CDAB), white surface, mono font
+    // Accent focus ring matches style.html accent color
+    "w-full min-w-0 cursor-pointer appearance-none border border-brand-border bg-brand-surface font-mono text-brand-text outline-none transition-all duration-[150ms] hover:border-brand-accent focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/30 disabled:cursor-not-allowed disabled:opacity-40",
     {
         variants: {
             size: {
-                default:
-                    "h-12 min-h-12 py-0 pl-3 pr-10 text-base sm:h-11 sm:min-h-11 sm:pr-9 sm:text-sm",
-                compact:
-                    "h-12 min-h-12 py-0 pl-3 pr-9 text-base sm:h-11 sm:min-h-11 sm:w-[5.5rem] sm:shrink-0 sm:pr-8 sm:text-sm",
+                default: "h-12 min-h-12 py-0 pl-3 pr-10 text-base sm:h-11 sm:min-h-11 sm:pr-9 sm:text-sm",
+                compact: "h-12 min-h-12 py-0 pl-3 pr-9 text-base sm:h-11 sm:min-h-11 sm:w-[5.5rem] sm:shrink-0 sm:pr-8 sm:text-sm",
             },
         },
         defaultVariants: {
@@ -64,7 +63,7 @@ export function ThemedDropdown({
                     <option
                         key={option.value}
                         value={option.value}
-                        className="bg-surface text-textPrimary"
+                        className="bg-brand-surface text-brand-text"
                     >
                         {option.label}
                     </option>
@@ -72,7 +71,7 @@ export function ThemedDropdown({
             </select>
             <ChevronDown
                 className={cn(
-                    "pointer-events-none absolute top-1/2 size-4 -translate-y-1/2 text-textMuted",
+                    "pointer-events-none absolute top-1/2 size-4 -translate-y-1/2 text-brand-muted",
                     size === "compact" ? "right-2.5 sm:right-2" : "right-3"
                 )}
                 aria-hidden

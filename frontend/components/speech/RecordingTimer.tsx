@@ -18,19 +18,19 @@ export function RecordingTimer({ elapsedSeconds = 0, maxSeconds = 60 }: Recordin
 
     return (
         <div
-            className="flex w-full min-w-0 flex-col gap-1 rounded-none border border-border/20 bg-surfaceAlt px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-2.5"
+            className="flex w-full min-w-0 flex-col gap-1 border border-brand-border bg-brand-surface px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-2.5"
             role="timer"
             aria-live="polite"
             aria-label={`Elapsed time ${formatTime(safeElapsed)}, limit ${formatTime(maxSeconds)}`}
         >
-            <span className="text-[10px] font-light uppercase tracking-[0.2em] text-textMuted sm:text-xs lg:hidden">
+            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-brand-muted lg:hidden">
                 Timer
             </span>
             <div className="flex items-baseline gap-2 tabular-nums">
-                <span className="text-xl font-light leading-none text-textPrimary sm:text-2xl">
+                <span className="font-mono text-xl font-bold leading-none text-brand-text sm:text-2xl">
                     {formatTime(safeElapsed)}
                 </span>
-                <span className="text-xs font-light uppercase tracking-[0.16em] text-textMuted">
+                <span className="font-mono text-xs uppercase tracking-widest text-brand-muted">
                     / {formatTime(maxSeconds)}
                 </span>
             </div>

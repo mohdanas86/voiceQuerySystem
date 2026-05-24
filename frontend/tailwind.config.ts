@@ -14,31 +14,34 @@ const config: Config = {
     theme: {
         extend: {
             fontFamily: {
-                heading: ["Sora", "system-ui", "sans-serif"],
-                body: ["Inter", "system-ui", "sans-serif"],
+                sans: ["Inter", "system-ui", "sans-serif"],
+                mono: ["JetBrains Mono", "Courier New", "monospace"],
             },
             colors: {
-                background: "rgb(var(--color-background) / <alpha-value>)",
-                foreground: "rgb(var(--color-foreground) / <alpha-value>)",
-                surface: "rgb(var(--color-surface) / <alpha-value>)",
-                surfaceAlt: "rgb(var(--color-surface-alt) / <alpha-value>)",
-                primary: "rgb(var(--color-primary) / <alpha-value>)",
-                primaryDark: "rgb(var(--color-primary-dark) / <alpha-value>)",
-                primaryForeground: "rgb(var(--color-primary-foreground) / <alpha-value>)",
-                textPrimary: "rgb(var(--color-text-primary) / <alpha-value>)",
-                textMuted: "rgb(var(--color-text-muted) / <alpha-value>)",
-                error: "rgb(var(--color-error) / <alpha-value>)",
-                success: "rgb(var(--color-success) / <alpha-value>)",
-                border: "rgb(var(--color-border) / <alpha-value>)",
-                ring: "rgb(var(--color-ring) / <alpha-value>)",
-            },
-            borderRadius: {
-                xl: "16px",
-                lg: "14px",
-                md: "12px",
+                brand: {
+                    // ─── from style.html tailwind config ───────────────
+                    bg:       "#F4F1EB",  // cream parchment (body background)
+                    text:     "#111111",  // near-black (body text, brutal borders)
+                    accent:   "#EA4313",  // orange-red (cta, highlights)
+                    border:   "#D1CDAB",  // warm tan (nav / section structural dividers)
+                    muted:    "#6B6A68",  // warm grey (secondary labels)
+                    grid:     "#E8E5DF",  // lighter grid lines
+
+                    // ─── supporting values used across style.html ───────
+                    surface:  "#FFFFFF",  // white card interior
+                    tertiary: "#1E3A5F",  // deep navy (used on card accents)
+                    error:    "#DC2626",
+                    success:  "#16A34A",
+                },
             },
             boxShadow: {
-                soft: "0 12px 32px rgba(0,0,0,0.24)",
+                // from style.html tailwind config exactly
+                brutal:        "4px 4px 0px 0px rgba(17,17,17,1)",
+                "brutal-sm":   "2px 2px 0px 0px rgba(17,17,17,1)",
+                "brutal-lg":   "6px 6px 0px 0px rgba(17,17,17,1)",
+            },
+            transitionDuration: {
+                fast: "150ms",
             },
         },
     },

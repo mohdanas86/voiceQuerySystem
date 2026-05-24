@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 
-import { AppShell } from "@/components/layout/AppShell";
 import { ErrorBanner } from "@/components/feedback/ErrorBanner";
 import { MicButton } from "@/components/speech/MicButton";
 import { RecordingTimer } from "@/components/speech/RecordingTimer";
@@ -19,24 +18,19 @@ export default function RecordPage() {
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const mediaStreamRef = useRef<MediaStream | null>(null);
     const recordedChunksRef = useRef<Blob[]>([]);
+
     const {
-        recordingStatus,
-        sourceLanguage,
-        originalTranscript,
-        errorMessage,
-        setRecordingStatus,
-        setSourceLanguage,
-        setOriginalTranscript,
-        setTranslatedTranscript,
-        setIsTranslating,
-        setErrorMessage,
+        recordingStatus, sourceLanguage, originalTranscript, errorMessage,
+        setRecordingStatus, setSourceLanguage, setOriginalTranscript,
+        setTranslatedTranscript, setIsTranslating, setErrorMessage,
     } = useQueryStore();
-    const activeTranscript = originalTranscript;
+
     const hasMounted = useSyncExternalStore(
         () => () => { },
         () => true,
         () => false
     );
+
     const mediaSupported =
         hasMounted &&
         typeof window !== "undefined" &&
@@ -44,76 +38,52 @@ export default function RecordPage() {
         !!navigator.mediaDevices?.getUserMedia;
 
     useEffect(() => {
-        if (!isRecording) {
-            return;
-        }
-        const interval = window.setInterval(() => {
-            setElapsedSeconds((prev) => prev + 1);
-        }, 1000);
+        if (!isRecording) return;
+        const interval = window.setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
         return () => window.clearInterval(interval);
     }, [isRecording]);
 
     const pickMimeType = () => {
-        const types = [
-            "audio/webm;codecs=opus",
-            "audio/webm",
-            "audio/ogg;codecs=opus",
-            "audio/ogg",
-        ];
-        return types.find((type) => MediaRecorder.isTypeSupported(type));
+        const types = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/ogg"];
+        return types.find((t) => MediaRecorder.isTypeSupported(t));
     };
 
     const stopTracks = () => {
-        mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
         mediaStreamRef.current = null;
     };
 
     const transcribeRecording = async (blob: Blob, language: string) => {
-        const formData = new FormData();
-        formData.append("audio", blob, "recording.webm");
-        formData.append("language", language);
-        const response = await fetch("/api/aai/transcribe", {
-            method: "POST",
-            body: formData,
-        });
-        if (!response.ok) {
+        const fd = new FormData();
+        fd.append("audio", blob, "recording.webm");
+        fd.append("language", language);
+        const res = await fetch("/api/aai/transcribe", { method: "POST", body: fd });
+        if (!res.ok) {
             let detail = "Transcription request failed";
             try {
-                const data = (await response.json()) as { error?: string; detail?: string };
-                detail = data.detail || data.error || detail;
-            } catch {
-                detail = detail;
-            }
+                const d = await res.json() as { error?: string; detail?: string };
+                detail = d.detail || d.error || detail;
+            } catch { /* use default */ }
             throw new Error(detail);
         }
-        return (await response.json()) as {
+        return res.json() as Promise<{
             text?: string;
             translated_texts?: Record<string, string>;
             language_code?: string;
-        };
-    };
-
-    const handleLanguageChange = (value: string) => {
-        setSourceLanguage(value);
+        }>;
     };
 
     const handleStart = useCallback(async () => {
-        if (!mediaSupported) {
-            setErrorMessage("Audio recording is not supported in this browser.");
-            return;
-        }
-        if (!window.isSecureContext) {
-            setErrorMessage("Recording requires HTTPS or localhost.");
-            return;
-        }
-        if (isRecording) {
-            return;
-        }
+        if (!mediaSupported) { setErrorMessage("Audio recording is not supported in this browser."); return; }
+        if (!window.isSecureContext) { setErrorMessage("Recording requires HTTPS or localhost."); return; }
+        if (isRecording) return;
+
         setElapsedSeconds(0);
         setOriginalTranscript("");
         setTranslatedTranscript("");
         setErrorMessage(null);
         setRecordingStatus("recording");
+
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaStreamRef.current = stream;
@@ -121,11 +91,11 @@ export default function RecordPage() {
             const mimeType = pickMimeType();
             const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
             mediaRecorderRef.current = recorder;
-            recorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    recordedChunksRef.current.push(event.data);
-                }
+
+            recorder.ondataavailable = (e) => {
+                if (e.data.size > 0) recordedChunksRef.current.push(e.data);
             };
+
             recorder.onstop = async () => {
                 stopTracks();
                 setRecordingStatus("processing");
@@ -136,17 +106,10 @@ export default function RecordPage() {
                     });
                     const result = await transcribeRecording(blob, sourceLanguage);
                     const original = result.text?.trim() ?? "";
-                    const translated =
-                        result.translated_texts?.en?.trim() || result.text?.trim() || "";
-                    const resolvedLanguage =
-                        sourceLanguage !== "auto"
-                            ? sourceLanguage
-                            : result.language_code ?? "auto";
+                    const translated = result.translated_texts?.en?.trim() || result.text?.trim() || "";
+                    const lang = sourceLanguage !== "auto" ? sourceLanguage : result.language_code ?? "auto";
 
-                    // If transcription returned no text (user was silent), prompt to retry
                     if (!original) {
-                        setOriginalTranscript("");
-                        setTranslatedTranscript("");
                         setErrorMessage("No speech detected. Please try recording again.");
                         setRecordingStatus("idle");
                         return;
@@ -154,16 +117,16 @@ export default function RecordPage() {
 
                     setOriginalTranscript(original);
                     setTranslatedTranscript(translated);
-                    setSourceLanguage(resolvedLanguage);
+                    setSourceLanguage(lang);
                     setRecordingStatus("done");
                 } catch (err) {
-                    const message = err instanceof Error ? err.message : null;
-                    setErrorMessage(message || "Transcription failed. Please try again.");
+                    setErrorMessage(err instanceof Error ? err.message : "Transcription failed.");
                     setRecordingStatus("idle");
                 } finally {
                     setIsTranslating(false);
                 }
             };
+
             recorder.start();
             setIsRecording(true);
         } catch {
@@ -171,111 +134,121 @@ export default function RecordPage() {
             setRecordingStatus("idle");
             stopTracks();
         }
-    }, [
-        isRecording,
-        mediaSupported,
-        sourceLanguage,
-        setErrorMessage,
-        setIsTranslating,
-        setOriginalTranscript,
-        setRecordingStatus,
-        setSourceLanguage,
-        setTranslatedTranscript,
-    ]);
+    }, [isRecording, mediaSupported, sourceLanguage, setErrorMessage, setIsTranslating, setOriginalTranscript, setRecordingStatus, setSourceLanguage, setTranslatedTranscript]);
 
     const handleStop = useCallback(() => {
-        if (!mediaRecorderRef.current || !isRecording) {
-            return;
-        }
+        if (!mediaRecorderRef.current || !isRecording) return;
         setRecordingStatus("processing");
         mediaRecorderRef.current.stop();
         setIsRecording(false);
     }, [isRecording, setRecordingStatus]);
 
     useEffect(() => {
-        if (elapsedSeconds >= maxSeconds && isRecording) {
-            handleStop();
-        }
-    }, [elapsedSeconds, handleStop, isRecording, maxSeconds]);
+        if (elapsedSeconds >= maxSeconds && isRecording) handleStop();
+    }, [elapsedSeconds, handleStop, isRecording]);
 
-    const handleToggle = () => {
-        if (isRecording) {
-            handleStop();
-        } else {
-            handleStart();
-        }
-    };
-
+    const handleToggle = () => { if (isRecording) handleStop(); else handleStart(); };
     const canContinue = originalTranscript.trim().length > 0;
 
     return (
-        <AppShell>
-            <div className="flex min-w-0 flex-col gap-8 md:gap-10 max-w-3xl mx-auto w-full px-4 md:px-0">
+        <div className="pt-12 min-h-screen">
+            <div className="max-w-[1920px] mx-auto border-x border-brand-border min-h-screen">
 
-                {hasMounted && !mediaSupported ? (
-                    <ErrorBanner message="Audio recording is not supported in this browser." />
-                ) : null}
-                {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
-                <section className="flex min-w-0 flex-col gap-4" aria-labelledby="record-step-label">
-                    <h2
-                        id="record-step-label"
-                        className="text-sm md:text-base font-light uppercase tracking-[0.24em] text-textMuted"
-                    >
+                {/* ── Page header ── */}
+                <div className="border-b border-brand-border px-6 py-8 lg:px-16">
+                    <div className="flex items-center gap-4 font-mono text-xs font-bold tracking-widest text-brand-muted mb-3">
+                        <div className="w-3 h-3 bg-brand-accent" aria-hidden />
+                        <span>// STEP 01 OF 03</span>
+                    </div>
+                    <h1 className="font-sans text-4xl font-black uppercase tracking-tighter text-brand-text md:text-5xl">
                         Record your query
-                    </h2>
-                    <div className="reveal grid min-w-0 gap-5 border border-white/20 bg-surfaceAlt/70 p-4 sm:gap-6 sm:p-6">
-                        <div className="grid min-w-0 gap-4 md:grid-cols-[1fr_auto] md:items-end md:gap-6">
-                            <div className="flex min-w-0 flex-col gap-2">
-                                <label
-                                    htmlFor="spoken-language"
-                                    className="text-xs font-light uppercase tracking-[0.2em] text-textMuted"
-                                >
-                                    Select language
-                                </label>
-                                <LanguageSelect
-                                    value={sourceLanguage}
-                                    onChange={handleLanguageChange}
+                    </h1>
+                </div>
+
+                {/* ── Errors ── */}
+                {((hasMounted && !mediaSupported) || errorMessage) && (
+                    <div className="border-b border-brand-border px-6 py-5 lg:px-16">
+                        {hasMounted && !mediaSupported && (
+                            <ErrorBanner message="Audio recording is not supported in this browser." />
+                        )}
+                        {errorMessage && <ErrorBanner message={errorMessage} />}
+                    </div>
+                )}
+
+                {/* ── Recording card ── */}
+                <div className="border-b border-brand-border px-6 py-10 lg:px-16">
+                    <div className="flex border-brutal bg-brand-bg shadow-brutal max-w-2xl">
+
+                        {/* White inner */}
+                        <div className="flex-1 bg-brand-surface p-6 sm:p-8 flex flex-col gap-6">
+                            {/* Language + Timer */}
+                            <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+                                <div className="flex flex-col gap-2">
+                                    <label
+                                        htmlFor="spoken-language"
+                                        className="font-mono text-xs font-bold uppercase tracking-widest text-brand-muted"
+                                    >
+                                        Select language
+                                    </label>
+                                    <LanguageSelect value={sourceLanguage} onChange={setSourceLanguage} />
+                                </div>
+                                <div className="w-full md:w-44">
+                                    <RecordingTimer elapsedSeconds={elapsedSeconds} maxSeconds={maxSeconds} />
+                                </div>
+                            </div>
+                            {/* Mic */}
+                            <div className="flex min-h-[13rem] w-full items-center justify-center py-4">
+                                <MicButton
+                                    status={
+                                        recordingStatus === "recording" ? "recording" :
+                                            recordingStatus === "processing" ? "processing" :
+                                                recordingStatus === "done" ? "done" : "idle"
+                                    }
+                                    onClick={handleToggle}
+                                    disabled={!hasMounted || !mediaSupported || recordingStatus === "processing"}
                                 />
                             </div>
-                            <div className="min-w-0 md:w-[min(100%,12rem)] lg:w-44">
-                                <RecordingTimer
-                                    elapsedSeconds={elapsedSeconds}
-                                    maxSeconds={maxSeconds}
-                                />
-                            </div>
-                        </div>
-                        <div className="flex min-h-[12.5rem] w-full flex-col items-center justify-center py-2 sm:min-h-[13rem]">
-                            <MicButton
-                                status={
-                                    recordingStatus === "recording"
-                                        ? "recording"
-                                        : recordingStatus === "processing"
-                                            ? "processing"
-                                            : recordingStatus === "done"
-                                                ? "done"
-                                                : "idle"
-                                }
-                                onClick={handleToggle}
-                                disabled={
-                                    !hasMounted ||
-                                    !mediaSupported ||
-                                    recordingStatus === "processing"
-                                }
-                            />
                         </div>
                     </div>
-                </section>
-                <div className="flex min-w-0 flex-col gap-3 sm:gap-4">
-                    <Button
-                        size="lg"
-                        className="w-full touch-manipulation bg-white text-black hover:bg-gray-100 rounded-md"
-                        disabled={!canContinue}
-                        onClick={() => router.push("/review")}
-                    >
-                        Continue to review
-                    </Button>
                 </div>
+
+                {/* ── Transcript preview (only when available) ── */}
+                {originalTranscript && (
+                    <div className="border-b border-brand-border px-6 py-10 lg:px-16">
+                        <div className="flex items-center gap-4 font-mono text-xs font-bold tracking-widest text-brand-muted mb-5">
+                            <div className="w-2 h-2 bg-brand-muted" aria-hidden />
+                            <span>// TRANSCRIPT PREVIEW</span>
+                        </div>
+                        <div className="flex border-brutal shadow-brutal-sm bg-brand-bg max-w-2xl">
+                            <div className="w-2 bg-brand-muted shrink-0" />
+                            <div className="flex-1 bg-brand-surface p-4 sm:p-6">
+                                <p className="font-mono text-sm leading-relaxed text-brand-text whitespace-pre-wrap break-words">
+                                    {originalTranscript}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Continue CTA ── */}
+                <div className="px-6 py-10 lg:px-16">
+                    <div className="max-w-2xl">
+                        <Button
+                            size="lg"
+                            className="w-full touch-manipulation text-black"
+                            disabled={!canContinue}
+                            onClick={() => router.push("/review")}
+                        >
+                            Continue to review →
+                        </Button>
+                    </div>
+                    <div className="mt-6 border-t border-brand-border pt-2 font-mono text-[10px] text-brand-muted flex justify-between tracking-widest max-w-2xl">
+                        <span>+ STEP 01 OF 03</span>
+                        <span>/ / / / / / / / / / / +</span>
+                    </div>
+                </div>
+
             </div>
-        </AppShell>
+        </div>
     );
 }

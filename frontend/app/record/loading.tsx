@@ -1,13 +1,15 @@
-import { AppShell } from "@/components/layout/AppShell";
-
 export default function Loading() {
     return (
-        <AppShell>
-            <div
-                className="min-h-[12rem] w-full min-w-0 animate-pulse rounded-none border border-border/20 bg-surfaceAlt/50 sm:min-h-[16rem]"
-                role="status"
-                aria-label="Loading"
-            />
-        </AppShell>
+        <div className="min-h-[calc(100vh-3rem)] pt-12">
+            <div className="max-w-[1920px] mx-auto border-x border-brand-border min-h-[calc(100vh-3rem)]">
+                <div className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-12 md:py-16">
+                    <div
+                        className="min-h-[20rem] w-full animate-pulse border border-brand-border bg-brand-surface shadow-brutal"
+                        role="status"
+                        aria-label="Loading"
+                    />
+                </div>
+            </div>
+        </div>
     );
 }
