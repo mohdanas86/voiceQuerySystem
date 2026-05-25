@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import emailjs from "@emailjs/browser";
 import { z } from "zod";
 
 import { ErrorBanner } from "@/components/feedback/ErrorBanner";
@@ -11,16 +10,34 @@ import { TranscriptEditor } from "@/components/forms/TranscriptEditor";
 import { PhoneInput } from "@/components/forms/PhoneInput";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { submitQuery } from "@/services/api";
+import { ApiError, submitQuery } from "@/services/api";
 import { useQueryStore } from "@/store/useQueryStore";
 import { getClientTimestamp } from "@/lib/time";
 
-export default function ReviewPage() {
-    const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
-    const EMAILJS_SERVICE_ID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
-    const EMAILJS_TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+// Human-readable messages per server error code
+function resolveErrorMessage(err: unknown): string {
+    if (err instanceof ApiError) {
+        switch (err.code) {
+            case "RATE_LIMITED":
+                return "You've submitted too many queries. Please wait a few minutes and try again.";
+            case "INVALID_PAYLOAD":
+            case "BAD_REQUEST":
+                return "Some required fields are missing. Please check your details.";
+            case "DB_ERROR":
+                return "We could not save your query. Please try again in a moment.";
+            default:
+                return err.message || "Something went wrong. Please try again.";
+        }
+    }
+    if (err instanceof Error) return err.message;
+    return "Something went wrong. Please try again.";
+}
 
+export default function ReviewPage() {
     const router = useRouter();
+
+    // Double-submit guard (ref so it doesn't trigger re-render)
+    const submittingRef = useRef(false);
 
     const {
         userName, sourceLanguage, originalTranscript, translatedTranscript,
@@ -57,35 +74,35 @@ export default function ReviewPage() {
         !isTranslating;
 
     const handleSubmit = async () => {
+        // Hard guard against double-submit (e.g. rapid tap on mobile)
+        if (submittingRef.current) return;
+
         const nameResult = nameSchema.safeParse(userName);
         if (!nameResult.success) {
             setNameError(nameResult.error.issues[0]?.message ?? "Please enter your name.");
             return;
         }
-        if (!phoneValidation) { setPhoneError("Please enter a valid number with country code."); return; }
+        if (!phoneValidation) {
+            setPhoneError("Please enter a valid number with country code.");
+            return;
+        }
+        if (!translatedTranscript.trim()) {
+            setErrorMessage("Please provide a transcript before sending.");
+            return;
+        }
 
         setNameError(null);
         setPhoneError(null);
-
-        if (!translatedTranscript.trim()) { setErrorMessage("Please provide a transcript before sending."); return; }
-
-        setIsSubmitting(true);
         setErrorMessage(null);
+
+        // Lock
+        submittingRef.current = true;
+        setIsSubmitting(true);
 
         try {
             const { timestamp, timezone } = getClientTimestamp();
-            if (!EMAILJS_PUBLIC_KEY || !EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID) {
-                throw new Error("EmailJS is not configured");
-            }
-            emailjs.init(EMAILJS_PUBLIC_KEY);
-            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-                name: normalizedUserName,
-                user_name: normalizedUserName,
-                original_query: originalTranscript,
-                translated_query: translatedTranscript,
-                phone: phoneFull,
-                submitted_at: timestamp,
-            });
+
+            // Single API call — server handles DB write + email in correct order
             await submitQuery({
                 user_name: normalizedUserName,
                 source_language: sourceLanguage,
@@ -97,12 +114,14 @@ export default function ReviewPage() {
                 client_timestamp: timestamp,
                 client_timezone: timezone,
             });
+
             reset();
             router.push("/confirmation");
         } catch (err) {
             console.error("[submit] failed", err);
-            setErrorMessage("Something went wrong. Please check your details and try again.");
+            setErrorMessage(resolveErrorMessage(err));
         } finally {
+            submittingRef.current = false;
             setIsSubmitting(false);
         }
     };
