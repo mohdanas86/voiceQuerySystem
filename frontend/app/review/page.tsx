@@ -82,7 +82,7 @@ export default function ReviewPage() {
         if (!originalTranscript.trim()) {
             router.replace("/record");
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // run once on mount only
 
     // ── Submit handler ────────────────────────────────────────────────────────
@@ -169,7 +169,39 @@ export default function ReviewPage() {
                 {/* Error */}
                 {errorMessage && <ErrorBanner message={errorMessage} />}
 
-                {/* Details card */}
+                {/* Card 1 — Transcripts */}
+                <Card padding="lg">
+                    <div className="flex flex-col gap-5">
+
+                        {/* Original transcript (read-only) */}
+                        {originalTranscript && (
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
+                                    Original transcript
+                                </span>
+                                <div className="rounded-xl border border-[#E8E5DF] bg-[#F9F8F5] overflow-hidden flex">
+                                    <div className="w-[3px] bg-[#E85D22] shrink-0" />
+                                    <p className="flex-1 px-4 py-3 text-sm font-light leading-relaxed text-[#111111] whitespace-pre-wrap break-words">
+                                        {originalTranscript}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Divider */}
+                        <div className="h-px bg-[#E8E5DF]" />
+
+                        {/* Translated transcript */}
+                        <TranscriptEditor
+                            value={translatedTranscript}
+                            onChange={setTranslatedTranscript}
+                            placeholder={isTranslating ? "Translating…" : "Your translated message will appear here…"}
+                        />
+
+                    </div>
+                </Card>
+
+                {/* Card 2 — Contact details */}
                 <Card padding="lg">
                     <div className="flex flex-col gap-5">
 
@@ -197,38 +229,20 @@ export default function ReviewPage() {
                             )}
                         </div>
 
-                        {/* Original transcript (read-only) */}
-                        {originalTranscript && (
-                            <div className="flex flex-col gap-1.5">
-                                <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                                    Original transcript
-                                </span>
-                                <div className="rounded-xl border border-[#E8E5DF] bg-[#F9F8F5] overflow-hidden flex">
-                                    <div className="w-[3px] bg-[#E85D22] shrink-0" />
-                                    <p className="flex-1 px-4 py-3 text-sm font-light leading-relaxed text-[#111111] whitespace-pre-wrap break-words">
-                                        {originalTranscript}
-                                    </p>
-                                </div>
-                            </div>
-                        )}
+                        {/* Divider */}
+                        <div className="h-px bg-[#E8E5DF]" />
+
+                        {/* Phone */}
+                        <PhoneInput
+                            countryCode={phoneCountryCode}
+                            number={phoneNumber}
+                            onCountryCodeChange={setPhoneCountryCode}
+                            onNumberChange={(v) => { setPhoneNumber(v); setPhoneError(null); }}
+                            error={phoneError ?? undefined}
+                        />
+
                     </div>
                 </Card>
-
-                {/* Translated transcript */}
-                <TranscriptEditor
-                    value={translatedTranscript}
-                    onChange={setTranslatedTranscript}
-                    placeholder={isTranslating ? "Translating…" : "Your translated message will appear here…"}
-                />
-
-                {/* Phone */}
-                <PhoneInput
-                    countryCode={phoneCountryCode}
-                    number={phoneNumber}
-                    onCountryCodeChange={setPhoneCountryCode}
-                    onNumberChange={(v) => { setPhoneNumber(v); setPhoneError(null); }}
-                    error={phoneError ?? undefined}
-                />
 
                 {/* Send CTA + Back */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
