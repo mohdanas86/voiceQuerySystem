@@ -1,10 +1,44 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { SuccessCheckmark } from "@/components/feedback/SuccessCheckmark";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 export default function ConfirmationPage() {
+    const router = useRouter();
+    // null = not checked yet (SSR / hydration), true = legit, false = direct visit
+    const [isLegit, setIsLegit] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        try {
+            const flag = sessionStorage.getItem("query_submitted");
+            if (flag === "1") {
+                // Consume the flag — single-use so refresh shows redirect
+                sessionStorage.removeItem("query_submitted");
+                setIsLegit(true);
+            } else {
+                setIsLegit(false);
+            }
+        } catch {
+            // sessionStorage unavailable (private mode / old browser) — be lenient
+            setIsLegit(true);
+        }
+    }, []);
+
+    // Redirect to /record if no submission flag found
+    useEffect(() => {
+        if (isLegit === false) {
+            router.replace("/record");
+        }
+    }, [isLegit, router]);
+
+    // Render nothing while checking / redirecting
+    if (!isLegit) return null;
+
     return (
         <div className="pt-12 min-h-screen bg-[#F4F1EB]">
             <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-10 flex flex-col gap-6">

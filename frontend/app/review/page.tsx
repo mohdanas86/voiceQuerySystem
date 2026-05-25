@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
@@ -46,6 +46,7 @@ export default function ReviewPage() {
         setIsSubmitting, setErrorMessage, reset,
     } = useQueryStore();
 
+    // ── All hooks must be declared before any early return ────────────────────
     const [phoneError, setPhoneError] = useState<string | null>(null);
     const [nameError, setNameError] = useState<string | null>(null);
 
@@ -73,6 +74,18 @@ export default function ReviewPage() {
         !isSubmitting &&
         !isTranslating;
 
+    // ── Direct-visit guard ────────────────────────────────────────────────────
+    // If someone lands on /review without going through /record first the store
+    // will have no transcript. Redirect them back gracefully.
+    // Must be after all hooks to comply with Rules of Hooks.
+    useEffect(() => {
+        if (!originalTranscript.trim()) {
+            router.replace("/record");
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // run once on mount only
+
+    // ── Submit handler ────────────────────────────────────────────────────────
     const handleSubmit = async () => {
         // Hard guard against double-submit (e.g. rapid tap on mobile)
         if (submittingRef.current) return;
@@ -116,6 +129,9 @@ export default function ReviewPage() {
             });
 
             reset();
+            // Set a one-time flag so /confirmation knows it was reached after a
+            // real submission, not by a direct URL visit.
+            try { sessionStorage.setItem("query_submitted", "1"); } catch { /* private mode */ }
             router.push("/confirmation");
         } catch (err) {
             console.error("[submit] failed", err);
@@ -125,6 +141,10 @@ export default function ReviewPage() {
             setIsSubmitting(false);
         }
     };
+
+    // ── Guard: render nothing while redirect is pending ───────────────────────
+    // Prevents a flash of the empty form before useEffect fires.
+    if (!originalTranscript.trim()) return null;
 
     return (
         <div className="pt-12 min-h-screen bg-[#F4F1EB]">
