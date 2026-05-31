@@ -14,8 +14,11 @@ import { useQueryStore } from "@/store/useQueryStore";
 export default function RecordPage() {
     const router = useRouter();
     const maxSeconds = 60;
+    const MIN_RECORD_SECONDS = 3;
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
     const [isRecording, setIsRecording] = useState(false);
+    const [retryCount, setRetryCount] = useState(0);
+    const elapsedRef = useRef(0);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const mediaStreamRef = useRef<MediaStream | null>(null);
     const recordedChunksRef = useRef<Blob[]>([]);
@@ -40,7 +43,13 @@ export default function RecordPage() {
 
     useEffect(() => {
         if (!isRecording) return;
-        const interval = window.setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
+        const interval = window.setInterval(() => {
+            setElapsedSeconds((s) => {
+                const next = s + 1;
+                elapsedRef.current = next;
+                return next;
+            });
+        }, 1000);
         return () => window.clearInterval(interval);
     }, [isRecording]);
 
@@ -61,16 +70,24 @@ export default function RecordPage() {
         const res = await fetch("/api/aai/transcribe", { method: "POST", body: fd });
         if (!res.ok) {
             let detail = "Transcription request failed";
+            let code = "UNKNOWN";
+            let audioDuration = 0;
             try {
-                const d = await res.json() as { error?: string; detail?: string };
+                const d = await res.json() as { error?: string; detail?: string; code?: string; audio_duration?: number };
                 detail = d.detail || d.error || detail;
+                code = d.code || code;
+                audioDuration = d.audio_duration || 0;
             } catch { /* use default */ }
-            throw new Error(detail);
+            const err = new Error(detail) as Error & { code: string; audioDuration: number };
+            err.code = code;
+            err.audioDuration = audioDuration;
+            throw err;
         }
         return res.json() as Promise<{
             text?: string;
-            translated_texts?: Record<string, string>;
+            translated_texts?: Record<string, string> | null;
             language_code?: string;
+            audio_duration?: number;
         }>;
     };
 
@@ -80,6 +97,7 @@ export default function RecordPage() {
         if (isRecording) return;
 
         setElapsedSeconds(0);
+        elapsedRef.current = 0;
         setOriginalTranscript("");
         setTranslatedTranscript("");
         setErrorMessage(null);
@@ -107,22 +125,46 @@ export default function RecordPage() {
                     });
                     const result = await transcribeRecording(blob, sourceLanguage);
                     const original = result.text?.trim() ?? "";
-                    const translated = result.translated_texts?.en?.trim() || result.text?.trim() || "";
+                    // Use AssemblyAI translated_texts if available; otherwise fall back to the
+                    // original text (server already tried MyMemory fallback before this point).
+                    const translated = result.translated_texts?.en?.trim() || original;
                     const lang = sourceLanguage !== "auto" ? sourceLanguage : result.language_code ?? "auto";
 
                     if (!original) {
-                        setErrorMessage("We couldn't catch that. Please try speaking again.");
+                        // This path shouldn't normally be reached anymore since the server now
+                        // returns 422 for empty transcripts — but keep it as a safety net.
+                        setRetryCount((c) => c + 1);
+                        setErrorMessage("We couldn't hear any speech. Please speak clearly into your mic.");
                         setRecordingStatus("idle");
                         return;
                     }
 
+                    setRetryCount(0);
                     setOriginalTranscript(original);
                     setTranslatedTranscript(translated);
                     setSourceLanguage(lang);
                     setRecordingStatus("done");
-                } catch (err) {
-                    console.error("[transcribe] failed", err);
-                    setErrorMessage("Something went wrong. Please try recording again.");
+                } catch (err: unknown) {
+                    const e = err as { code?: string; audioDuration?: number; message?: string };
+                    setRetryCount((c) => c + 1);
+
+                    if (e.code === "NO_SPEECH") {
+                        const dur = e.audioDuration ?? 0;
+                        // Expected user-behaviour: no speech in clip. Warn, not error.
+                        console.warn("[transcribe] no speech detected, duration:", dur);
+                        if (dur > 0 && dur < 4) {
+                            setErrorMessage("Recording too short — please speak for at least a few seconds.");
+                        } else {
+                            setErrorMessage("No speech was detected. Please speak louder and more clearly, or move to a quieter environment.");
+                        }
+                    } else if (e.code === "RATE_LIMITED") {
+                        console.warn("[transcribe] rate limited");
+                        setErrorMessage("Too many attempts. Please wait a moment and try again.");
+                    } else {
+                        // Genuinely unexpected: log as error for debugging.
+                        console.error("[transcribe] unexpected failure", e);
+                        setErrorMessage("Something went wrong. Please try recording again.");
+                    }
                     setRecordingStatus("idle");
                 } finally {
                     setIsTranslating(false);
@@ -140,10 +182,23 @@ export default function RecordPage() {
 
     const handleStop = useCallback(() => {
         if (!mediaRecorderRef.current || !isRecording) return;
+        // Enforce minimum recording length — don't waste an API call on a near-empty clip.
+        if (elapsedRef.current < MIN_RECORD_SECONDS) {
+            setErrorMessage(`Please record for at least ${MIN_RECORD_SECONDS} seconds. Tap the mic and speak clearly.`);
+            // Still stop the recorder and free tracks, but go back to idle.
+            mediaRecorderRef.current.onstop = () => {
+                stopTracks();
+                setRecordingStatus("idle");
+                setIsRecording(false);
+            };
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+            return;
+        }
         setRecordingStatus("processing");
         mediaRecorderRef.current.stop();
         setIsRecording(false);
-    }, [isRecording, setRecordingStatus]);
+    }, [isRecording, setRecordingStatus, setErrorMessage]);
 
     useEffect(() => {
         if (elapsedSeconds >= maxSeconds && isRecording) handleStop();
@@ -178,6 +233,21 @@ export default function RecordPage() {
                     <ErrorBanner message="Audio recording is not supported in this browser." />
                 )}
                 {errorMessage && <ErrorBanner message={errorMessage} />}
+
+                {/* Tips panel — shown after one or more failed attempts */}
+                {retryCount >= 1 && !originalTranscript && (
+                    <div className="rounded-xl border border-[#E8E5DF] bg-white/60 px-4 py-3 flex flex-col gap-2">
+                        <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
+                            💡 Tips for a clear recording
+                        </p>
+                        <ul className="text-[13px] font-light text-[#6B6A68] flex flex-col gap-1 list-none">
+                            <li>• Speak for at least 5 seconds</li>
+                            <li>• Hold the device 20–30 cm from your mouth</li>
+                            <li>• Move to a quieter place if there is background noise</li>
+                            <li>• Select your language from the dropdown for better accuracy</li>
+                        </ul>
+                    </div>
+                )}
 
                 {/* Recording Card — uses shared Card component */}
                 <Card padding="lg">

@@ -18,6 +18,8 @@ export async function sendSubmissionEmail(params: EmailParams): Promise<void> {
     const templateId = process.env.EMAILJS_TEMPLATE_ID;
     const publicKey = process.env.EMAILJS_PUBLIC_KEY;
 
+    const privateKey = process.env.EMAILJS_PRIVATE_KEY || process.env.EMAILJS_ACCESS_TOKEN;
+
     if (!serviceId || !templateId || !publicKey) {
         // Email not configured — log and skip gracefully so the submission still succeeds.
         console.warn("[email] EmailJS env vars not set — skipping email notification.");
@@ -28,6 +30,7 @@ export async function sendSubmissionEmail(params: EmailParams): Promise<void> {
         service_id: serviceId,
         template_id: templateId,
         user_id: publicKey,
+        accessToken: privateKey || undefined,
         template_params: {
             name: params.user_name,
             user_name: params.user_name,
@@ -45,9 +48,8 @@ export async function sendSubmissionEmail(params: EmailParams): Promise<void> {
     });
 
     if (!res.ok) {
-        // Non-fatal — the query is already stored; just log.
         const text = await res.text().catch(() => "(no body)");
-        console.error(`[email] EmailJS responded ${res.status}: ${text}`);
+        throw new Error(`EmailJS responded ${res.status}: ${text}`);
     } else {
         console.info("[email] Notification sent for submission.");
     }

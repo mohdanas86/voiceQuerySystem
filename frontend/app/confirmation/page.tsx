@@ -17,9 +17,14 @@ export default function ConfirmationPage() {
         try {
             const flag = sessionStorage.getItem("query_submitted");
             if (flag === "1") {
-                // Consume the flag — single-use so refresh shows redirect
-                sessionStorage.removeItem("query_submitted");
                 setIsLegit(true);
+                // Clear after a short delay so React's StrictMode double-mount in dev can both read it
+                const t = setTimeout(() => {
+                    try {
+                        sessionStorage.removeItem("query_submitted");
+                    } catch {}
+                }, 1000);
+                return () => clearTimeout(t);
             } else {
                 setIsLegit(false);
             }
