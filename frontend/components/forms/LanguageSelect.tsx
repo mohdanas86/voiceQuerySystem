@@ -3,15 +3,15 @@ import { cn } from "@/lib/utils";
 
 const LANGUAGE_OPTIONS = [
     { value: "auto", label: "Auto-detect" },
-    { value: "en", label: "English" },
-    { value: "hi", label: "Hindi" },
-    { value: "ur", label: "Urdu" },
-    { value: "ta", label: "Tamil" },
-    { value: "te", label: "Telugu" },
-    { value: "mr", label: "Marathi" },
-    { value: "kn", label: "Kannada" },
-    { value: "gu", label: "Gujarati" },
-    { value: "bn", label: "Bengali" },
+    { value: "en",   label: "English" },
+    { value: "hi",   label: "Hindi" },
+    { value: "ur",   label: "Urdu" },
+    { value: "ta",   label: "Tamil" },
+    { value: "te",   label: "Telugu" },
+    { value: "mr",   label: "Marathi" },
+    { value: "kn",   label: "Kannada" },
+    { value: "gu",   label: "Gujarati" },
+    { value: "bn",   label: "Bengali" },
 ];
 
 interface LanguageSelectProps {

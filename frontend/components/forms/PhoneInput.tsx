@@ -18,14 +18,14 @@ export function PhoneInput({
     const errorId = "phone-input-error";
 
     return (
-        <div className="flex min-w-0 flex-col gap-2 sm:gap-3">
+        <div className="flex min-w-0 flex-col gap-1.5">
             <label
                 htmlFor="phone-national"
-                className="text-xs font-light uppercase tracking-[0.2em] text-textMuted"
+                className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]"
             >
                 Your Mobile Number
             </label>
-            <div className="grid min-w-0 grid-cols-1 items-stretch gap-3 sm:grid-cols-[5.5rem_minmax(0,1fr)] sm:items-center">
+            <div className="grid min-w-0 grid-cols-1 items-stretch gap-3 sm:grid-cols-[5.5rem_minmax(0,1fr)]">
                 <CountryCodeSelect
                     id="phone-country-code"
                     value={countryCode}
@@ -33,7 +33,7 @@ export function PhoneInput({
                 />
                 <input
                     id="phone-national"
-                    className="h-12 min-h-12 w-full min-w-0 rounded-none border border-border/20 bg-surface px-3 text-base text-textPrimary placeholder:text-textMuted focus:outline-none focus:ring-2 focus:ring-primary/40 sm:h-11 sm:min-h-11 sm:text-sm"
+                    className="h-11 w-full min-w-0 rounded-xl border border-[#E8E5DF] bg-white px-4 text-sm font-light text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#E85D22] focus:ring-2 focus:ring-[#E85D22]/20 transition-colors"
                     placeholder="98765 43210"
                     type="tel"
                     inputMode="tel"
@@ -44,11 +44,11 @@ export function PhoneInput({
                     onChange={(event) => onNumberChange(event.target.value)}
                 />
             </div>
-            {error ? (
-                <p id={errorId} className="text-sm leading-snug text-error sm:text-xs">
+            {error && (
+                <p id={errorId} className="text-[12px] font-light text-red-600">
                     {error}
                 </p>
-            ) : null}
+            )}
         </div>
     );
 }

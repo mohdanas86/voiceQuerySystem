@@ -1,29 +1,118 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { SuccessCheckmark } from "@/components/feedback/SuccessCheckmark";
-import { SuccessPanel } from "@/components/feedback/SuccessPanel";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export default function ConfirmationPage() {
+    const router = useRouter();
+    // null = not checked yet (SSR / hydration), true = legit, false = direct visit
+    const [isLegit, setIsLegit] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        try {
+            const flag = sessionStorage.getItem("query_submitted");
+            if (flag === "1") {
+                setIsLegit(true);
+                // Clear after a short delay so React's StrictMode double-mount in dev can both read it
+                const t = setTimeout(() => {
+                    try {
+                        sessionStorage.removeItem("query_submitted");
+                    } catch {}
+                }, 1000);
+                return () => clearTimeout(t);
+            } else {
+                setIsLegit(false);
+            }
+        } catch {
+            // sessionStorage unavailable (private mode / old browser) — be lenient
+            setIsLegit(true);
+        }
+    }, []);
+
+    // Redirect to /record if no submission flag found
+    useEffect(() => {
+        if (isLegit === false) {
+            router.replace("/record");
+        }
+    }, [isLegit, router]);
+
+    // Render nothing while checking / redirecting
+    if (!isLegit) return null;
+
     return (
-        <div className="flex min-h-screen items-center justify-center px-4 md:px-6">
-            <div className="flex w-full max-w-lg flex-col items-center justify-center gap-8 text-center">
+        <div className="pt-12 min-h-screen bg-[#F4F1EB]">
+            <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-10 flex flex-col gap-6">
 
-                <SuccessCheckmark />
+                {/* Page header */}
+                <div className="flex flex-col gap-1.5 reveal">
+                    <div className="inline-flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-[#16A34A]" aria-hidden />
+                        <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
+                            Step 03 of 03 — Complete
+                        </span>
+                    </div>
+                    <h1 className="text-3xl font-semibold tracking-[-0.025em] text-[#111111] sm:text-4xl">
+                        Query{" "}
+                        <span className="text-[#16A34A]">submitted.</span>
+                    </h1>
+                    <p className="text-sm font-light text-[#6B6A68] mt-1">
+                        We&apos;ve received your message and will respond shortly.
+                    </p>
+                </div>
 
-                <SuccessPanel
-                    align="center"
-                    message="Thank you for your query. Our team will get back to you shortly."
-                />
+                {/* Success card */}
+                <Card padding="lg">
+                    <div className="flex flex-col items-center gap-8 text-center py-6">
 
-                <Link
-                    href="/record"
-                    className="w-full touch-manipulation"
-                >
-                    <Button size="lg" className="w-full bg-white text-black hover:bg-gray-100 rounded-md">
+                        {/* Animated checkmark */}
+                        <SuccessCheckmark />
+
+                        {/* Text */}
+                        <div className="flex flex-col gap-2">
+                            <p className="text-lg font-semibold text-[#111111]">
+                                Your query has been sent!
+                            </p>
+                            <p className="text-sm font-light text-[#6B6A68] leading-relaxed max-w-xs mx-auto">
+                                Thank you. Our team will review your request and get back to you as soon as possible.
+                            </p>
+                        </div>
+
+                        {/* Green confirmation pill */}
+                        <div
+                            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5"
+                            style={{
+                                background: "rgba(22,163,74,0.08)",
+                                border: "1px solid rgba(22,163,74,0.2)",
+                            }}
+                        >
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
+                            <span className="text-[12px] font-medium text-[#16A34A] tracking-[0.04em]">
+                                Submission confirmed
+                            </span>
+                        </div>
+                    </div>
+                </Card>
+
+                {/* CTA */}
+                <Link href="/record" className="touch-manipulation">
+                    <Button size="lg" variant="outline" className="w-full">
                         Submit another query
                     </Button>
                 </Link>
+
+                {/* Bottom ticker */}
+                <div className="border-t border-[#E8E5DF] pt-3 flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-[#9CA3AF] tracking-[0.05em] uppercase">
+                        Complete
+                    </span>
+                    <span className="text-[11px] text-[#D5D0C4] tracking-widest">/ / / / /</span>
+                </div>
+
             </div>
         </div>
     );

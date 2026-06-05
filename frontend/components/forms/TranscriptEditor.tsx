@@ -6,10 +6,10 @@ interface TranscriptEditorProps {
 
 export function TranscriptEditor({ placeholder, value, onChange }: TranscriptEditorProps) {
     return (
-        <div className="flex min-w-0 flex-col gap-2 sm:gap-3">
+        <div className="flex min-w-0 flex-col gap-1.5">
             <label
                 htmlFor="transcript-english"
-                className="text-xs font-light uppercase tracking-[0.2em] text-textMuted"
+                className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]"
             >
                 Transcript (English)
             </label>
@@ -20,7 +20,7 @@ export function TranscriptEditor({ placeholder, value, onChange }: TranscriptEdi
                 autoComplete="off"
                 spellCheck
                 enterKeyHint="done"
-                className="min-h-[11rem] w-full min-w-0 resize-y break-words rounded-none border border-border/20 bg-surface p-3 text-base leading-relaxed text-textPrimary placeholder:text-textMuted focus:outline-none focus:ring-2 focus:ring-primary/40 sm:min-h-[12.5rem] sm:p-4 sm:text-sm"
+                className="min-h-[11rem] w-full min-w-0 resize-y break-words rounded-xl border border-[#E8E5DF] bg-white px-4 py-3 text-sm font-light leading-relaxed text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#E85D22] focus:ring-2 focus:ring-[#E85D22]/20 sm:min-h-[12.5rem] transition-colors"
                 placeholder={placeholder ?? "Your translated message will appear here..."}
                 value={value}
                 onChange={(event) => onChange?.(event.target.value)}
