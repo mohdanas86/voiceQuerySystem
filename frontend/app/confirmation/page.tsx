@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { SuccessCheckmark } from "@/components/feedback/SuccessCheckmark";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useQueryStore } from "@/store/useQueryStore";
+import { t } from "@/lib/i18n";
 
 export default function ConfirmationPage() {
     const router = useRouter();
+    const { uiLanguage, reset } = useQueryStore();
     // null = not checked yet (SSR / hydration), true = legit, false = direct visit
     const [isLegit, setIsLegit] = useState<boolean | null>(null);
 
@@ -17,7 +19,7 @@ export default function ConfirmationPage() {
         try {
             const flag = sessionStorage.getItem("query_submitted");
             if (flag === "1") {
-                setIsLegit(true);
+                setTimeout(() => setIsLegit(true), 0);
                 // Clear after a short delay so React's StrictMode double-mount in dev can both read it
                 const t = setTimeout(() => {
                     try {
@@ -26,11 +28,11 @@ export default function ConfirmationPage() {
                 }, 1000);
                 return () => clearTimeout(t);
             } else {
-                setIsLegit(false);
+                setTimeout(() => setIsLegit(false), 0);
             }
         } catch {
             // sessionStorage unavailable (private mode / old browser) — be lenient
-            setIsLegit(true);
+            setTimeout(() => setIsLegit(true), 0);
         }
     }, []);
 
@@ -40,6 +42,11 @@ export default function ConfirmationPage() {
             router.replace("/record");
         }
     }, [isLegit, router]);
+
+    const handleSubmitAnother = () => {
+        reset();
+        router.push("/");
+    };
 
     // Render nothing while checking / redirecting
     if (!isLegit) return null;
@@ -53,15 +60,14 @@ export default function ConfirmationPage() {
                     <div className="inline-flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full bg-[#16A34A]" aria-hidden />
                         <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                            Step 03 of 03 — Complete
+                            {t(uiLanguage, "confirmStep")}
                         </span>
                     </div>
                     <h1 className="text-3xl font-semibold tracking-[-0.025em] text-[#111111] sm:text-4xl">
-                        Query{" "}
-                        <span className="text-[#16A34A]">submitted.</span>
+                        {t(uiLanguage, "confirmTitle")}
                     </h1>
                     <p className="text-sm font-light text-[#6B6A68] mt-1">
-                        We&apos;ve received your message and will respond shortly.
+                        {t(uiLanguage, "confirmBody")}
                     </p>
                 </div>
 
@@ -75,10 +81,10 @@ export default function ConfirmationPage() {
                         {/* Text */}
                         <div className="flex flex-col gap-2">
                             <p className="text-lg font-semibold text-[#111111]">
-                                Your query has been sent!
+                                {t(uiLanguage, "confirmTitle")}
                             </p>
                             <p className="text-sm font-light text-[#6B6A68] leading-relaxed max-w-xs mx-auto">
-                                Thank you. Our team will review your request and get back to you as soon as possible.
+                                {t(uiLanguage, "confirmBody")}
                             </p>
                         </div>
 
@@ -99,16 +105,19 @@ export default function ConfirmationPage() {
                 </Card>
 
                 {/* CTA */}
-                <Link href="/record" className="touch-manipulation">
-                    <Button size="lg" variant="outline" className="w-full">
-                        Submit another query
-                    </Button>
-                </Link>
+                <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="w-full touch-manipulation"
+                    onClick={handleSubmitAnother}
+                >
+                    {t(uiLanguage, "confirmSubAnotherQuery")}
+                </Button>
 
                 {/* Bottom ticker */}
                 <div className="border-t border-[#E8E5DF] pt-3 flex items-center justify-between">
                     <span className="text-[11px] font-medium text-[#9CA3AF] tracking-[0.05em] uppercase">
-                        Complete
+                        {t(uiLanguage, "confirmStep")}
                     </span>
                     <span className="text-[11px] text-[#D5D0C4] tracking-widest">/ / / / /</span>
                 </div>

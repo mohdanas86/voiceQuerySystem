@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { ApiError, submitQuery } from "@/services/api";
 import { useQueryStore } from "@/store/useQueryStore";
 import { getClientTimestamp } from "@/lib/time";
+import { t } from "@/lib/i18n";
 
 // Human-readable messages per server error code
 function resolveErrorMessage(err: unknown): string {
@@ -43,7 +44,7 @@ export default function ReviewPage() {
         userName, sourceLanguage, originalTranscript, translatedTranscript,
         phoneCountryCode, phoneNumber, isTranslating, isSubmitting, errorMessage,
         setUserName, setTranslatedTranscript, setPhoneCountryCode, setPhoneNumber,
-        setIsSubmitting, setErrorMessage, reset,
+        setIsSubmitting, setErrorMessage, reset, uiLanguage,
     } = useQueryStore();
 
     // ── All hooks must be declared before any early return ────────────────────
@@ -92,15 +93,15 @@ export default function ReviewPage() {
 
         const nameResult = nameSchema.safeParse(userName);
         if (!nameResult.success) {
-            setNameError(nameResult.error.issues[0]?.message ?? "Please enter your name.");
+            setNameError(t(uiLanguage, "errorName"));
             return;
         }
         if (!phoneValidation) {
-            setPhoneError("Please enter a valid number with country code.");
+            setPhoneError(t(uiLanguage, "errorPhone"));
             return;
         }
         if (!translatedTranscript.trim()) {
-            setErrorMessage("Please provide a transcript before sending.");
+            setErrorMessage(t(uiLanguage, "errorTranscript"));
             return;
         }
 
@@ -155,14 +156,14 @@ export default function ReviewPage() {
                     <div className="inline-flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full bg-[#E85D22]" aria-hidden />
                         <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                            Step 02 of 03
+                            {t(uiLanguage, "reviewStep")}
                         </span>
                     </div>
                     <h1 className="text-3xl font-semibold tracking-[-0.025em] text-[#111111] sm:text-4xl">
-                        Review &amp; <span className="text-[#E85D22]">submit.</span>
+                        {t(uiLanguage, "reviewTitle")}
                     </h1>
                     <p className="text-sm font-light text-[#6B6A68] mt-1">
-                        Check your details before sending.
+                        {t(uiLanguage, "reviewSubtitle")}
                     </p>
                 </div>
 
@@ -177,7 +178,7 @@ export default function ReviewPage() {
                         {originalTranscript && (
                             <div className="flex flex-col gap-1.5">
                                 <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                                    Original transcript
+                                    {t(uiLanguage, "reviewTranscriptLabel")}
                                 </span>
                                 <div className="rounded-xl border border-[#E8E5DF] bg-[#F9F8F5] overflow-hidden flex">
                                     <div className="w-[3px] bg-[#E85D22] shrink-0" />
@@ -211,7 +212,7 @@ export default function ReviewPage() {
                                 htmlFor="review-user-name"
                                 className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]"
                             >
-                                Your Name
+                                {t(uiLanguage, "reviewNameLabel")}
                             </label>
                             <input
                                 id="review-user-name"
@@ -253,19 +254,19 @@ export default function ReviewPage() {
                         onClick={handleSubmit}
                         aria-busy={isSubmitting}
                     >
-                        {isSubmitting ? "Sending…" : "Send query →"}
+                        {isSubmitting ? t(uiLanguage, "reviewSending") : t(uiLanguage, "reviewSend")}
                     </Button>
                     <Link
                         href="/record"
                         className="flex items-center justify-center sm:justify-start gap-1 text-sm font-medium text-[#6B6A68] hover:text-[#E85D22] transition-colors whitespace-nowrap px-2 py-2"
                     >
-                        ← Back
+                        {t(uiLanguage, "reviewBack")}
                     </Link>
                 </div>
 
                 {/* Bottom ticker */}
                 <div className="border-t border-[#E8E5DF] pt-3 flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-[#9CA3AF] tracking-[0.05em] uppercase">Step 02 of 03</span>
+                    <span className="text-[11px] font-medium text-[#9CA3AF] tracking-[0.05em] uppercase">{t(uiLanguage, "reviewStep")}</span>
                     <span className="text-[11px] text-[#D5D0C4] tracking-widest">/ / / / /</span>
                 </div>
 
