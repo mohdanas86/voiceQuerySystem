@@ -17,8 +17,12 @@ const sentryOptions = {
   widenClientFileUpload: true,
   transpileClientSDK: true,
   hideSourceMaps: true,
-  disableLogger: true,
   automaticVercelCronJobs: true,
+  webpack: {
+    treeshake: {
+      removeDebugLogging: true,
+    },
+  },
 };
 
 export default withSentryConfig(nextConfig, sentryOptions);
