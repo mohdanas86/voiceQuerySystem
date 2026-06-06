@@ -1,6 +1,6 @@
 /**
  * LanguagePicker.tsx — Component displaying a grid of language selection cards.
- * VoiceBerry | Ulavi Technologies
+ * Ulavi Technologies
  */
 
 "use client";

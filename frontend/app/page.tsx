@@ -1,6 +1,6 @@
 /**
  * page.tsx — Root route (/). Redirects immediately to the record screen.
- * VoiceBerry | Ulavi Technologies
+ * Ulavi Technologies
  */
 
 import { redirect } from "next/navigation";

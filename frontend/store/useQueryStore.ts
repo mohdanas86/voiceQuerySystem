@@ -1,7 +1,7 @@
 /**
  * useQueryStore.ts — Zustand global state store for query, language, and trip state.
  * Persists the user's selected language in localStorage while keeping other fields ephemeral.
- * VoiceBerry | Ulavi Technologies
+ * Ulavi Technologies
  */
 
 import { create } from "zustand";

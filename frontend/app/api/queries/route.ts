@@ -1,14 +1,32 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
 
-import { sendSubmissionEmail } from "@/lib/email";
+import { sendCustomerEmail, sendOpsEmail } from "@/lib/email";
 import { getDatabase } from "@/lib/mongodb";
 import { checkRateLimit } from "@/lib/rateLimit";
 import type { QueryPayload } from "@/types/query";
+import type { SupportedLang } from "@/lib/i18n";
 
 // ── Rate-limit config ────────────────────────────────────────────────────────
 // 5 submissions per IP per 10 minutes.
 const RATE_LIMIT = { limit: 5, windowMs: 10 * 60 * 1000 };
+
+/**
+ * Maps SupportedLang codes to their full English display names.
+ * Used in ops emails to identify which language the user spoke.
+ */
+const LANGUAGE_NAMES: Record<string, string> = {
+  en:   'English',
+  hi:   'Hindi',
+  ta:   'Tamil',
+  te:   'Telugu',
+  kn:   'Kannada',
+  ml:   'Malayalam',
+  bn:   'Bengali',
+  mr:   'Marathi',
+  auto: 'Auto-detected',
+};
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function getClientIp(headersList: Headers): string {
@@ -19,16 +37,33 @@ function getClientIp(headersList: Headers): string {
     );
 }
 
-function validPayload(p: Partial<QueryPayload>): p is QueryPayload {
-    return (
-        typeof p.user_name === "string" && p.user_name.trim().length > 0 &&
-        typeof p.translated_transcript === "string" && p.translated_transcript.trim().length > 0 &&
-        typeof p.phone_full === "string" && p.phone_full.trim().length > 0 &&
-        typeof p.phone_country_code === "string" &&
-        typeof p.phone_number === "string" &&
-        typeof p.client_timestamp === "string" &&
-        typeof p.client_timezone === "string"
-    );
+function validPayload(payload: unknown): payload is QueryPayload {
+  if (!payload || typeof payload !== 'object') return false;
+  const p = payload as Record<string, unknown>;
+
+  return (
+    // Existing required fields
+    typeof p.user_name === 'string' && p.user_name.trim().length > 0 &&
+    typeof p.original_transcript === 'string' && p.original_transcript.trim().length > 0 &&
+    typeof p.translated_transcript === 'string' && p.translated_transcript.trim().length > 0 &&
+    typeof p.phone_full === 'string' && p.phone_full.trim().length > 4 &&
+    typeof p.phone_country_code === 'string' &&
+    typeof p.phone_number === 'string' &&
+    typeof p.client_timestamp === 'string' &&
+    typeof p.client_timezone === 'string' &&
+
+    // New required fields (Phase 3)
+    typeof p.user_email === 'string' && p.user_email.includes('@') && // Basic check; Zod validates on client
+    typeof p.ui_language === 'string' && p.ui_language.length > 0 &&
+
+    // New optional fields — must be present but can be empty strings
+    typeof p.audio_url === 'string' &&
+    typeof p.trip_city === 'string' &&
+    typeof p.trip_dates_from === 'string' &&
+    typeof p.trip_dates_to === 'string' &&
+    typeof p.trip_passengers === 'string' &&
+    typeof p.trip_budget === 'string'
+  );
 }
 
 // ── Route handler ────────────────────────────────────────────────────────────
@@ -77,18 +112,32 @@ export async function POST(request: Request) {
     try {
         const db = await getDatabase();
         const result = await db.collection("query_submissions").insertOne({
-            user_name: payload.user_name.trim(),
-            source_language: payload.source_language ?? "auto",
-            original_transcript: payload.original_transcript ?? "",
+            // ── Existing fields
+            user_name:             payload.user_name.trim(),
+            source_language:       payload.source_language ?? "auto",
+            original_transcript:   payload.original_transcript ?? "",
             translated_transcript: payload.translated_transcript.trim(),
-            phone_country_code: payload.phone_country_code,
-            phone_number: payload.phone_number,
-            phone_full: payload.phone_full.trim(),
-            client_timestamp: payload.client_timestamp,
-            client_timezone: payload.client_timezone,
-            status: "accepted",
-            email_sent: false,
-            created_at: new Date(),
+            phone_country_code:    payload.phone_country_code,
+            phone_number:          payload.phone_number,
+            phone_full:            payload.phone_full.trim(),
+            client_timestamp:      payload.client_timestamp,
+            client_timezone:       payload.client_timezone,
+
+            // ── New fields (Phase 3)
+            ui_language:     payload.ui_language,
+            user_email:      payload.user_email.trim(),
+            audio_url:       payload.audio_url,
+            trip_city:       payload.trip_city,
+            trip_dates_from: payload.trip_dates_from,
+            trip_dates_to:   payload.trip_dates_to,
+            trip_passengers: payload.trip_passengers,
+            trip_budget:     payload.trip_budget,
+
+            // ── Metadata
+            status:              "accepted",
+            customer_email_sent: false,
+            ops_email_sent:      false,
+            created_at:          new Date(),
             ip,
         });
         insertedId = String(result.insertedId);
@@ -101,30 +150,68 @@ export async function POST(request: Request) {
         );
     }
 
-    // 4. Send email AFTER DB write — non-fatal if it fails
+    // 4. Send emails sequentially AFTER DB write — non-fatal if they fail
+    const dbObjectId = new ObjectId(insertedId);
+
+    // ── Customer Email
     try {
-        await sendSubmissionEmail({
-            user_name: payload.user_name.trim(),
-            original_query: payload.original_transcript ?? "",
-            translated_query: payload.translated_transcript.trim(),
-            phone: payload.phone_full.trim(),
-            submitted_at: payload.client_timestamp,
+        await sendCustomerEmail({
+            to_email:        payload.user_email.trim(),
+            user_name:       payload.user_name.trim(),
+            ui_language:     payload.ui_language as SupportedLang,
+            original_query:  payload.original_transcript,
+            trip_city:       payload.trip_city,
+            trip_dates_from: payload.trip_dates_from,
+            trip_dates_to:   payload.trip_dates_to,
+            trip_passengers: payload.trip_passengers,
+            trip_budget:     payload.trip_budget,
+            phone:           payload.phone_full.trim(),
+            submitted_at:    payload.client_timestamp,
         });
 
-        // Mark email as sent in DB (best-effort, don't throw if this fails)
+        // Best-effort status update — non-fatal if this write fails
         try {
-            const { ObjectId } = await import("mongodb");
             const db = await getDatabase();
             await db.collection("query_submissions").updateOne(
-                { _id: new ObjectId(insertedId) },
-                { $set: { email_sent: true, email_sent_at: new Date() } }
+                { _id: dbObjectId },
+                { $set: { customer_email_sent: true, customer_email_sent_at: new Date() } }
             );
-        } catch {
-            console.warn("[api/queries] could not update email_sent flag, continuing.");
+        } catch (updateErr) {
+            console.warn("[api/queries] could not update customer_email_sent flag:", updateErr);
         }
-    } catch (error) {
-        // Email failure is non-fatal — submission is already saved.
-        console.error("[api/queries] email notification failed (submission still accepted)", error);
+    } catch (err: unknown) {
+        console.error("[api/queries] customer email FAILED — submission id:", insertedId, err);
+    }
+
+    // ── Ops Email
+    try {
+        await sendOpsEmail({
+            customer_name:           payload.user_name.trim(),
+            original_query:          payload.original_transcript,
+            original_query_language: LANGUAGE_NAMES[payload.ui_language] ?? "Unknown",
+            english_translation:     payload.translated_transcript.trim(),
+            audio_url:               payload.audio_url,
+            trip_city:               payload.trip_city,
+            trip_dates_from:         payload.trip_dates_from,
+            trip_dates_to:           payload.trip_dates_to,
+            trip_passengers:         payload.trip_passengers,
+            trip_budget:             payload.trip_budget,
+            user_email:              payload.user_email.trim(),
+            phone:                   payload.phone_full.trim(),
+            submitted_at:            payload.client_timestamp,
+        });
+
+        try {
+            const db = await getDatabase();
+            await db.collection("query_submissions").updateOne(
+                { _id: dbObjectId },
+                { $set: { ops_email_sent: true, ops_email_sent_at: new Date() } }
+            );
+        } catch (updateErr) {
+            console.warn("[api/queries] could not update ops_email_sent flag:", updateErr);
+        }
+    } catch (err: unknown) {
+        console.error("[api/queries] ops email FAILED — submission id:", insertedId, err);
     }
 
     // 5. Respond success

@@ -2,7 +2,7 @@
  * TripDetailPopup.tsx — Bottom-sheet modal asking one trip detail question at a time.
  * Renders different input types depending on the field: text for city/passengers/dates,
  * BudgetStarSelector for the budget field.
- * VoiceBerry | Ulavi Technologies
+ * Ulavi Technologies
  */
 
 'use client';

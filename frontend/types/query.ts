@@ -10,6 +10,16 @@ export interface QueryPayload {
     phone_full: string;
     client_timestamp: string;
     client_timezone: string;
+    
+    // New fields (Phase 3)
+    ui_language: string;
+    user_email: string;
+    audio_url: string;
+    trip_city: string;
+    trip_dates_from: string;
+    trip_dates_to: string;
+    trip_passengers: string;
+    trip_budget: string;
 }
 
 export interface QueryResponse {

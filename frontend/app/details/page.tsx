@@ -2,7 +2,7 @@
  * page.tsx — Screen 3: Smart trip detail pop-up orchestrator.
  * Runs extractTripDetails() on the transcript, builds a queue of missing fields,
  * and shows one TripDetailPopup at a time. Navigates to /review when queue is empty.
- * VoiceBerry | Ulavi Technologies
+ * Ulavi Technologies
  */
 
 'use client';

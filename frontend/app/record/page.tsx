@@ -31,7 +31,7 @@ export default function RecordPage() {
         recordingStatus, sourceLanguage, originalTranscript, errorMessage,
         setRecordingStatus, setSourceLanguage, setOriginalTranscript,
         setTranslatedTranscript, setIsTranslating, setErrorMessage,
-        uiLanguage, setUiLanguage,
+        uiLanguage, setUiLanguage, setAudioUrl,
     } = useQueryStore();
 
     const hasMounted = useSyncExternalStore(
@@ -167,7 +167,22 @@ export default function RecordPage() {
                     setOriginalTranscript(original);
                     setTranslatedTranscript(translated);
                     setSourceLanguage(lang);
+
+                    // Auto-detect UI Language Switch
+                    if (uiLanguage === 'auto' && result.language_code) {
+                        const detected = result.language_code as SupportedLang;
+                        const SUPPORTED_LANGUAGES: SupportedLang[] = ['en', 'hi', 'ta', 'te', 'kn', 'ml', 'bn', 'mr'];
+                        if (SUPPORTED_LANGUAGES.includes(detected)) {
+                            setUiLanguage(detected);
+                        }
+                    }
+
                     setRecordingStatus("done");
+
+                    // Trigger parallel non-blocking upload
+                    uploadAudioBlob(blob).then((url) => {
+                        setAudioUrl(url ?? '');
+                    });
                 } catch (err: unknown) {
                     const e = err as { code?: string; audioDuration?: number; message?: string };
                     setRetryCount((c) => c + 1);
@@ -202,7 +217,7 @@ export default function RecordPage() {
             setRecordingStatus("idle");
             stopTracks();
         }
-    }, [isRecording, mediaSupported, sourceLanguage, setErrorMessage, setIsTranslating, setOriginalTranscript, setRecordingStatus, setSourceLanguage, setTranslatedTranscript, uiLanguage]);
+    }, [isRecording, mediaSupported, sourceLanguage, setErrorMessage, setIsTranslating, setOriginalTranscript, setRecordingStatus, setSourceLanguage, setTranslatedTranscript, uiLanguage, setUiLanguage, setAudioUrl]);
 
     const handleStop = useCallback(() => {
         if (!mediaRecorderRef.current || !isRecording) return;
@@ -388,4 +403,36 @@ export default function RecordPage() {
             )}
         </div>
     );
+}
+
+/**
+ * Uploads the recorded audio Blob to Supabase via the /api/audio/upload route.
+ * This is non-blocking and non-fatal — if the upload fails, the submission flow
+ * continues normally, and the ops email will note that audio is unavailable.
+ *
+ * @param blob - The raw audio Blob from MediaRecorder
+ * @returns The public Supabase URL of the uploaded audio, or null on failure
+ */
+async function uploadAudioBlob(blob: Blob): Promise<string | null> {
+    try {
+        const formData = new FormData();
+        formData.append('audio', blob, 'recording.webm');
+
+        const res = await fetch('/api/audio/upload', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!res.ok) {
+            console.warn('[record] audio upload returned non-OK status:', res.status);
+            return null;
+        }
+
+        const data = (await res.json()) as { audioUrl?: string };
+        return data.audioUrl ?? null;
+    } catch (err: unknown) {
+        // Non-fatal — the submission will work without an audio URL
+        console.warn('[record] audio upload failed, continuing without audio URL:', err);
+        return null;
+    }
 }

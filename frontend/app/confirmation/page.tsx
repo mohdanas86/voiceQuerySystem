@@ -98,7 +98,7 @@ export default function ConfirmationPage() {
                         >
                             <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
                             <span className="text-[12px] font-medium text-[#16A34A] tracking-[0.04em]">
-                                Submission confirmed
+                                {t(uiLanguage, "confirmTitle")}
                             </span>
                         </div>
                     </div>

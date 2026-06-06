@@ -10,6 +10,7 @@ import { TranscriptEditor } from "@/components/forms/TranscriptEditor";
 import { PhoneInput } from "@/components/forms/PhoneInput";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { BudgetStarSelector, budgetRatingToString } from "@/components/popups/BudgetStarSelector";
 import { ApiError, submitQuery } from "@/services/api";
 import { useQueryStore } from "@/store/useQueryStore";
 import { getClientTimestamp } from "@/lib/time";
@@ -34,6 +35,16 @@ function resolveErrorMessage(err: unknown): string {
     return "Something went wrong. Please try again.";
 }
 
+// Parse the current tripBudget string back to a star count
+// The string starts with N stars (⭐), so count them
+function parseBudgetStarCount(budgetString: string): number {
+    if (!budgetString) return 0;
+    const starCount = [...budgetString].filter((char) => char === "⭐").length;
+    return Math.min(starCount, 5); // Cap at 5 just in case
+}
+
+const emailSchema = z.string().email();
+
 export default function ReviewPage() {
     const router = useRouter();
 
@@ -45,11 +56,26 @@ export default function ReviewPage() {
         phoneCountryCode, phoneNumber, isTranslating, isSubmitting, errorMessage,
         setUserName, setTranslatedTranscript, setPhoneCountryCode, setPhoneNumber,
         setIsSubmitting, setErrorMessage, reset, uiLanguage,
+        // New fields (Phase 3)
+        tripCity, setTripCity,
+        tripDatesFrom, setTripDatesFrom,
+        tripDatesTo, setTripDatesTo,
+        tripPassengers, setTripPassengers,
+        tripBudget, setTripBudget,
+        userEmail, setUserEmail,
+        audioUrl,
     } = useQueryStore();
 
     // ── All hooks must be declared before any early return ────────────────────
     const [phoneError, setPhoneError] = useState<string | null>(null);
     const [nameError, setNameError] = useState<string | null>(null);
+    const [emailError, setEmailError] = useState<string | null>(null);
+
+    const budgetStarCount = useMemo(() => parseBudgetStarCount(tripBudget), [tripBudget]);
+
+    function handleBudgetChange(rating: number): void {
+        setTripBudget(budgetRatingToString(rating, uiLanguage));
+    }
 
     const phoneSchema = useMemo(() => z.object({
         countryCode: z.string().regex(/^\+\d{1,4}$/),
@@ -64,13 +90,18 @@ export default function ReviewPage() {
         [phoneSchema, phoneCountryCode, phoneNumber]);
 
     const phoneFull = useMemo(
-        () => `${phoneCountryCode} ${phoneNumber}`.trim(),
+        () => `${phoneCountryCode}${phoneNumber}`.trim(),
         [phoneCountryCode, phoneNumber]
     );
+
+    const emailValidation = useMemo(() =>
+        emailSchema.safeParse(userEmail.trim()).success,
+        [userEmail]);
 
     const canSubmit =
         normalizedUserName.length > 1 &&
         phoneValidation &&
+        emailValidation &&
         translatedTranscript.trim().length > 0 &&
         !isSubmitting &&
         !isTranslating;
@@ -96,6 +127,10 @@ export default function ReviewPage() {
             setNameError(t(uiLanguage, "errorName"));
             return;
         }
+        if (!emailValidation) {
+            setEmailError(t(uiLanguage, "errorEmail"));
+            return;
+        }
         if (!phoneValidation) {
             setPhoneError(t(uiLanguage, "errorPhone"));
             return;
@@ -107,6 +142,7 @@ export default function ReviewPage() {
 
         setNameError(null);
         setPhoneError(null);
+        setEmailError(null);
         setErrorMessage(null);
 
         // Lock
@@ -127,12 +163,24 @@ export default function ReviewPage() {
                 phone_full: phoneFull,
                 client_timestamp: timestamp,
                 client_timezone: timezone,
+                // New fields (Phase 3)
+                ui_language: uiLanguage,
+                user_email: userEmail.trim(),
+                audio_url: audioUrl,
+                trip_city: tripCity,
+                trip_dates_from: tripDatesFrom,
+                trip_dates_to: tripDatesTo,
+                trip_passengers: tripPassengers,
+                trip_budget: tripBudget,
             });
 
-            reset();
-            // Set a one-time flag so /confirmation knows it was reached after a
-            // real submission, not by a direct URL visit.
+            // Clear sessionStorage and navigate
             try { sessionStorage.setItem("query_submitted", "1"); } catch { /* private mode */ }
+            
+            // Wait: we call reset() in confirmation handleSubmitAnother, but let's reset here as well
+            // as required by Step 3.4: "After a successful submission, call reset() on the store to clear all trip fields and contact info."
+            reset();
+            
             router.push("/confirmation");
         } catch (err) {
             console.error("[submit] failed", err);
@@ -140,6 +188,17 @@ export default function ReviewPage() {
         } finally {
             submittingRef.current = false;
             setIsSubmitting(false);
+        }
+    };
+
+    // Show inline email validation error as the user types
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setUserEmail(value);
+        if (value.trim().length > 0 && !emailSchema.safeParse(value.trim()).success) {
+            setEmailError(t(uiLanguage, "errorEmail"));
+        } else {
+            setEmailError(null);
         }
     };
 
@@ -202,16 +261,101 @@ export default function ReviewPage() {
                     </div>
                 </Card>
 
-                {/* Card 2 — Contact details */}
+                {/* Card 2 — Trip Details */}
                 <Card padding="lg">
                     <div className="flex flex-col gap-5">
+                        <h2 className="text-xs font-bold tracking-[0.08em] uppercase text-[#111111] border-b border-[#E8E5DF] pb-2">
+                            Trip Details
+                        </h2>
+
+                        {/* Destination */}
+                        <div className="flex flex-col gap-1.5">
+                            <label htmlFor="review-trip-city" className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
+                                {t(uiLanguage, "reviewCityLabel")}
+                            </label>
+                            <input
+                                id="review-trip-city"
+                                type="text"
+                                className="h-11 w-full rounded-xl border border-[#E8E5DF] bg-white px-4 text-sm font-light text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#E85D22] focus:ring-2 focus:ring-[#E85D22]/20 transition-colors"
+                                placeholder={t(uiLanguage, "reviewNotProvided")}
+                                value={tripCity}
+                                onChange={(e) => setTripCity(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Travel dates */}
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
+                                {t(uiLanguage, "reviewDatesLabel")}
+                            </label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-[9px] font-semibold tracking-[0.05em] uppercase text-[#9CA3AF]">
+                                        From Date
+                                    </span>
+                                    <input
+                                        type="date"
+                                        className="h-11 w-full rounded-xl border border-[#E8E5DF] bg-white px-4 text-sm font-light text-[#111111] focus:outline-none focus:border-[#E85D22] focus:ring-2 focus:ring-[#E85D22]/20 transition-colors cursor-pointer"
+                                        value={tripDatesFrom}
+                                        onChange={(e) => setTripDatesFrom(e.target.value)}
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-[9px] font-semibold tracking-[0.05em] uppercase text-[#9CA3AF]">
+                                        To/Return Date
+                                    </span>
+                                    <input
+                                        type="date"
+                                        className="h-11 w-full rounded-xl border border-[#E8E5DF] bg-white px-4 text-sm font-light text-[#111111] focus:outline-none focus:border-[#E85D22] focus:ring-2 focus:ring-[#E85D22]/20 transition-colors cursor-pointer"
+                                        value={tripDatesTo}
+                                        onChange={(e) => setTripDatesTo(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Passengers */}
+                        <div className="flex flex-col gap-1.5">
+                            <label htmlFor="review-trip-passengers" className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
+                                {t(uiLanguage, "reviewPassengersLabel")}
+                            </label>
+                            <input
+                                id="review-trip-passengers"
+                                type="text"
+                                className="h-11 w-full rounded-xl border border-[#E8E5DF] bg-white px-4 text-sm font-light text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#E85D22] focus:ring-2 focus:ring-[#E85D22]/20 transition-colors"
+                                placeholder={t(uiLanguage, "reviewNotProvided")}
+                                value={tripPassengers}
+                                onChange={(e) => setTripPassengers(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Budget Star Selector */}
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
+                                {t(uiLanguage, "reviewBudgetLabel")}
+                            </label>
+                            <div className="rounded-xl border border-[#E8E5DF] bg-[#F9F8F5] p-4 flex flex-col items-center shadow-sm">
+                                <BudgetStarSelector
+                                    value={budgetStarCount}
+                                    onChange={handleBudgetChange}
+                                    lang={uiLanguage}
+                                />
+                            </div>
+                        </div>
+
+                    </div>
+                </Card>
+
+                {/* Card 3 — Contact details */}
+                <Card padding="lg">
+                    <div className="flex flex-col gap-5">
+                        <h2 className="text-xs font-bold tracking-[0.08em] uppercase text-[#111111] border-b border-[#E8E5DF] pb-2">
+                            Contact Details
+                        </h2>
 
                         {/* Name */}
                         <div className="flex flex-col gap-1.5">
-                            <label
-                                htmlFor="review-user-name"
-                                className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]"
-                            >
+                            <label htmlFor="review-user-name" className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
                                 {t(uiLanguage, "reviewNameLabel")}
                             </label>
                             <input
@@ -219,7 +363,7 @@ export default function ReviewPage() {
                                 name="user_name"
                                 type="text"
                                 autoComplete="name"
-                                placeholder="Enter your name"
+                                placeholder={t(uiLanguage, "reviewNameLabel")}
                                 aria-invalid={nameError ? true : undefined}
                                 className="h-11 w-full rounded-xl border border-[#E8E5DF] bg-white px-4 text-sm font-light text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#E85D22] focus:ring-2 focus:ring-[#E85D22]/20 transition-colors"
                                 value={userName}
@@ -227,6 +371,30 @@ export default function ReviewPage() {
                             />
                             {nameError && (
                                 <p className="text-[12px] font-light text-red-600">{nameError}</p>
+                            )}
+                        </div>
+
+                        {/* Divider */}
+                        <div className="h-px bg-[#E8E5DF]" />
+
+                        {/* Email Address */}
+                        <div className="flex flex-col gap-1.5">
+                            <label htmlFor="review-user-email" className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
+                                {t(uiLanguage, "reviewEmailLabel")}
+                            </label>
+                            <input
+                                id="review-user-email"
+                                name="user_email"
+                                type="email"
+                                autoComplete="email"
+                                placeholder={t(uiLanguage, "reviewEmailPlaceholder")}
+                                aria-invalid={emailError ? true : undefined}
+                                className="h-11 w-full rounded-xl border border-[#E8E5DF] bg-white px-4 text-sm font-light text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#E85D22] focus:ring-2 focus:ring-[#E85D22]/20 transition-colors"
+                                value={userEmail}
+                                onChange={handleEmailChange}
+                            />
+                            {emailError && (
+                                <p role="alert" className="text-[12px] font-light text-red-600">{emailError}</p>
                             )}
                         </div>
 
