@@ -73,7 +73,7 @@ export default function RecordPage() {
         setUiLanguage(lang);
         try {
             localStorage.setItem("vb-language-initialized", "true");
-        } catch {}
+        } catch { }
         setShowLanguageModal(false);
     };
 
@@ -396,7 +396,7 @@ export default function RecordPage() {
                                 {t(uiLanguage, "langPickerSubtitle") || "All screens will adapt to your choice."}
                             </p>
                         </div>
-                        
+
                         <LanguagePicker onSelect={handleLanguageSelect} />
                     </div>
                 </div>
