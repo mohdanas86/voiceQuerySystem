@@ -1,7 +1,6 @@
 /**
- * Simple in-memory sliding-window rate limiter.
- * Works per-IP across a single Next.js server process.
- * For multi-instance deployments, swap the Map for Redis.
+ * @deprecated Simple in-memory sliding-window rate limiter.
+ * Swapped out in Phase 4 for Redis-based rate limiting (rateLimitRedis.ts) to support serverless scale.
  */
 
 interface Window {

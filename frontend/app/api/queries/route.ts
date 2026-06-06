@@ -4,13 +4,10 @@ import { ObjectId } from "mongodb";
 
 import { sendCustomerEmail, sendOpsEmail } from "@/lib/email";
 import { getDatabase } from "@/lib/mongodb";
-import { checkRateLimit } from "@/lib/rateLimit";
+import { queryRateLimiter } from "@/lib/rateLimitRedis";
 import type { QueryPayload } from "@/types/query";
 import type { SupportedLang } from "@/lib/i18n";
 
-// ── Rate-limit config ────────────────────────────────────────────────────────
-// 5 submissions per IP per 10 minutes.
-const RATE_LIMIT = { limit: 5, windowMs: 10 * 60 * 1000 };
 
 /**
  * Maps SupportedLang codes to their full English display names.
@@ -71,10 +68,10 @@ export async function POST(request: Request) {
     // 1. Rate-limit check (per IP)
     const headersList = await headers();
     const ip = getClientIp(headersList);
-    const rl = checkRateLimit(`queries:${ip}`, RATE_LIMIT);
+    const rl = await queryRateLimiter.limit(ip);
 
-    if (!rl.allowed) {
-        const retryAfterSec = Math.ceil((rl.resetAt - Date.now()) / 1000);
+    if (!rl.success) {
+        const retryAfterSec = Math.ceil((rl.reset - Date.now()) / 1000);
         console.warn(`[api/queries] rate-limited IP=${ip}`);
         return NextResponse.json(
             { error: "Too many submissions. Please wait and try again.", code: "RATE_LIMITED" },
@@ -83,7 +80,7 @@ export async function POST(request: Request) {
                 headers: {
                     "Retry-After": String(retryAfterSec),
                     "X-RateLimit-Remaining": "0",
-                    "X-RateLimit-Reset": String(Math.ceil(rl.resetAt / 1000)),
+                    "X-RateLimit-Reset": String(Math.ceil(rl.reset / 1000)),
                 },
             }
         );
@@ -225,7 +222,7 @@ export async function POST(request: Request) {
             status: 200,
             headers: {
                 "X-RateLimit-Remaining": String(rl.remaining),
-                "X-RateLimit-Reset": String(Math.ceil(rl.resetAt / 1000)),
+                "X-RateLimit-Reset": String(Math.ceil(rl.reset / 1000)),
             },
         }
     );
