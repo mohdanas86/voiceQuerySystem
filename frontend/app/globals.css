@@ -131,3 +131,17 @@ button {
     .reveal { animation: none; }
     .success-check-path { stroke-dashoffset: 0; }
 }
+
+/* Bottom sheet animation for TripDetailPopup */
+@keyframes vb-sheet-up {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes vb-sheet-down {
+    from { transform: translateY(0);    opacity: 1; }
+    to   { transform: translateY(100%); opacity: 0; }
+}
+
+.vb-sheet-enter { animation: vb-sheet-up   200ms ease-out both; }
+.vb-sheet-exit  { animation: vb-sheet-down 150ms ease-in  both; }

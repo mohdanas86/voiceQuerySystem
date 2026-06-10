@@ -1,4 +1,6 @@
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { transcribeRateLimiter } from "@/lib/rateLimitRedis";
 
 interface TranscriptResponse {
     id?: string;
@@ -17,6 +19,20 @@ const MAX_POLLS = 30;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * Extracts the client IP address from the request headers list.
+ * 
+ * @param headersList - Next.js headers helper object
+ * @returns The resolved client IP address string
+ */
+function getClientIp(headersList: Headers): string {
+    return (
+        headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+        headersList.get("x-real-ip") ??
+        "unknown"
+    );
+}
+
 const readErrorDetail = async (response: Response) => {
     try {
         const data = (await response.json()) as { error?: string };
@@ -31,6 +47,27 @@ const readErrorDetail = async (response: Response) => {
 };
 
 export async function POST(request: Request) {
+    // 0. Rate-limit check (per IP)
+    const headersList = await headers();
+    const ip = getClientIp(headersList);
+    const rl = await transcribeRateLimiter.limit(ip);
+
+    if (!rl.success) {
+        const retryAfterSec = Math.ceil((rl.reset - Date.now()) / 1000);
+        console.warn(`[api/aai/transcribe] rate-limited IP=${ip}`);
+        return NextResponse.json(
+            { error: "Too many transcription requests. Please wait and try again.", code: "RATE_LIMITED" },
+            {
+                status: 429,
+                headers: {
+                    "Retry-After": String(retryAfterSec),
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": String(Math.ceil(rl.reset / 1000)),
+                },
+            }
+        );
+    }
+
     const contentType = request.headers.get("content-type") ?? "";
     if (!contentType.includes("multipart/form-data")) {
         return NextResponse.json({ error: "Expected multipart/form-data", code: "BAD_CONTENT_TYPE" }, { status: 400 });
