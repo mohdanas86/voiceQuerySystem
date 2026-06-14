@@ -15,7 +15,6 @@ import { extractTripDetails, type TripDetailField, type TripDetails } from '@/li
 import { TripDetailPopup } from '@/components/popups/TripDetailPopup';
 import { SuccessCheckmark } from '@/components/feedback/SuccessCheckmark';
 import { Card } from '@/components/ui/card';
-import { type SupportedLang } from '@/lib/i18n';
 import { useTranslation } from '@/hooks/useTranslation';
 
 type DetailsPageStatus = 'analysing' | 'popups' | 'all-detected' | 'done';

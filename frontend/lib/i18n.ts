@@ -1,7 +1,6 @@
 /**
- * i18n.ts — Static localisation dictionary for all 8 supported languages.
- * All UI strings live here. Never hardcode text in JSX — always use t().
- * VoiceBerry | Ulavi Technologies
+ * i18n.ts — Localisation dictionary for all supported languages.
+ 
  */
 
 export type SupportedLang =

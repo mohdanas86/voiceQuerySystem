@@ -1,21 +1,45 @@
-import { CountryCodeSelect } from "@/components/forms/CountryCodeSelect";
+/**
+ * PhoneInput.tsx — Component for entering and validating customer phone number.
+ 
+ */
 
+'use client';
+// Client component: interactive phone input selector and text field.
+
+import React from 'react';
+import { CountryCodeSelect } from '@/components/forms/CountryCodeSelect';
+
+/**
+ * PhoneInputProps — props for the PhoneInput component.
+ 
+ */
 interface PhoneInputProps {
+    /** The country dialing prefix (e.g. '+91'). */
     countryCode: string;
+    /** The national phone number digits. */
     number: string;
+    /** Callback fired when the country code is changed. */
     onCountryCodeChange: (value: string) => void;
+    /** Callback fired when the phone number digits are changed. */
     onNumberChange: (value: string) => void;
+    /** An optional validation error message to display under the input. */
     error?: string;
 }
 
+/**
+ * Renders a phone input selector alongside a text field for national mobile numbers.
+ *
+ * @param props - Component props containing values, callbacks, and error message
+ * @returns React JSX element representing the phone input fields
+ */
 export function PhoneInput({
     countryCode,
     number,
     onCountryCodeChange,
     onNumberChange,
     error,
-}: PhoneInputProps) {
-    const errorId = "phone-input-error";
+}: PhoneInputProps): React.JSX.Element {
+    const errorId = 'phone-input-error';
 
     return (
         <div className="flex min-w-0 flex-col gap-1.5">
@@ -41,7 +65,7 @@ export function PhoneInput({
                     aria-invalid={error ? true : undefined}
                     aria-describedby={error ? errorId : undefined}
                     value={number}
-                    onChange={(event) => onNumberChange(event.target.value)}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>): void => onNumberChange(event.target.value)}
                 />
             </div>
             {error && (

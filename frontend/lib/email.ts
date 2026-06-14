@@ -1,19 +1,27 @@
 /**
  * email.ts — Server-side email sending via EmailJS REST API.
- * Exports: sendCustomerEmail (user's language), sendOpsEmail (always English).
- * Ulavi Technologies
+ 
  */
 
 // ── SERVER ONLY ───────────────────────────────────────────────────────────────
-// 1. Never import this file from client components.
-// 2. Never prefix keys used here with NEXT_PUBLIC_.
-// 3. Never log email addresses, phone numbers, or transcript content.
+// This file runs on the server (Next.js API route). Rules:
+// 1. Do NOT import any browser APIs (window, document, navigator, MediaRecorder).
+// 2. Do NOT prefix environment variables with NEXT_PUBLIC_ — they will be
+//    exposed to the browser bundle and that is a security vulnerability.
+// 3. Do NOT import Zustand store — server has no access to client state.
+// 4. Keep secrets (ASSEMBLYAI_API_KEY, MONGODB_URI, etc.) in process.env only.
 
 import { t } from '@/lib/i18n';
 import type { SupportedLang } from '@/lib/i18n';
 import { translateText } from '@/lib/translate';
 
-/** Helper to translate a key or dynamic text to target lang on the server. */
+/**
+ * Translates a static localization key or dynamic text to the target language on the server.
+ *
+ * @param text - The text to translate
+ * @param targetLang - The destination language code
+ * @returns The translated string, or the original text if target language is English or statically mapped
+ */
 async function translateLabel(text: string, targetLang: string): Promise<string> {
   if (targetLang === 'en' || targetLang === 'hi' || targetLang === 'ta' || targetLang === 'auto') {
     return text;
@@ -21,13 +29,19 @@ async function translateLabel(text: string, targetLang: string): Promise<string>
   try {
     const result = await translateText(text, 'en', targetLang);
     return result || text;
-  } catch (err) {
-    console.warn(`[email] Failed to translate "${text}" to ${targetLang}:`, err);
+  } catch (err: unknown) {
+    console.warn(`[lib/email] Failed to translate "${text}" to ${targetLang}:`, err);
     return text;
   }
 }
 
-/** Helper to translate text to English for Ops Email if the source UI language is not English. */
+/**
+ * Translates a given user-input field (such as city name or passenger counts) to English.
+ *
+ * @param text - The raw text content in the user's language
+ * @param uiLang - The user's active UI language code
+ * @returns The translated English string, or original text if the UI language is already English or translation fails
+ */
 async function translateToEnglish(text: string, uiLang: string): Promise<string> {
   const trimmed = text.trim();
   if (!trimmed || uiLang === 'en') {
@@ -37,8 +51,8 @@ async function translateToEnglish(text: string, uiLang: string): Promise<string>
     const source = (uiLang === 'auto' || !uiLang) ? 'auto' : uiLang;
     const result = await translateText(trimmed, source, 'en');
     return result || text;
-  } catch (err) {
-    console.warn(`[email] Failed to translate "${text}" to en:`, err);
+  } catch (err: unknown) {
+    console.warn(`[lib/email] Failed to translate "${text}" to en:`, err);
     return text;
   }
 }
@@ -46,8 +60,10 @@ async function translateToEnglish(text: string, uiLang: string): Promise<string>
 /** EmailJS REST API endpoint for sending emails. */
 const EMAILJS_API_URL = 'https://api.emailjs.com/api/v1.0/email/send';
 
+const EMAIL_SEPARATOR_LENGTH = 45;
+
 /** Separator line used in email body formatting. */
-const EMAIL_SEPARATOR = '─'.repeat(45);
+const EMAIL_SEPARATOR = '─'.repeat(EMAIL_SEPARATOR_LENGTH);
 
 /** Placeholder shown when a field was not provided by the user. */
 const NOT_PROVIDED_EN = 'Not provided';
@@ -127,7 +143,7 @@ interface OpsEmailParams {
  */
 export async function sendCustomerEmail(params: CustomerEmailParams): Promise<void> {
   const lang = params.ui_language;
-  
+
   // Resolve labels (translated or static)
   const notProvided = await translateLabel(t(lang, 'reviewNotProvided'), lang);
   const confirmBodyText = await translateLabel(t(lang, 'confirmBody'), lang);

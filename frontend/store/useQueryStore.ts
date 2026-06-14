@@ -1,7 +1,6 @@
 /**
  * useQueryStore.ts — Zustand global state store for query, language, and trip state.
- * Persists the user's selected language in localStorage while keeping other fields ephemeral.
- * Ulavi Technologies
+ * 
  */
 
 import { create } from "zustand";
@@ -173,8 +172,8 @@ export const useQueryStore = create<QueryState>()(
             onRehydrateStorage: () => (state, error) => {
                 if (!error && state) {
                     // Migrate old uiLanguage to preferredLanguage if preferredLanguage is not set
-                    if (!state.preferredLanguage && (state as any).uiLanguage) {
-                        state.preferredLanguage = (state as any).uiLanguage;
+                    if (!state.preferredLanguage && state.uiLanguage) {
+                        state.preferredLanguage = state.uiLanguage;
                     }
                     const preferred = state.preferredLanguage || "auto";
                     state.uiLanguage = preferred;

@@ -1,6 +1,12 @@
-"use client";
+/**
+ * page.tsx — Review screen where users view, edit, and submit travel queries.
+ 
+ */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+"use client";
+// Client component: uses Zustand store, router, and page hooks.
+
+import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
@@ -21,10 +27,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 function parsePassengerCounts(passengersString: string) {
     const defaultVal = { adults: 1, childrenCount: 0 };
     if (!passengersString) return defaultVal;
-    
+
     let adults = 1;
     let childrenCount = 0;
-    
+
     const adultMatch = passengersString.match(/(\d+)\s*(?:adult|वयस्क|பெரியவர்)/i);
     if (adultMatch) {
         adults = parseInt(adultMatch[1], 10);
@@ -34,12 +40,12 @@ function parsePassengerCounts(passengersString: string) {
             adults = parseInt(genericMatch[1], 10);
         }
     }
-    
+
     const childMatch = passengersString.match(/(\d+)\s*(?:child|बच्चा|குழந்தை|बच्चे|குழந்)/i);
     if (childMatch) {
         childrenCount = parseInt(childMatch[1], 10);
     }
-    
+
     return { adults, childrenCount };
 }
 
@@ -72,7 +78,17 @@ function parseBudgetStarCount(budgetString: string): number {
 
 const emailSchema = z.string().email();
 
-export default function ReviewPage() {
+// Debounce delay for user input in original transcript editor
+const DEBOUNCE_DELAY_MS = 800;
+
+/**
+ * ReviewPage component — displays travel form details extracted from voice transcript,
+ * allowing users to edit fields, correct their original query with real-time translation,
+ * and submit the final query.
+ *
+ * @returns React JSX element representing the entire review screen
+ */
+export default function ReviewPage(): React.JSX.Element | null {
     const router = useRouter();
 
     // Double-submit guard (ref so it doesn't trigger re-render)
@@ -99,20 +115,20 @@ export default function ReviewPage() {
     const [phoneError, setPhoneError] = useState<string | null>(null);
     const [nameError, setNameError] = useState<string | null>(null);
     const [emailError, setEmailError] = useState<string | null>(null);
-    const [hasMounted, setHasMounted] = useState(false);
+    const hasMounted = useSyncExternalStore(
+        () => () => { },
+        () => true,
+        () => false
+    );
 
     const [debouncedTranscript, setDebouncedTranscript] = useState(originalTranscript);
     const lastTranslatedRef = useRef(originalTranscript);
-
-    useEffect(() => {
-        setHasMounted(true);
-    }, []);
 
     // Debounce originalTranscript changes
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedTranscript(originalTranscript);
-        }, 800);
+        }, DEBOUNCE_DELAY_MS);
         return () => clearTimeout(timer);
     }, [originalTranscript]);
 
@@ -169,26 +185,26 @@ export default function ReviewPage() {
     }, [tripPassengers]);
 
     const handleAdultsChange = (newAdults: number) => {
-        const childText = childrenCount === 0 
-          ? '' 
-          : childrenCount === 1 
-            ? (uiLanguage === 'hi' ? '1 बच्चा' : uiLanguage === 'ta' ? '1 குழந்தை' : '1 child')
-            : `${childrenCount} ${uiLanguage === 'hi' ? 'बच्चे' : uiLanguage === 'ta' ? 'குழந்தைகள்' : 'children'}`;
-        const adultText = newAdults === 1 
-          ? (uiLanguage === 'hi' ? '1 वयस्क' : uiLanguage === 'ta' ? '1 பெரியவர்' : '1 adult') 
-          : `${newAdults} ${uiLanguage === 'hi' ? 'वयस्क' : uiLanguage === 'ta' ? 'பெரியவர்கள்' : 'adults'}`;
+        const childText = childrenCount === 0
+            ? ''
+            : childrenCount === 1
+                ? (uiLanguage === 'hi' ? '1 बच्चा' : uiLanguage === 'ta' ? '1 குழந்தை' : '1 child')
+                : `${childrenCount} ${uiLanguage === 'hi' ? 'बच्चे' : uiLanguage === 'ta' ? 'குழந்தைகள்' : 'children'}`;
+        const adultText = newAdults === 1
+            ? (uiLanguage === 'hi' ? '1 वयस्क' : uiLanguage === 'ta' ? '1 பெரியவர்' : '1 adult')
+            : `${newAdults} ${uiLanguage === 'hi' ? 'वयस्क' : uiLanguage === 'ta' ? 'பெரியவர்கள்' : 'adults'}`;
         setTripPassengers(childText ? `${adultText}, ${childText}` : adultText);
     };
 
     const handleChildrenChange = (newChildren: number) => {
-        const adultText = adults === 1 
-          ? (uiLanguage === 'hi' ? '1 वयस्क' : uiLanguage === 'ta' ? '1 பெரியவர்' : '1 adult') 
-          : `${adults} ${uiLanguage === 'hi' ? 'वयस्क' : uiLanguage === 'ta' ? 'பெரியவர்கள்' : 'adults'}`;
-        const childText = newChildren === 0 
-          ? '' 
-          : newChildren === 1 
-            ? (uiLanguage === 'hi' ? '1 बच्चा' : uiLanguage === 'ta' ? '1 குழந்தை' : '1 child')
-            : `${newChildren} ${uiLanguage === 'hi' ? 'बच्चे' : uiLanguage === 'ta' ? 'குழந்தைகள்' : 'children'}`;
+        const adultText = adults === 1
+            ? (uiLanguage === 'hi' ? '1 वयस्क' : uiLanguage === 'ta' ? '1 பெரியவர்' : '1 adult')
+            : `${adults} ${uiLanguage === 'hi' ? 'वयस्क' : uiLanguage === 'ta' ? 'பெரியவர்கள்' : 'adults'}`;
+        const childText = newChildren === 0
+            ? ''
+            : newChildren === 1
+                ? (uiLanguage === 'hi' ? '1 बच्चा' : uiLanguage === 'ta' ? '1 குழந்தை' : '1 child')
+                : `${newChildren} ${uiLanguage === 'hi' ? 'बच्चे' : uiLanguage === 'ta' ? 'குழந்தைகள்' : 'children'}`;
         setTripPassengers(childText ? `${adultText}, ${childText}` : adultText);
     };
 
@@ -297,11 +313,11 @@ export default function ReviewPage() {
 
             // Clear sessionStorage and navigate
             try { sessionStorage.setItem("query_submitted", "1"); } catch { /* private mode */ }
-            
+
             // Wait: we call reset() in confirmation handleSubmitAnother, but let's reset here as well
             // as required by Step 3.4: "After a successful submission, call reset() on the store to clear all trip fields and contact info."
             reset();
-            
+
             router.push("/confirmation");
         } catch (err) {
             console.error("[submit] failed", err);
