@@ -1,7 +1,7 @@
 # Project Brief — Voice-Based Query Submission System
 
 **Ulavi Technologies · Web platform**  
-**Author:** Anas Alam — SDE
+**Author:** [Anas Alam](https://linkedin.com/in/anas86/) — SDE
 
 ---
 

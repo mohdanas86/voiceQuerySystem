@@ -2,7 +2,7 @@
 
 **Project:** Voice-Based Travel Query Submission System  
 **Company:** Ulavi Technologies  
-**Author:** Anas Alam — SDE  
+**Author:** [Anas Alam](https://linkedin.com/in/anas86/) — SDE  
 **Target:** 100,000+ concurrent users | Zero paid services (free tiers only)
 
 ---
@@ -108,4 +108,4 @@ UI strings are fully localised for each language; pages are dynamically translat
 ---
 
 *Ulavi Technologies — Confidential*  
-*Questions: Anas Alam — SDE*
+*Questions: [Anas Alam](https://linkedin.com/in/anas86/) — SDE*

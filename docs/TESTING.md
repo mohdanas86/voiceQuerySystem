@@ -1,4 +1,4 @@
-# Testing & Demo Checklist (checked by Anas Alam)
+# Testing & Demo Checklist (checked by [Anas Alam](https://linkedin.com/in/anas86/))
 
 This is the practical checklist I use before a demo or submission. Follow it step-by-step and mark items as you verify them.
 

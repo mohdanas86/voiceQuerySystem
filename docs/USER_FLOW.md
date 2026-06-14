@@ -1,4 +1,4 @@
-## User Flow (notes by Anas Alam)
+## User Flow (notes by [Anas Alam](https://linkedin.com/in/anas86/))
 
 Overview:
 

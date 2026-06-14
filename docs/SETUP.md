@@ -1,4 +1,4 @@
-# Setup Guide (Notes by Anas Alam — SDE)
+# Setup Guide (Notes by [Anas Alam](https://linkedin.com/in/anas86/) — SDE)
 
 > **Last updated:** Reflects 72-language support, debounced auto-translation, server-side EmailJS, and dual email templates.
 

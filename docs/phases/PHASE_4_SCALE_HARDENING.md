@@ -1,4 +1,4 @@
-﻿# Phase 4 â€” Scale Hardening + Production Polish
+# Phase 4 â€” Scale Hardening + Production Polish
 
 **Goal:** Make the application production-ready for 100K+ concurrent users. Replace the in-memory rate limiter with Upstash Redis, set up MongoDB collection indexes, upgrade the translation API with DeepL as the primary engine and MyMemory as a fallback, configure Sentry for error monitoring, and establish the final production environment variables.
 
@@ -505,5 +505,4 @@ Execute these verification checks before marking the implementation project as c
 ---
 
 *This document is the property of Ulavi Technologies. Confidential.*  
-*Questions? Contact Anas Alam â€” SDE.*
-
+*Questions? Contact [Anas Alam](https://linkedin.com/in/anas86/) — SDE.*
