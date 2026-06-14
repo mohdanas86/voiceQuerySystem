@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
+import { Plus, Minus } from "lucide-react";
 
 import { ErrorBanner } from "@/components/feedback/ErrorBanner";
 import { TranscriptEditor } from "@/components/forms/TranscriptEditor";
@@ -15,6 +16,32 @@ import { ApiError, submitQuery } from "@/services/api";
 import { useQueryStore } from "@/store/useQueryStore";
 import { getClientTimestamp } from "@/lib/time";
 import { t } from "@/lib/i18n";
+
+// Parsers for passenger counts (adults, children)
+function parsePassengerCounts(passengersString: string) {
+    const defaultVal = { adults: 1, childrenCount: 0 };
+    if (!passengersString) return defaultVal;
+    
+    let adults = 1;
+    let childrenCount = 0;
+    
+    const adultMatch = passengersString.match(/(\d+)\s*(?:adult|वयस्क|பெரியவர்)/i);
+    if (adultMatch) {
+        adults = parseInt(adultMatch[1], 10);
+    } else {
+        const genericMatch = passengersString.match(/^(\d+)/);
+        if (genericMatch) {
+            adults = parseInt(genericMatch[1], 10);
+        }
+    }
+    
+    const childMatch = passengersString.match(/(\d+)\s*(?:child|बच्चा|குழந்தை|बच्चे|குழந்)/i);
+    if (childMatch) {
+        childrenCount = parseInt(childMatch[1], 10);
+    }
+    
+    return { adults, childrenCount };
+}
 
 // Human-readable messages per server error code
 function resolveErrorMessage(err: unknown): string {
@@ -75,6 +102,34 @@ export default function ReviewPage() {
     useEffect(() => {
         setHasMounted(true);
     }, []);
+
+    const { adults, childrenCount } = useMemo(() => {
+        return parsePassengerCounts(tripPassengers);
+    }, [tripPassengers]);
+
+    const handleAdultsChange = (newAdults: number) => {
+        const childText = childrenCount === 0 
+          ? '' 
+          : childrenCount === 1 
+            ? (uiLanguage === 'hi' ? '1 बच्चा' : uiLanguage === 'ta' ? '1 குழந்தை' : '1 child')
+            : `${childrenCount} ${uiLanguage === 'hi' ? 'बच्चे' : uiLanguage === 'ta' ? 'குழந்தைகள்' : 'children'}`;
+        const adultText = newAdults === 1 
+          ? (uiLanguage === 'hi' ? '1 वयस्क' : uiLanguage === 'ta' ? '1 பெரியவர்' : '1 adult') 
+          : `${newAdults} ${uiLanguage === 'hi' ? 'वयस्क' : uiLanguage === 'ta' ? 'பெரியவர்கள்' : 'adults'}`;
+        setTripPassengers(childText ? `${adultText}, ${childText}` : adultText);
+    };
+
+    const handleChildrenChange = (newChildren: number) => {
+        const adultText = adults === 1 
+          ? (uiLanguage === 'hi' ? '1 वयस्क' : uiLanguage === 'ta' ? '1 பெரியவர்' : '1 adult') 
+          : `${adults} ${uiLanguage === 'hi' ? 'वयस्क' : uiLanguage === 'ta' ? 'பெரியவர்கள்' : 'adults'}`;
+        const childText = newChildren === 0 
+          ? '' 
+          : newChildren === 1 
+            ? (uiLanguage === 'hi' ? '1 बच्चा' : uiLanguage === 'ta' ? '1 குழந்தை' : '1 child')
+            : `${newChildren} ${uiLanguage === 'hi' ? 'बच्चे' : uiLanguage === 'ta' ? 'குழந்தைகள்' : 'children'}`;
+        setTripPassengers(childText ? `${adultText}, ${childText}` : adultText);
+    };
 
     const budgetStarCount = useMemo(() => parseBudgetStarCount(tripBudget), [tripBudget]);
 
@@ -321,17 +376,83 @@ export default function ReviewPage() {
 
                         {/* Passengers */}
                         <div className="flex flex-col gap-1.5">
-                            <label htmlFor="review-trip-passengers" className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
+                            <label className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
                                 {t(uiLanguage, "reviewPassengersLabel")}
                             </label>
-                            <input
-                                id="review-trip-passengers"
-                                type="text"
-                                className="h-11 w-full rounded-xl border border-[#E8E5DF] bg-white px-4 text-sm font-light text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#E85D22] focus:ring-2 focus:ring-[#E85D22]/20 transition-colors"
-                                placeholder={t(uiLanguage, "reviewNotProvided")}
-                                value={tripPassengers}
-                                onChange={(e) => setTripPassengers(e.target.value)}
-                            />
+                            <div className="flex flex-col gap-4 w-full bg-[#F9F8F5] p-5 rounded-2xl border border-[#E8E5DF] shadow-sm">
+                                {/* Adults Row */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col text-left">
+                                        <span className="text-sm font-semibold text-[#111111]">
+                                            {t(uiLanguage, 'popupAdultsLabel')}
+                                        </span>
+                                        <span className="text-[11px] text-[#6B6A68] font-light mt-0.5">
+                                            {uiLanguage === 'hi' ? '12 वर्ष से अधिक' : uiLanguage === 'ta' ? '12 வயதிற்கு மேல்' : 'Ages 13 or above'}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-4 bg-white border border-[#E8E5DF] rounded-xl px-2 py-1 shadow-sm">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleAdultsChange(Math.max(1, adults - 1))}
+                                            disabled={adults <= 1}
+                                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-[#E8E5DF] text-[#111111] hover:bg-[#E85D22]/5 hover:border-[#E85D22]/30 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all cursor-pointer font-bold text-lg select-none"
+                                            aria-label="Decrease adults"
+                                        >
+                                            <Minus className="w-4 h-4 text-[#111111]" />
+                                        </button>
+                                        <span className="text-base font-semibold min-w-[20px] text-center font-mono select-none">
+                                            {adults}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleAdultsChange(Math.min(10, adults + 1))}
+                                            disabled={adults >= 10}
+                                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-[#E8E5DF] text-[#111111] hover:bg-[#E85D22]/5 hover:border-[#E85D22]/30 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all cursor-pointer font-bold text-lg select-none"
+                                            aria-label="Increase adults"
+                                        >
+                                            <Plus className="w-4 h-4 text-[#111111]" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Divider */}
+                                <div className="h-px bg-[#E8E5DF]/60" />
+
+                                {/* Children Row */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col text-left">
+                                        <span className="text-sm font-semibold text-[#111111]">
+                                            {t(uiLanguage, 'popupChildrenLabel')}
+                                        </span>
+                                        <span className="text-[11px] text-[#6B6A68] font-light mt-0.5">
+                                            {uiLanguage === 'hi' ? '0 से 12 वर्ष' : uiLanguage === 'ta' ? '0 முதல் 12 வயது' : 'Ages 0 to 12'}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-4 bg-white border border-[#E8E5DF] rounded-xl px-2 py-1 shadow-sm">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleChildrenChange(Math.max(0, childrenCount - 1))}
+                                            disabled={childrenCount <= 0}
+                                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-[#E8E5DF] text-[#111111] hover:bg-[#E85D22]/5 hover:border-[#E85D22]/30 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all cursor-pointer font-bold text-lg select-none"
+                                            aria-label="Decrease children"
+                                        >
+                                            <Minus className="w-4 h-4 text-[#111111]" />
+                                        </button>
+                                        <span className="text-base font-semibold min-w-[20px] text-center font-mono select-none">
+                                            {childrenCount}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleChildrenChange(Math.min(10, childrenCount + 1))}
+                                            disabled={childrenCount >= 10}
+                                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-[#E8E5DF] text-[#111111] hover:bg-[#E85D22]/5 hover:border-[#E85D22]/30 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all cursor-pointer font-bold text-lg select-none"
+                                            aria-label="Increase children"
+                                        >
+                                            <Plus className="w-4 h-4 text-[#111111]" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Budget Star Selector */}
