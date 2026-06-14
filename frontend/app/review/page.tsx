@@ -70,6 +70,11 @@ export default function ReviewPage() {
     const [phoneError, setPhoneError] = useState<string | null>(null);
     const [nameError, setNameError] = useState<string | null>(null);
     const [emailError, setEmailError] = useState<string | null>(null);
+    const [hasMounted, setHasMounted] = useState(false);
+
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
 
     const budgetStarCount = useMemo(() => parseBudgetStarCount(tripBudget), [tripBudget]);
 
@@ -202,9 +207,9 @@ export default function ReviewPage() {
         }
     };
 
-    // ── Guard: render nothing while redirect is pending ───────────────────────
-    // Prevents a flash of the empty form before useEffect fires.
-    if (!originalTranscript.trim()) return null;
+    // ── Guard: render nothing while redirect is pending or before mount ───────
+    // Prevents a flash of the empty form before useEffect fires and avoids hydration mismatches.
+    if (!hasMounted || !originalTranscript.trim()) return null;
 
     return (
         <div className="pt-12 min-h-screen bg-[#F4F1EB]">

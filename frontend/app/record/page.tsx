@@ -31,7 +31,7 @@ export default function RecordPage() {
         recordingStatus, sourceLanguage, originalTranscript, errorMessage,
         setRecordingStatus, setSourceLanguage, setOriginalTranscript,
         setTranslatedTranscript, setIsTranslating, setErrorMessage,
-        uiLanguage, setUiLanguage, setAudioUrl,
+        uiLanguage, setUiLanguage, setAudioUrl, setDetectedLanguage,
     } = useQueryStore();
 
     const hasMounted = useSyncExternalStore(
@@ -173,7 +173,7 @@ export default function RecordPage() {
                         const detected = result.language_code as SupportedLang;
                         const SUPPORTED_LANGUAGES: SupportedLang[] = ['en', 'hi', 'ta', 'te', 'kn', 'ml', 'bn', 'mr'];
                         if (SUPPORTED_LANGUAGES.includes(detected)) {
-                            setUiLanguage(detected);
+                            setDetectedLanguage(detected);
                         }
                     }
 
@@ -217,7 +217,7 @@ export default function RecordPage() {
             setRecordingStatus("idle");
             stopTracks();
         }
-    }, [isRecording, mediaSupported, sourceLanguage, setErrorMessage, setIsTranslating, setOriginalTranscript, setRecordingStatus, setSourceLanguage, setTranslatedTranscript, uiLanguage, setUiLanguage, setAudioUrl]);
+    }, [isRecording, mediaSupported, sourceLanguage, setErrorMessage, setIsTranslating, setOriginalTranscript, setRecordingStatus, setSourceLanguage, setTranslatedTranscript, uiLanguage, setDetectedLanguage, setAudioUrl]);
 
     const handleStop = useCallback(() => {
         if (!mediaRecorderRef.current || !isRecording) return;
@@ -245,6 +245,17 @@ export default function RecordPage() {
 
     const handleToggle = () => { if (isRecording) handleStop(); else handleStart(); };
     const canContinue = originalTranscript.trim().length > 0;
+
+    if (!hasMounted) {
+        return (
+            <div className="pt-12 min-h-screen bg-[#F4F1EB] flex items-center justify-center">
+                <div className="animate-pulse flex flex-col items-center gap-4">
+                    <div className="h-8 w-48 bg-gray-200/50 rounded-md" />
+                    <div className="h-4 w-64 bg-gray-200/50 rounded-md" />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="pt-12 min-h-screen bg-[#F4F1EB]">

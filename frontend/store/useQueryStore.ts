@@ -38,6 +38,9 @@ export interface QueryState {
     audioUrl: string;
 
     // ── Persisted Language State ─────────────────────────────────────────────
+    preferredLanguage: SupportedLang;
+
+    // ── Ephemeral Language State ─────────────────────────────────────────────
     uiLanguage: SupportedLang;
 
     // ── Setters ──────────────────────────────────────────────────────────────
@@ -67,9 +70,10 @@ export interface QueryState {
 
     // Setter for persisted language
     setUiLanguage: (lang: SupportedLang) => void;
+    setDetectedLanguage: (lang: SupportedLang) => void;
 
     // ── Actions ──────────────────────────────────────────────────────────────
-    /** Resets all ephemeral user entry fields to initial state (preserves persisted uiLanguage). */
+    /** Resets all ephemeral user entry fields to initial state (preserves persisted preferredLanguage). */
     reset: () => void;
 }
 
@@ -91,13 +95,14 @@ const initialEphemeralState = {
     tripBudget: "",
     userEmail: "",
     audioUrl: "",
+    uiLanguage: "auto" as SupportedLang,
 };
 
 export const useQueryStore = create<QueryState>()(
     persist(
         (set) => ({
+            preferredLanguage: "auto" as SupportedLang,
             ...initialEphemeralState,
-            uiLanguage: "auto" as SupportedLang,
 
             // Setters for recording & request status
             setRecordingStatus: (recordingStatus) => set({ recordingStatus }),
@@ -127,16 +132,45 @@ export const useQueryStore = create<QueryState>()(
             setAudioUrl: (audioUrl) => set({ audioUrl }),
 
             // Setter for UI Language
-            setUiLanguage: (uiLanguage) => set({ uiLanguage, sourceLanguage: uiLanguage }),
+            setUiLanguage: (uiLanguage) => set({
+                preferredLanguage: uiLanguage,
+                uiLanguage,
+                sourceLanguage: uiLanguage,
+            }),
+
+            setDetectedLanguage: (detectedLanguage) => set((state) => {
+                if (state.preferredLanguage === "auto") {
+                    return {
+                        uiLanguage: detectedLanguage,
+                        sourceLanguage: detectedLanguage,
+                    };
+                }
+                return {};
+            }),
 
             // Reset action
-            reset: () => set({ ...initialEphemeralState }),
+            reset: () => set((state) => ({
+                ...initialEphemeralState,
+                uiLanguage: state.preferredLanguage || "auto",
+                sourceLanguage: state.preferredLanguage || "auto",
+            })),
         }),
         {
             name: "vb-query-store",
-            // Only persist language preference across sessions.
+            // Only persist preferredLanguage across sessions.
             // Transcripts, contact details, and trip parameters must be lost on page reload for privacy.
-            partialize: (state) => ({ uiLanguage: state.uiLanguage }),
+            partialize: (state) => ({ preferredLanguage: state.preferredLanguage }),
+            onRehydrateStorage: () => (state, error) => {
+                if (!error && state) {
+                    // Migrate old uiLanguage to preferredLanguage if preferredLanguage is not set
+                    if (!state.preferredLanguage && (state as any).uiLanguage) {
+                        state.preferredLanguage = (state as any).uiLanguage;
+                    }
+                    const preferred = state.preferredLanguage || "auto";
+                    state.uiLanguage = preferred;
+                    state.sourceLanguage = preferred;
+                }
+            },
         }
     )
 );
