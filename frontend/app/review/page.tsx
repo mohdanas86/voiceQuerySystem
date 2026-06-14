@@ -101,9 +101,68 @@ export default function ReviewPage() {
     const [emailError, setEmailError] = useState<string | null>(null);
     const [hasMounted, setHasMounted] = useState(false);
 
+    const [debouncedTranscript, setDebouncedTranscript] = useState(originalTranscript);
+    const lastTranslatedRef = useRef(originalTranscript);
+
     useEffect(() => {
         setHasMounted(true);
     }, []);
+
+    // Debounce originalTranscript changes
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedTranscript(originalTranscript);
+        }, 800);
+        return () => clearTimeout(timer);
+    }, [originalTranscript]);
+
+    // Automatically translate when debouncedTranscript changes
+    useEffect(() => {
+        const trimmed = debouncedTranscript.trim();
+        if (!trimmed) {
+            setTranslatedTranscript("");
+            return;
+        }
+
+        // Avoid translating if unchanged from the last translation request
+        if (trimmed === lastTranslatedRef.current) return;
+
+        const triggerTranslation = async () => {
+            setIsTranslating(true);
+            setErrorMessage(null);
+            try {
+                const res = await fetch("/api/translate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        texts: [trimmed],
+                        source: sourceLanguage,
+                        target: "en",
+                    }),
+                });
+
+                if (!res.ok) {
+                    throw new Error("Translation request failed");
+                }
+
+                const data = await res.json();
+                const translatedTexts = data.translatedTexts as string[];
+                if (translatedTexts && translatedTexts.length > 0) {
+                    setTranslatedTranscript(translatedTexts[0]);
+                    lastTranslatedRef.current = trimmed;
+                }
+            } catch (err: unknown) {
+                console.error("[translate] Failed to re-translate modified query:", err);
+                setErrorMessage("Failed to translate the query automatically. Please check your connection.");
+            } finally {
+                setIsTranslating(false);
+            }
+        };
+
+        triggerTranslation();
+    }, [debouncedTranscript, sourceLanguage, setTranslatedTranscript, setIsTranslating, setErrorMessage]);
 
     const { adults, childrenCount } = useMemo(() => {
         return parsePassengerCounts(tripPassengers);
@@ -253,39 +312,7 @@ export default function ReviewPage() {
         }
     };
 
-    const handleTranslateQuery = async () => {
-        if (!originalTranscript.trim()) return;
-        setIsTranslating(true);
-        setErrorMessage(null);
-        try {
-            const res = await fetch("/api/translate", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    texts: [originalTranscript],
-                    source: sourceLanguage,
-                    target: "en",
-                }),
-            });
-
-            if (!res.ok) {
-                throw new Error("Translation request failed");
-            }
-
-            const data = await res.json();
-            const translatedTexts = data.translatedTexts as string[];
-            if (translatedTexts && translatedTexts.length > 0) {
-                setTranslatedTranscript(translatedTexts[0]);
-            }
-        } catch (err: unknown) {
-            console.error("[translate] Failed to re-translate modified query:", err);
-            setErrorMessage("Failed to translate the query. Please try again.");
-        } finally {
-            setIsTranslating(false);
-        }
-    };
+    // Auto-translation handles this automatically on user input debounce
 
     // Show inline email validation error as the user types
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -339,24 +366,12 @@ export default function ReviewPage() {
                                     onChange={setOriginalTranscript}
                                     placeholder="Enter your query in your local language..."
                                 />
-                                <div className="flex justify-end -mt-1">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        disabled={isTranslating || !originalTranscript.trim()}
-                                        onClick={handleTranslateQuery}
-                                        className="h-9 px-4 text-xs font-semibold border-[#E85D22]/30 text-[#E85D22] hover:bg-[#E85D22]/5 transition-colors duration-150"
-                                    >
-                                        {isTranslating ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                                                {t("reviewTranslatingStatus")}
-                                            </>
-                                        ) : (
-                                            t("reviewTranslateButton")
-                                        )}
-                                    </Button>
-                                </div>
+                                {isTranslating && (
+                                    <div className="flex items-center justify-end gap-1.5 text-xs text-[#E85D22] font-semibold -mt-1.5 h-4">
+                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        <span>{t("reviewTranslatingStatus")}</span>
+                                    </div>
+                                )}
                             </div>
                         )}
 
