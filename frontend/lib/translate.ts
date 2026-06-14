@@ -1,6 +1,6 @@
 /**
  * translate.ts — Server-side translation utility.
- * VoiceBerry | Ulavi Technologies
+ * Ulavi Technologies
  */
 
 interface DeepLTranslation {

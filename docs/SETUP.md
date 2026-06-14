@@ -1,5 +1,7 @@
 # Setup Guide (Notes by Anas Alam — SDE)
 
+> **Last updated:** Reflects 72-language support, debounced auto-translation, server-side EmailJS, and dual email templates.
+
 ## 1. Clone and install
 
 ```bash
@@ -42,8 +44,10 @@ Note: the current submit flow posts directly to the built-in `POST /api/queries`
 ## 3. AssemblyAI
 
 1. Create an account at https://www.assemblyai.com/ and copy the API key into `ASSEMBLYAI_API_KEY`.
-2. The server route at `/api/aai/transcribe` uploads recorded audio and submits a transcription request to AssemblyAI. It polls the transcript endpoint until the job completes (I set a ~90s poll window).
+2. The server route at `/api/aai/transcribe` uploads recorded audio and submits a transcription request to AssemblyAI. It polls the transcript endpoint until the job completes (~90s window, 30 polls at 3s intervals).
 3. Recording in the UI is limited to 60 seconds; keep uploads within that limit.
+4. AssemblyAI supports **72 languages**. The app normalises the detected language code to a two-letter base code (e.g. `hi-IN` → `hi`) before storing it in Zustand.
+5. If AssemblyAI returns a `translated_texts.en` value, that is used directly. Otherwise the app falls back to `/api/translate` (MyMemory).
 
 If you change env vars, restart the dev server.
 
@@ -51,37 +55,48 @@ If you change env vars, restart the dev server.
 
 ## 4. EmailJS
 
-I configured the app to send email via EmailJS on the client. Make a template that includes these variables (names must match):
+Email is sent **server-side** via the `emailjs` Node.js SDK (not from the browser). Two separate templates are required:
 
-| Template variable      | Source                                                |
+### Template A — Customer Confirmation (`EMAILJS_CUSTOMER_TEMPLATE_ID`)
+
+Sent to the user who submitted the query, translated into their selected UI language.
+
+| Template variable | Source |
 | ---------------------- | ----------------------------------------------------- |
-| `{{name}}`             | User name                                             |
-| `{{translated_query}}` | English (editable) transcript                         |
-| `{{original_query}}`   | Original-language transcript                          |
-| `{{phone}}`            | Full phone with country code (e.g. `+91 98765 43210`) |
-| `{{submitted_at}}`     | Client ISO timestamp                                  |
+| `{{name}}` | User name |
+| `{{translated_query}}` | English transcript |
+| `{{original_query}}` | Original-language transcript |
+| `{{phone}}` | Full phone with country code (e.g. `+91 98765 43210`) |
+| `{{submitted_at}}` | ISO timestamp |
+| `{{to_email}}` | User's email address |
 
-Copy the public key, service ID, and template ID into your `.env.local`.
+### Template B — Ops Notification (`EMAILJS_OPS_TEMPLATE_ID`)
 
-Suggested subject and body:
+Sent to the support team inbox. **Always in English** — all field values (city, budget, passengers) are translated server-side before dispatch.
 
-**Subject:** `New Query from {{phone}}`
+| Template variable | Source |
+| ---------------------- | --------------------------------------------------------------- |
+| `{{name}}` | User name |
+| `{{translated_query}}` | English transcript |
+| `{{original_query}}` | Original-language transcript |
+| `{{trip_city}}` | Destination city (translated to English) |
+| `{{trip_passengers}}` | Passenger summary (translated to English) |
+| `{{trip_budget}}` | Budget tier label (translated to English) |
+| `{{trip_dates}}` | Travel dates |
+| `{{phone}}` | Full phone with country code |
+| `{{submitted_at}}` | ISO timestamp |
 
-**Body:**
+Add all five EmailJS keys to `.env.local` (server-side — no `NEXT_PUBLIC_` prefix):
 
+```env
+EMAILJS_SERVICE_ID=service_xxxxxx
+EMAILJS_PUBLIC_KEY=your_public_key
+EMAILJS_PRIVATE_KEY=your_private_key
+EMAILJS_CUSTOMER_TEMPLATE_ID=customer_confirmation
+EMAILJS_OPS_TEMPLATE_ID=ops_notification
 ```
-Name: {{name}}
 
-Query (English): {{translated_query}}
-
-Mobile Number: {{phone}}
-
-Submitted at: {{submitted_at}}
-```
-
-Set the template destination to your support inbox (e.g. support@ulavitech.com).
-
-If you want the subject/body to match the app data exactly, keep the `name`, `translated_query`, `phone`, and `submitted_at` variables in your template.
+Set the destination for Template B to your support inbox (e.g. support@ulavitech.com).
 
 ---
 
@@ -125,12 +140,15 @@ Recording requires a secure context. `localhost` is treated as secure for develo
 
 ## Troubleshooting (quick)
 
-| Issue                       | What I check                                                                                              |
+| Issue | What I check |
 | --------------------------- | --------------------------------------------------------------------------------------------------------- |
-| "AssemblyAI key missing"    | `ASSEMBLYAI_API_KEY` present and server restarted                                                         |
-| Transcription fails         | API key, audio length (<=60s), network access                                                             |
-| "EmailJS is not configured" | `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY`, `NEXT_PUBLIC_EMAILJS_SERVICE_ID`, `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` set |
-| Send fails silently         | Browser console; EmailJS template variables and quota                                                     |
-| Mic blocked                 | Browser permissions, HTTPS, not in blocked iframe                                                         |
-| No audio on iOS             | Use Safari on HTTPS; require user gesture before recording                                                |
+| "AssemblyAI key missing" | `ASSEMBLYAI_API_KEY` present and server restarted |
+| Transcription fails | API key, audio length (≤60s), network access |
+| "EmailJS is not configured" | `EMAILJS_SERVICE_ID`, `EMAILJS_PUBLIC_KEY`, `EMAILJS_CUSTOMER_TEMPLATE_ID`, `EMAILJS_OPS_TEMPLATE_ID` set |
+| Send fails silently | Server logs; EmailJS template variable names and quota |
+| Ops email contains non-English text | Check `translateToEnglish` helper in `email.ts`; verify MyMemory quota |
+| Auto-translation not firing | Check browser console for `/api/translate` errors; verify MyMemory quota |
+| Language not detected correctly | Inspect `detected_language` in AssemblyAI response; normalisation strips suffixes like `-IN` |
+| Mic blocked | Browser permissions, HTTPS, not in blocked iframe |
+| No audio on iOS | Use Safari on HTTPS; require user gesture before recording |
 

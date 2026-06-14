@@ -1,7 +1,7 @@
 /**
  * BudgetStarSelector.tsx — Star-rating widget for selecting travel budget tier (1–5 stars).
  * Used in the budget pop-up and on the review screen.
- * VoiceBerry | Ulavi Technologies
+ * Ulavi Technologies
  */
 
 'use client';

@@ -1,8 +1,8 @@
-# Phase 2 — Trip Detail Pop-ups + Smart Detection
+﻿# Phase 2 â€” Trip Detail Pop-ups + Smart Detection
 
 **Goal:** After the user records their query, automatically detect up to 4 trip details (city, dates, passengers, budget) from the transcript, then show one pop-up at a time for any missing details. Budget uses a star-rating widget instead of a text input.
 
-**Duration:** 3–4 days  
+**Duration:** 3â€“4 days  
 **Depends on:** Phase 1 complete and verified (all checklist items passed).
 
 **Must read before starting:**
@@ -14,17 +14,17 @@
 
 | File | Action | Why |
 |---|---|---|
-| `frontend/lib/tripExtractor.ts` | CREATE | Rule-based detector — checks transcript for city, dates, passengers, budget |
+| `frontend/lib/tripExtractor.ts` | CREATE | Rule-based detector â€” checks transcript for city, dates, passengers, budget |
 | `frontend/components/popups/BudgetStarSelector.tsx` | CREATE | Star-rating widget for budget tier selection |
 | `frontend/components/popups/TripDetailPopup.tsx` | CREATE | Bottom-sheet modal that shows one question at a time |
-| `frontend/app/details/page.tsx` | CREATE | Screen 3 — orchestrates the pop-up queue |
+| `frontend/app/details/page.tsx` | CREATE | Screen 3 â€” orchestrates the pop-up queue |
 | `frontend/app/record/page.tsx` | ALREADY DONE in Phase 1 | "Continue" button already points to `/details` |
 
 **Do NOT touch:** `lib/i18n.ts`, `lib/email.ts`, `api/queries/route.ts`, `app/review/page.tsx`
 
 ---
 
-## Step 2.1 — Install No New Packages
+## Step 2.1 â€” Install No New Packages
 
 Phase 2 requires no new npm packages.
 
@@ -38,7 +38,7 @@ If build fails, fix Phase 1 issues before continuing.
 
 ---
 
-## Step 2.2 — Create `frontend/lib/tripExtractor.ts`
+## Step 2.2 â€” Create `frontend/lib/tripExtractor.ts`
 
 This is a pure TypeScript module. It runs in the browser. It makes zero API calls. It is fast (< 5ms).
 
@@ -46,10 +46,10 @@ This is a pure TypeScript module. It runs in the browser. It makes zero API call
 
 ```ts
 /**
- * tripExtractor.ts — Heuristic scanner that detects trip details from raw voice transcripts.
- * Runs client-side only. Zero API cost. Conservative detection — misses are ok, false
+ * tripExtractor.ts â€” Heuristic scanner that detects trip details from raw voice transcripts.
+ * Runs client-side only. Zero API cost. Conservative detection â€” misses are ok, false
  * positives skip necessary pop-ups and lose data.
- * VoiceBerry | Ulavi Technologies
+ * Voice Query System | Ulavi Technologies
  */
 ```
 
@@ -58,8 +58,8 @@ This is a pure TypeScript module. It runs in the browser. It makes zero API call
 ```ts
 /**
  * Represents the 4 trip details extracted from a voice transcript.
- * null means "not confidently detected" — a pop-up will be shown for that field.
- * Empty string means "detected but couldn't parse" — treat same as null.
+ * null means "not confidently detected" â€” a pop-up will be shown for that field.
+ * Empty string means "detected but couldn't parse" â€” treat same as null.
  */
 export interface TripDetails {
   /** Destination city or location name. null = not mentioned. */
@@ -83,7 +83,7 @@ export type TripDetailField = 'city' | 'dates' | 'passengers' | 'budget';
 ```ts
 /**
  * Analyses a raw voice transcript and extracts any trip details that were mentioned.
- * Only marks a field as detected when reasonably confident — it is better to ask
+ * Only marks a field as detected when reasonably confident â€” it is better to ask
  * the user an extra question than to miss a critical detail.
  *
  * @param transcript - Raw transcribed text from AssemblyAI (in any language)
@@ -95,7 +95,7 @@ export function extractTripDetails(transcript: string): TripDetails {
   return {
     city:       detectCity(text),
     datesFrom:  detectDates(text),
-    datesTo:    null, // Return date is not extracted — always ask
+    datesTo:    null, // Return date is not extracted â€” always ask
     passengers: detectPassengers(text),
     budget:     detectBudget(text),
   };
@@ -108,7 +108,7 @@ Maintain a hard-coded list of 80+ known destinations:
 
 ```ts
 /**
- * Known travel destinations — English names and common alternate spellings.
+ * Known travel destinations â€” English names and common alternate spellings.
  * Cover the top 50 Indian domestic destinations + 20 international ones.
  * Also include common Hindi and Tamil spellings where applicable.
  */
@@ -136,9 +136,9 @@ const KNOWN_DESTINATIONS: readonly string[] = [
   'london', 'maldives', 'sri lanka', 'nepal', 'bhutan', 'europe',
   'malaysia', 'kuala lumpur', 'vietnam', 'hong kong', 'japan', 'tokyo',
   // Hindi spellings of common destinations
-  'मनाली', 'शिमला', 'जयपुर', 'उदयपुर', 'गोवा', 'मसूरी', 'नैनीताल',
+  'à¤®à¤¨à¤¾à¤²à¥€', 'à¤¶à¤¿à¤®à¤²à¤¾', 'à¤œà¤¯à¤ªà¥à¤°', 'à¤‰à¤¦à¤¯à¤ªà¥à¤°', 'à¤—à¥‹à¤µà¤¾', 'à¤®à¤¸à¥‚à¤°à¥€', 'à¤¨à¥ˆà¤¨à¥€à¤¤à¤¾à¤²',
   // Tamil spellings
-  'கொடைக்கானல்', 'ஊட்டி', 'கேரளா', 'புதுவை',
+  'à®•à¯Šà®Ÿà¯ˆà®•à¯à®•à®¾à®©à®²à¯', 'à®Šà®Ÿà¯à®Ÿà®¿', 'à®•à¯‡à®°à®³à®¾', 'à®ªà¯à®¤à¯à®µà¯ˆ',
 ] as const;
 
 /**
@@ -171,14 +171,14 @@ const ENGLISH_MONTHS: readonly string[] = [
 
 /** Hindi month names in Devanagari. */
 const HINDI_MONTHS: readonly string[] = [
-  'जनवरी', 'फरवरी', 'मार्च', 'अप्रैल', 'मई', 'जून',
-  'जुलाई', 'अगस्त', 'सितम्बर', 'अक्टूबर', 'नवम्बर', 'दिसम्बर',
+  'à¤œà¤¨à¤µà¤°à¥€', 'à¤«à¤°à¤µà¤°à¥€', 'à¤®à¤¾à¤°à¥à¤š', 'à¤…à¤ªà¥à¤°à¥ˆà¤²', 'à¤®à¤ˆ', 'à¤œà¥‚à¤¨',
+  'à¤œà¥à¤²à¤¾à¤ˆ', 'à¤…à¤—à¤¸à¥à¤¤', 'à¤¸à¤¿à¤¤à¤®à¥à¤¬à¤°', 'à¤…à¤•à¥à¤Ÿà¥‚à¤¬à¤°', 'à¤¨à¤µà¤®à¥à¤¬à¤°', 'à¤¦à¤¿à¤¸à¤®à¥à¤¬à¤°',
 ];
 
 /** Tamil month names in Tamil script. */
 const TAMIL_MONTHS: readonly string[] = [
-  'ஜனவரி', 'பிப்ரவரி', 'மார்ச்', 'ஏப்ரல்', 'மே', 'ஜூன்',
-  'ஜூலை', 'ஆகஸ்ட்', 'செப்டம்பர்', 'அக்டோபர்', 'நவம்பர்', 'டிசம்பர்',
+  'à®œà®©à®µà®°à®¿', 'à®ªà®¿à®ªà¯à®°à®µà®°à®¿', 'à®®à®¾à®°à¯à®šà¯', 'à®à®ªà¯à®°à®²à¯', 'à®®à¯‡', 'à®œà¯‚à®©à¯',
+  'à®œà¯‚à®²à¯ˆ', 'à®†à®•à®¸à¯à®Ÿà¯', 'à®šà¯†à®ªà¯à®Ÿà®®à¯à®ªà®°à¯', 'à®…à®•à¯à®Ÿà¯‹à®ªà®°à¯', 'à®¨à®µà®®à¯à®ªà®°à¯', 'à®Ÿà®¿à®šà®®à¯à®ªà®°à¯',
 ];
 
 /** Words that strongly imply a date is being discussed. */
@@ -186,9 +186,9 @@ const DATE_SIGNAL_WORDS: readonly string[] = [
   'from', 'to', 'between', 'starting', 'ending', 'depart', 'return',
   'travel on', 'going on', 'arriving', 'departure', 'arrival',
   // Hindi
-  'से', 'तक', 'पर', 'को',
+  'à¤¸à¥‡', 'à¤¤à¤•', 'à¤ªà¤°', 'à¤•à¥‹',
   // Tamil
-  'முதல்', 'வரை',
+  'à®®à¯à®¤à®²à¯', 'à®µà®°à¯ˆ',
 ];
 
 /** Numeric date pattern: 15/08, 15-08-2026, 2026-08-15, etc. */
@@ -196,7 +196,7 @@ const NUMERIC_DATE_PATTERN = /\b\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?\b/;
 
 /**
  * Detects whether the transcript contains any date-related information.
- * Does NOT try to parse the exact date — the ops team reads raw text.
+ * Does NOT try to parse the exact date â€” the ops team reads raw text.
  * Returns a non-null value (the matched signal word/month) if dates are mentioned.
  *
  * @param text - Lowercased transcript text
@@ -232,17 +232,17 @@ function detectDates(text: string): string | null {
 ```ts
 /**
  * Regex patterns for detecting passenger counts.
- * Matches: "2 people", "3 adults", "2 लोग", "2 பேர்", etc.
+ * Matches: "2 people", "3 adults", "2 à¤²à¥‹à¤—", "2 à®ªà¯‡à®°à¯", etc.
  */
 const PASSENGER_PATTERNS: readonly RegExp[] = [
   /(\d+)\s*(person|people|adult|adults|child|children|passenger|passengers|travell?er|travell?ers)/i,
-  /(\d+)\s*(लोग|व्यक्ति|यात्री)/,      // Hindi
-  /(\d+)\s*(பேர்|நபர்கள்)/,             // Tamil
-  /(\d+)\s*(మంది|వ్యక్తులు)/,           // Telugu
-  /(\d+)\s*(ಜನ|ವ್ಯಕ್ತಿಗಳು)/,           // Kannada
-  /(\d+)\s*(ആള്‍|ആള്‍ക്കാര്‍)/,        // Malayalam
-  /(\d+)\s*(জন|মানুষ)/,                 // Bengali
-  /(\d+)\s*(लोक|माणसे)/,               // Marathi
+  /(\d+)\s*(à¤²à¥‹à¤—|à¤µà¥à¤¯à¤•à¥à¤¤à¤¿|à¤¯à¤¾à¤¤à¥à¤°à¥€)/,      // Hindi
+  /(\d+)\s*(à®ªà¯‡à®°à¯|à®¨à®ªà®°à¯à®•à®³à¯)/,             // Tamil
+  /(\d+)\s*(à°®à°‚à°¦à°¿|à°µà±à°¯à°•à±à°¤à±à°²à±)/,           // Telugu
+  /(\d+)\s*(à²œà²¨|à²µà³à²¯à²•à³à²¤à²¿à²—à²³à³)/,           // Kannada
+  /(\d+)\s*(à´†à´³àµâ€|à´†à´³àµâ€à´•àµà´•à´¾à´°àµâ€)/,        // Malayalam
+  /(\d+)\s*(à¦œà¦¨|à¦®à¦¾à¦¨à§à¦·)/,                 // Bengali
+  /(\d+)\s*(à¤²à¥‹à¤•|à¤®à¤¾à¤£à¤¸à¥‡)/,               // Marathi
 ];
 
 /**
@@ -267,22 +267,22 @@ function detectPassengers(text: string): string | null {
 ```ts
 /**
  * Patterns for detecting budget information.
- * Matches: ₹10000, "30,000 rupees", "budget of 50k", "spend around 20000", etc.
+ * Matches: â‚¹10000, "30,000 rupees", "budget of 50k", "spend around 20000", etc.
  */
 const BUDGET_PATTERNS: readonly RegExp[] = [
-  /₹[\s\d,]+/,                                          // ₹ symbol followed by amount
+  /â‚¹[\s\d,]+/,                                          // â‚¹ symbol followed by amount
   /(\d[\d,]*)\s*(rupee|rupees|inr)/i,                   // 30000 rupees
   /(\d[\d,]*)\s*k\b/i,                                  // 30k
-  /budget\s+(of\s+)?[\d,₹]+/i,                          // budget of 30000
-  /spend(ing)?\s+(around\s+)?(₹|rs\.?)?\s*[\d,]+/i,   // spending around 30000
-  /cost\s+(of\s+)?(₹|rs\.?)?\s*[\d,]+/i,              // cost of 30000
+  /budget\s+(of\s+)?[\d,â‚¹]+/i,                          // budget of 30000
+  /spend(ing)?\s+(around\s+)?(â‚¹|rs\.?)?\s*[\d,]+/i,   // spending around 30000
+  /cost\s+(of\s+)?(â‚¹|rs\.?)?\s*[\d,]+/i,              // cost of 30000
   /\b(cheap|affordable|luxury|premium|economy|budget)\b/i, // budget tier words
   // Hindi
-  /(\d[\d,]*)\s*(रुपये|रुपया)/,
-  /बजट/,
+  /(\d[\d,]*)\s*(à¤°à¥à¤ªà¤¯à¥‡|à¤°à¥à¤ªà¤¯à¤¾)/,
+  /à¤¬à¤œà¤Ÿ/,
   // Tamil
-  /(\d[\d,]*)\s*(ரூபாய்|ரூ)/,
-  /பட்ஜெட்/,
+  /(\d[\d,]*)\s*(à®°à¯‚à®ªà®¾à®¯à¯|à®°à¯‚)/,
+  /à®ªà®Ÿà¯à®œà¯†à®Ÿà¯/,
 ];
 
 /**
@@ -304,7 +304,7 @@ function detectBudget(text: string): string | null {
 
 ---
 
-## Step 2.3 — Create `frontend/components/popups/BudgetStarSelector.tsx`
+## Step 2.3 â€” Create `frontend/components/popups/BudgetStarSelector.tsx`
 
 This is the star-rating widget for budget selection. It is used in:
 - The budget pop-up (Phase 2)
@@ -314,9 +314,9 @@ This is the star-rating widget for budget selection. It is used in:
 
 ```ts
 /**
- * BudgetStarSelector.tsx — Star-rating widget for selecting travel budget tier (1–5 stars).
+ * BudgetStarSelector.tsx â€” Star-rating widget for selecting travel budget tier (1â€“5 stars).
  * Used in the budget pop-up and on the review screen.
- * VoiceBerry | Ulavi Technologies
+ * Voice Query System | Ulavi Technologies
  */
 'use client';
 // Client component: uses useState for hover/selection state.
@@ -325,7 +325,7 @@ This is the star-rating widget for budget selection. It is used in:
 ### Budget Tier Constants
 
 ```ts
-import { Star } from 'lucide-react'; // Star icon — already installed
+import { Star } from 'lucide-react'; // Star icon â€” already installed
 import { t } from '@/lib/i18n';
 import type { SupportedLang, LangStrings } from '@/lib/i18n';
 
@@ -341,7 +341,7 @@ const STAR_FILLED_COLOR = '#E85D22';
 /** Grey colour for empty/unselected stars. */
 const STAR_EMPTY_COLOR = '#D1D5DB';
 
-/** 100ms fill transition — fast enough to feel instant, slow enough to be visible. */
+/** 100ms fill transition â€” fast enough to feel instant, slow enough to be visible. */
 const STAR_TRANSITION_DURATION_MS = 100;
 
 /**
@@ -366,12 +366,12 @@ Export this so the review page and the pop-up can both use it:
 
 ```ts
 /**
- * Converts a numeric star rating (1–5) to a human-readable budget string
+ * Converts a numeric star rating (1â€“5) to a human-readable budget string
  * for display in emails and on the review screen.
  *
- * @param rating - Star count selected by the user (1–5). 0 = not selected.
+ * @param rating - Star count selected by the user (1â€“5). 0 = not selected.
  * @param lang   - Language code for localised tier label text.
- * @returns A formatted string like "⭐⭐⭐ Mid-range (₹25,000 – ₹50,000/person)",
+ * @returns A formatted string like "â­â­â­ Mid-range (â‚¹25,000 â€“ â‚¹50,000/person)",
  *          or an empty string if rating is 0.
  */
 export function budgetRatingToString(rating: number, lang: SupportedLang): string {
@@ -379,7 +379,7 @@ export function budgetRatingToString(rating: number, lang: SupportedLang): strin
   const tier = BUDGET_TIERS[rating - 1]; // Convert 1-based rating to 0-based index
   const tierLabel = t(lang, tier.labelKey);
   const tierRange = t(lang, tier.rangeKey);
-  return `${'⭐'.repeat(rating)} ${tierLabel} (${tierRange})`;
+  return `${'â­'.repeat(rating)} ${tierLabel} (${tierRange})`;
 }
 ```
 
@@ -387,19 +387,19 @@ export function budgetRatingToString(rating: number, lang: SupportedLang): strin
 
 ```ts
 /**
- * BudgetStarSelectorProps — props for the star-based budget rating widget.
- * VoiceBerry | Ulavi Technologies
+ * BudgetStarSelectorProps â€” props for the star-based budget rating widget.
+ * Voice Query System | Ulavi Technologies
  */
 interface BudgetStarSelectorProps {
-  /** Currently selected star count (1–5). 0 = nothing selected yet. */
+  /** Currently selected star count (1â€“5). 0 = nothing selected yet. */
   value: number;
   /**
    * Fired when the user taps a star.
-   * Receives the new star count (1–5) as an integer.
+   * Receives the new star count (1â€“5) as an integer.
    * Called with 0 if the user taps the already-selected star (deselect).
    */
   onChange: (rating: number) => void;
-  /** Language code — used to render tier labels in the correct language. */
+  /** Language code â€” used to render tier labels in the correct language. */
   lang: SupportedLang;
 }
 ```
@@ -416,7 +416,7 @@ export function BudgetStarSelector({ value, onChange, lang }: BudgetStarSelector
    * Handles a star click.
    * Tapping the already-selected star deselects (resets to 0).
    *
-   * @param starIndex - 1-based star number that was clicked (1–5)
+   * @param starIndex - 1-based star number that was clicked (1â€“5)
    */
   function handleStarClick(starIndex: number): void {
     const newRating = starIndex === value ? 0 : starIndex;
@@ -445,7 +445,7 @@ export function BudgetStarSelector({ value, onChange, lang }: BudgetStarSelector
               onMouseEnter={() => setHoverRating(starIndex)}
               onMouseLeave={() => setHoverRating(0)}
               style={{
-                // Minimum 44×44px touch target (mobile accessibility)
+                // Minimum 44Ã—44px touch target (mobile accessibility)
                 width: MIN_TOUCH_TARGET_PX,
                 height: MIN_TOUCH_TARGET_PX,
                 display: 'flex',
@@ -494,7 +494,7 @@ export function BudgetStarSelector({ value, onChange, lang }: BudgetStarSelector
 
 ---
 
-## Step 2.4 — Create `frontend/components/popups/TripDetailPopup.tsx`
+## Step 2.4 â€” Create `frontend/components/popups/TripDetailPopup.tsx`
 
 A bottom-sheet modal. It asks ONE question. For budget, it renders `BudgetStarSelector` instead of a text input.
 
@@ -502,16 +502,16 @@ A bottom-sheet modal. It asks ONE question. For budget, it renders `BudgetStarSe
 
 ```ts
 /**
- * TripDetailPopup.tsx — Bottom-sheet modal asking one trip detail question at a time.
+ * TripDetailPopup.tsx â€” Bottom-sheet modal asking one trip detail question at a time.
  * Renders different input types depending on the field: text for city/passengers/dates,
  * BudgetStarSelector for the budget field.
- * VoiceBerry | Ulavi Technologies
+ * Voice Query System | Ulavi Technologies
  */
 'use client';
 // Client component: uses useState, useEffect, keyboard event listeners.
 ```
 
-### CSS Animations — Add to `globals.css`
+### CSS Animations â€” Add to `globals.css`
 
 ```css
 /* Bottom sheet animation for TripDetailPopup */
@@ -629,8 +629,8 @@ const FIELD_QUESTION_KEY: Record<TripDetailField, keyof LangStrings> = {
 ### Component Structure
 
 The modal renders:
-1. **Backdrop** — semi-transparent dark overlay, full screen
-2. **Sheet** — white card that slides up from the bottom
+1. **Backdrop** â€” semi-transparent dark overlay, full screen
+2. **Sheet** â€” white card that slides up from the bottom
 3. Inside the sheet:
    - Step indicator: "2 of 4" (top-right, small, grey)
    - Question text (large, bold, `id="popup-question-text"`)
@@ -714,7 +714,7 @@ function buildSubmitValue(): string {
   switch (field) {
     case 'city':       return inputValue.trim();
     case 'passengers': return inputValue.trim();
-    case 'dates':      return [dateFrom.trim(), dateTo.trim()].filter(Boolean).join(' — ');
+    case 'dates':      return [dateFrom.trim(), dateTo.trim()].filter(Boolean).join(' â€” ');
     case 'budget':     return budgetRatingToString(starRating, lang);
     default:           return '';
   }
@@ -742,7 +742,7 @@ const isNextDisabled = field === 'budget' && starRating === 0;
 
 ---
 
-## Step 2.5 — Create `frontend/app/details/page.tsx`
+## Step 2.5 â€” Create `frontend/app/details/page.tsx`
 
 This is Screen 3. It reads the transcript, runs the extractor, and shows pop-ups for missing fields.
 
@@ -750,10 +750,10 @@ This is Screen 3. It reads the transcript, runs the extractor, and shows pop-ups
 
 ```ts
 /**
- * page.tsx — Screen 3: Smart trip detail pop-up orchestrator.
+ * page.tsx â€” Screen 3: Smart trip detail pop-up orchestrator.
  * Runs extractTripDetails() on the transcript, builds a queue of missing fields,
  * and shows one TripDetailPopup at a time. Navigates to /review when queue is empty.
- * VoiceBerry | Ulavi Technologies
+ * Voice Query System | Ulavi Technologies
  */
 'use client';
 // Client component: uses Zustand store, next/navigation, and runs client-side extraction.
@@ -804,13 +804,13 @@ function buildMissingFieldQueue(extracted: TripDetails): TripDetailField[] {
 }
 
 useEffect(() => {
-  // Guard: if transcript is missing, user navigated directly — send back to /record
+  // Guard: if transcript is missing, user navigated directly â€” send back to /record
   if (!originalTranscript) {
     router.replace('/record');
     return;
   }
 
-  // Run extraction (instant — no API call)
+  // Run extraction (instant â€” no API call)
   const extracted = extractTripDetails(originalTranscript);
 
   // Pre-fill store with any detected values
@@ -824,7 +824,7 @@ useEffect(() => {
   // Show "analysing" state briefly before the first pop-up
   setTimeout(() => {
     if (queue.length === 0) {
-      // All details were detected — skip pop-ups entirely
+      // All details were detected â€” skip pop-ups entirely
       setStatus('all-detected');
       setTimeout(() => router.push('/review'), ALL_DETECTED_DISPLAY_MS);
     } else {
@@ -857,9 +857,9 @@ function storeFieldValue(field: TripDetailField, value: string): void {
   switch (field) {
     case 'city':       setTripCity(value);       break;
     case 'dates':
-      // Value format: "15 Aug 2026 — 20 Aug 2026" (from popup)
-      // Split on " — " to get from/to
-      const [from = '', to = ''] = value.split(' — ');
+      // Value format: "15 Aug 2026 â€” 20 Aug 2026" (from popup)
+      // Split on " â€” " to get from/to
+      const [from = '', to = ''] = value.split(' â€” ');
       setTripDatesFrom(from.trim());
       setTripDatesTo(to.trim());
       break;
@@ -878,7 +878,7 @@ function advanceQueue(): void {
   }
 }
 
-/** Handles user tapping Skip — stores empty string and advances. */
+/** Handles user tapping Skip â€” stores empty string and advances. */
 function handlePopupSkip(): void {
   storeFieldValue(missingQueue[currentIndex], '');
   advanceQueue();
@@ -889,24 +889,24 @@ function handlePopupSkip(): void {
 
 ```
 status === 'analysing':
-  → Full-screen centred: spinner + "Analysing your query..." (in user's language)
-  → Blurred transcript card visible behind
+  â†’ Full-screen centred: spinner + "Analysing your query..." (in user's language)
+  â†’ Blurred transcript card visible behind
 
 status === 'all-detected':
-  → Full-screen centred: green check icon + "Great! We found all your trip details." (1.2s)
+  â†’ Full-screen centred: green check icon + "Great! We found all your trip details." (1.2s)
 
 status === 'popups':
-  → Transcript card visible (blurred) in background
-  → TripDetailPopup rendered on top
-  → currentStep = currentIndex + 1, totalSteps = missingQueue.length
+  â†’ Transcript card visible (blurred) in background
+  â†’ TripDetailPopup rendered on top
+  â†’ currentStep = currentIndex + 1, totalSteps = missingQueue.length
 
 status === 'done':
-  → (never renders — router.push('/review') is called before this state)
+  â†’ (never renders â€” router.push('/review') is called before this state)
 ```
 
 ---
 
-## Phase 2 Testing — Full Verification Checklist
+## Phase 2 Testing â€” Full Verification Checklist
 
 Run through EVERY item before moving to Phase 3.
 
@@ -926,7 +926,7 @@ Open `localhost:3000` and paste these in the browser console to test the extract
 // These are integration tests you can manually verify
 
 // Test 1: All 4 details present
-const t1 = extractTripDetails("I want to go to Goa on 15 August for 2 people with a budget of ₹30,000");
+const t1 = extractTripDetails("I want to go to Goa on 15 August for 2 people with a budget of â‚¹30,000");
 console.assert(t1.city === 'Goa', 'City detection failed');
 console.assert(t1.datesFrom !== null, 'Date detection failed');
 console.assert(t1.passengers !== null, 'Passenger detection failed');
@@ -940,11 +940,11 @@ console.assert(t2.passengers === null, 'Passengers should be null');
 console.assert(t2.budget === null, 'Budget should be null');
 
 // Test 3: Hindi transcript
-const t3 = extractTripDetails("मैं मनाली जाना चाहता हूं");
+const t3 = extractTripDetails("à¤®à¥ˆà¤‚ à¤®à¤¨à¤¾à¤²à¥€ à¤œà¤¾à¤¨à¤¾ à¤šà¤¾à¤¹à¤¤à¤¾ à¤¹à¥‚à¤‚");
 console.assert(t3.city !== null, 'Hindi city detection failed');
 
 // Test 4: Tamil transcript
-const t4 = extractTripDetails("நான் கொடைக்கானலுக்கு போக விரும்புகிறேன்");
+const t4 = extractTripDetails("à®¨à®¾à®©à¯ à®•à¯Šà®Ÿà¯ˆà®•à¯à®•à®¾à®©à®²à¯à®•à¯à®•à¯ à®ªà¯‹à®• à®µà®¿à®°à¯à®®à¯à®ªà¯à®•à®¿à®±à¯‡à®©à¯");
 console.assert(t4.city !== null, 'Tamil city detection failed');
 ```
 
@@ -956,23 +956,23 @@ console.assert(t4.city !== null, 'Tamil city detection failed');
 - [ ] Click Continue
 - [ ] `/details` shows "Analysing your query..." spinner for ~500ms
 - [ ] First pop-up appears: City question
-- [ ] Fill in "Ooty" → click Next
-- [ ] Second pop-up: Dates question — shows two text inputs ("From" and "To")
-- [ ] Fill in from and to dates → click Next
+- [ ] Fill in "Ooty" â†’ click Next
+- [ ] Second pop-up: Dates question â€” shows two text inputs ("From" and "To")
+- [ ] Fill in from and to dates â†’ click Next
 - [ ] Third pop-up: Passengers question
-- [ ] Fill in "2 adults" → click Next
-- [ ] Fourth pop-up: Budget question — shows 5 stars (NOT a text input)
-- [ ] After all 4 → navigates to `/review`
+- [ ] Fill in "2 adults" â†’ click Next
+- [ ] Fourth pop-up: Budget question â€” shows 5 stars (NOT a text input)
+- [ ] After all 4 â†’ navigates to `/review`
 
 **Flow 2: City and passengers detected (only 2 pop-ups)**
 - [ ] Record: "trip to Goa for 2 people"
-- [ ] Continue → `/details`
+- [ ] Continue â†’ `/details`
 - [ ] Only 2 pop-ups appear: Dates, then Budget
-- [ ] After 2 pop-ups → navigates to `/review`
+- [ ] After 2 pop-ups â†’ navigates to `/review`
 
 **Flow 3: All 4 details detected (zero pop-ups)**
 - [ ] Record: "I want to go to Kodaikanal on 15th August for 3 people with a budget of 30,000 rupees"
-- [ ] Continue → `/details`
+- [ ] Continue â†’ `/details`
 - [ ] "Analysing your query..." appears briefly
 - [ ] "Great! We found all your trip details." appears
 - [ ] Auto-navigates to `/review` after ~1.2 seconds
@@ -983,18 +983,18 @@ console.assert(t4.city !== null, 'Tamil city detection failed');
 
 **Budget Star Selector Tests**
 - [ ] Budget pop-up shows 5 empty stars
-- [ ] Tapping 3rd star fills stars 1, 2, 3 — leaves 4 and 5 empty
+- [ ] Tapping 3rd star fills stars 1, 2, 3 â€” leaves 4 and 5 empty
 - [ ] Tier label shows "Mid-range" (or equivalent in selected language)
-- [ ] Tier range shows "₹25,000 – ₹50,000 per person"
-- [ ] Tapping the 3rd star again → all stars go empty, placeholder text shows
+- [ ] Tier range shows "â‚¹25,000 â€“ â‚¹50,000 per person"
+- [ ] Tapping the 3rd star again â†’ all stars go empty, placeholder text shows
 - [ ] "Next" button is disabled when 0 stars selected
 - [ ] "Next" button is enabled after any star is tapped (even 1 star)
-- [ ] Clicking "Skip" on the budget pop-up → stores empty string → moves to next pop-up
+- [ ] Clicking "Skip" on the budget pop-up â†’ stores empty string â†’ moves to next pop-up
 
 **Language Tests**
-- [ ] Select Hindi → all pop-up question text in Hindi
+- [ ] Select Hindi â†’ all pop-up question text in Hindi
 - [ ] Budget tier labels ("Economy", "Mid-range", etc.) appear in Hindi
-- [ ] Select Tamil → all pop-up question text in Tamil
+- [ ] Select Tamil â†’ all pop-up question text in Tamil
 - [ ] Budget tier labels appear in Tamil
 
 **Accessibility Tests**
@@ -1002,7 +1002,7 @@ console.assert(t4.city !== null, 'Tamil city detection failed');
 - [ ] Pop-up has `aria-modal="true"` attribute
 - [ ] Pop-up has `aria-labelledby` pointing to the question text element
 - [ ] First input inside pop-up receives focus automatically on open
-- [ ] Tab key cycles through: input → Skip button → Next button → input (loop)
+- [ ] Tab key cycles through: input â†’ Skip button â†’ Next button â†’ input (loop)
 - [ ] Pressing Escape key calls onSkip() (same as tapping Skip)
 - [ ] After pop-up closes, focus should return to the page background
 
@@ -1013,11 +1013,11 @@ console.assert(t4.city !== null, 'Tamil city detection failed');
 - [ ] No layout shift during animation
 
 **Touch Target Tests**
-- [ ] Each star button is at least 44×44px (test in Chrome DevTools: Elements → computed styles)
+- [ ] Each star button is at least 44Ã—44px (test in Chrome DevTools: Elements â†’ computed styles)
 
 **Skip Tests**
-- [ ] Skipping city → stored as empty string → next pop-up appears
-- [ ] Skipping all 4 → navigates to `/review` with all trip fields empty
+- [ ] Skipping city â†’ stored as empty string â†’ next pop-up appears
+- [ ] Skipping all 4 â†’ navigates to `/review` with all trip fields empty
 - [ ] Review screen shows "Not provided" for all skipped fields
 
 ### Store State Tests
@@ -1050,18 +1050,19 @@ Alternatively, use the React DevTools extension to inspect the Zustand store sta
 | Edge Case | What Happens | How It's Handled |
 |---|---|---|
 | All 4 details in transcript | Zero pop-ups | Auto-navigate to /review after 1.2s "all detected" message |
-| User types nothing in a pop-up and clicks Next | Empty string stored | Review shows "Not provided" — not an error |
-| User clicks Skip on budget | Empty string stored | Review shows "Not provided" — budget is optional |
+| User types nothing in a pop-up and clicks Next | Empty string stored | Review shows "Not provided" â€” not an error |
+| User clicks Skip on budget | Empty string stored | Review shows "Not provided" â€” budget is optional |
 | User types in "dates from" but not "to" | "15 Aug" stored as datesFrom, datesTo stays empty | Review shows "15 Aug" for from, "Not provided" for to |
 | Transcript is empty (user navigates to /details directly) | Redirect to /record | Handled by `if (!originalTranscript) router.replace('/record')` |
-| Extractor false-positive (e.g. "may" detected as the month May) | Pop-up may not appear for dates | Acceptable — extractor is conservative, but not perfect |
+| Extractor false-positive (e.g. "may" detected as the month May) | Pop-up may not appear for dates | Acceptable â€” extractor is conservative, but not perfect |
 
 ---
 
 **Phase 2 is complete when:** All checklist items pass, `npm run build` passes, and the full flow from recording to `/review` works with pop-ups.
 
-**Next: [Phase 3 → Audio Upload + Review Screen + Dual Email](./PHASE_3_AUDIO_REVIEW_EMAIL.md)**
+**Next: [Phase 3 â†’ Audio Upload + Review Screen + Dual Email](./PHASE_3_AUDIO_REVIEW_EMAIL.md)**
 
 ---
 
-*Ulavi Technologies — Confidential*
+*Ulavi Technologies â€” Confidential*
+

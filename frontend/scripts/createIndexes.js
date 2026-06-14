@@ -1,6 +1,6 @@
 /**
  * createIndexes.js — Script to programmatically set up MongoDB collection indexes
- * VoiceBerry | Ulavi Technologies
+ * Ulavi Technologies
  */
 
 const fs = require('fs');

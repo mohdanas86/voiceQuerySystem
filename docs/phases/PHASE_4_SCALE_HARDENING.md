@@ -1,8 +1,8 @@
-# Phase 4 — Scale Hardening + Production Polish
+﻿# Phase 4 â€” Scale Hardening + Production Polish
 
 **Goal:** Make the application production-ready for 100K+ concurrent users. Replace the in-memory rate limiter with Upstash Redis, set up MongoDB collection indexes, upgrade the translation API with DeepL as the primary engine and MyMemory as a fallback, configure Sentry for error monitoring, and establish the final production environment variables.
 
-**Duration:** 3–5 days  
+**Duration:** 3â€“5 days  
 **Depends on:** Phase 3 complete and verified.  
 
 **Must read before starting:**
@@ -25,7 +25,7 @@
 
 ---
 
-## Step 4.0 — Install New Packages
+## Step 4.0 â€” Install New Packages
 
 Phase 4 requires Upstash Redis packages and Sentry. Run the following command in the `frontend` directory:
 
@@ -42,7 +42,7 @@ npm run build
 
 ---
 
-## Step 4.1 — Create `frontend/lib/rateLimitRedis.ts`
+## Step 4.1 â€” Create `frontend/lib/rateLimitRedis.ts`
 
 This helper configures Upstash Redis as a shared database for tracking IP request rates. This is necessary because serverless deployments on platforms like Vercel spin up isolated function instances, making in-memory Maps ineffective for global rate limiting.
 
@@ -50,11 +50,11 @@ This helper configures Upstash Redis as a shared database for tracking IP reques
 
 ```ts
 /**
- * rateLimitRedis.ts — Redis-based sliding window rate limiter using Upstash.
- * VoiceBerry | Ulavi Technologies
+ * rateLimitRedis.ts â€” Redis-based sliding window rate limiter using Upstash.
+ * Voice Query System | Ulavi Technologies
  */
 
-// ── SERVER ONLY ───────────────────────────────────────────────────────────────
+// â”€â”€ SERVER ONLY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // This file runs on the server (Upstash Redis API client). Rules:
 // 1. Do NOT import browser APIs.
 // 2. UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must NOT have NEXT_PUBLIC_ prefix.
@@ -104,7 +104,7 @@ Mark `frontend/lib/rateLimit.ts` as deprecated by adding a comment at the top of
 
 ---
 
-## Step 4.2 — Update API Routes to Use Redis Rate Limiting
+## Step 4.2 â€” Update API Routes to Use Redis Rate Limiting
 
 ### 1. Update `frontend/app/api/queries/route.ts`
 
@@ -222,14 +222,14 @@ export async function POST(request: Request) {
 
 ---
 
-## Step 4.3 — MongoDB Collection Indexes
+## Step 4.3 â€” MongoDB Collection Indexes
 
 To ensure fast query responses under load (especially as the collection grows past 10,000+ entries), create indexes on key query patterns.
 
 ### Setup Instructions
 
 1. Log in to your **MongoDB Atlas** dashboard.
-2. Select your Database Cluster → click **Browse Collections**.
+2. Select your Database Cluster â†’ click **Browse Collections**.
 3. Go to the `query_submissions` collection.
 4. Click the **Indexes** tab and then click **Create Index**.
 5. Create the following indexes:
@@ -253,7 +253,7 @@ db.query_submissions.createIndex({ user_email: 1 });
 
 ---
 
-## Step 4.4 — Upgrade Translation Endpoint with DeepL
+## Step 4.4 â€” Upgrade Translation Endpoint with DeepL
 
 Rewrite the `/api/translate` endpoint to prioritize the DeepL Free API (500K free characters per month) and fall back to the MyMemory API if DeepL limits are reached or if no API key is supplied.
 
@@ -261,12 +261,12 @@ Rewrite the `/api/translate` endpoint to prioritize the DeepL Free API (500K fre
 
 ```ts
 /**
- * route.ts — GET /api/translate
+ * route.ts â€” GET /api/translate
  * Translates queries to English. Prioritises DeepL Free API and falls back to MyMemory.
- * VoiceBerry | Ulavi Technologies
+ * Voice Query System | Ulavi Technologies
  */
 
-// ── SERVER ONLY ───────────────────────────────────────────────────────────────
+// â”€â”€ SERVER ONLY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // This file runs on the server (Next.js API route). Do NOT import browser APIs.
 
 import { NextResponse } from "next/server";
@@ -392,7 +392,7 @@ export async function GET(request: Request) {
 
 ---
 
-## Step 4.5 — Error Monitoring with Sentry
+## Step 4.5 â€” Error Monitoring with Sentry
 
 Sentry tracks runtime crashes and slow queries, providing visibility into failing requests in production.
 
@@ -424,48 +424,48 @@ npm run build
 
 ---
 
-## Step 4.6 — Production Environment Variables
+## Step 4.6 â€” Production Environment Variables
 
 Update `frontend/.env.example` to provide a complete list of keys required for production hosting.
 
 **Full file content (`frontend/.env.example`):**
 
 ```bash
-# ── AssemblyAI — server-side transcription ──────────────────────────────────
+# â”€â”€ AssemblyAI â€” server-side transcription â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 ASSEMBLYAI_API_KEY=
 
-# ── EmailJS — server-side ONLY (never use NEXT_PUBLIC_ prefix here) ─────────
+# â”€â”€ EmailJS â€” server-side ONLY (never use NEXT_PUBLIC_ prefix here) â”€â”€â”€â”€â”€â”€â”€â”€â”€
 EMAILJS_PUBLIC_KEY=
 EMAILJS_SERVICE_ID=
 EMAILJS_CUSTOMER_TEMPLATE_ID=
 EMAILJS_OPS_TEMPLATE_ID=
 EMAILJS_PRIVATE_KEY=
 
-# ── MongoDB Atlas — database storage ────────────────────────────────────────
+# â”€â”€ MongoDB Atlas â€” database storage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 MONGODB_URI=
-MONGODB_DB=voiceberry
+MONGODB_DB=Voice Query System
 
-# ── Supabase Storage — voice recording uploads ──────────────────────────────
+# â”€â”€ Supabase Storage â€” voice recording uploads â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # (NEXT_PUBLIC_ is allowed here as project URLs are public)
 NEXT_PUBLIC_SUPABASE_URL=
-# Service role key — server-side ONLY (never expose this to the browser)
+# Service role key â€” server-side ONLY (never expose this to the browser)
 SUPABASE_SERVICE_ROLE_KEY=
 
-# ── Upstash Redis — rate limiting ───────────────────────────────────────────
+# â”€â”€ Upstash Redis â€” rate limiting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # REST keys are used for compatibility with serverless environments
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 
-# ── DeepL API — high quality translations ──────────────────────────────────
+# â”€â”€ DeepL API â€” high quality translations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 DEEPL_API_KEY=
 
-# ── Sentry — error tracking ─────────────────────────────────────────────────
+# â”€â”€ Sentry â€” error tracking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 NEXT_PUBLIC_SENTRY_DSN=
 ```
 
 ---
 
-## Phase 4 — Verification Checklist
+## Phase 4 â€” Verification Checklist
 
 Execute these verification checks before marking the implementation project as complete.
 
@@ -505,4 +505,5 @@ Execute these verification checks before marking the implementation project as c
 ---
 
 *This document is the property of Ulavi Technologies. Confidential.*  
-*Questions? Contact Anas Alam — SDE.*
+*Questions? Contact Anas Alam â€” SDE.*
+

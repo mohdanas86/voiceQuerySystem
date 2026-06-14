@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
 const sentryOptions = {
   silent: true, // Suppresses source map uploading logs
   org: "ulavi-technologies",
-  project: "voiceberry",
+  project: "voice-query-system",
   widenClientFileUpload: true,
   transpileClientSDK: true,
   hideSourceMaps: true,
