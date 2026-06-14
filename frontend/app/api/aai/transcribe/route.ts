@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { transcribeRateLimiter } from "@/lib/rateLimitRedis";
+import { translateText } from "@/lib/translate";
 
 interface TranscriptResponse {
     id?: string;
@@ -176,25 +177,17 @@ export async function POST(request: Request) {
             // If AssemblyAI didn't return a translation, fall back to MyMemory
             // server-side so the client always gets an English translation.
             let translatedTexts = pollData.translated_texts ?? null;
-            if ((!translatedTexts || !translatedTexts["en"]) && pollData.language_code && pollData.language_code !== "en") {
+            const rawLangCode = pollData.language_code ?? "";
+            const baseLang = rawLangCode.split("-")[0].split("_")[0].toLowerCase();
+
+            if ((!translatedTexts || !translatedTexts["en"]) && baseLang && baseLang !== "en") {
                 try {
-                    const translateUrl = new URL("/api/translate", "http://localhost");
-                    translateUrl.searchParams.set("text", text);
-                    translateUrl.searchParams.set("source", pollData.language_code);
-                    translateUrl.searchParams.set("target", "en");
-                    // Use the internal relative URL so it works in both dev and prod.
-                    const host = request.headers.get("host") ?? "localhost:3000";
-                    const proto = request.headers.get("x-forwarded-proto") ?? "http";
-                    const internalUrl = `${proto}://${host}/api/translate?text=${encodeURIComponent(text)}&source=${pollData.language_code}&target=en`;
-                    const tlRes = await fetch(internalUrl, { cache: "no-store" });
-                    if (tlRes.ok) {
-                        const tlData = (await tlRes.json()) as { translatedText?: string };
-                        if (tlData.translatedText && tlData.translatedText !== text) {
-                            translatedTexts = { en: tlData.translatedText };
-                        }
+                    const translatedText = await translateText(text, baseLang, "en");
+                    if (translatedText && translatedText !== text) {
+                        translatedTexts = { en: translatedText };
                     }
-                } catch {
-                    // Translation fallback failed — continue without it; client can still use original text.
+                } catch (err) {
+                    console.error("[api/aai/transcribe] Translation fallback failed:", err);
                 }
             }
 

@@ -7,11 +7,12 @@ import { SuccessCheckmark } from "@/components/feedback/SuccessCheckmark";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useQueryStore } from "@/store/useQueryStore";
-import { t } from "@/lib/i18n";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function ConfirmationPage() {
     const router = useRouter();
-    const { uiLanguage, reset } = useQueryStore();
+    const { reset } = useQueryStore();
+    const { t } = useTranslation();
     // null = not checked yet (SSR / hydration), true = legit, false = direct visit
     const [isLegit, setIsLegit] = useState<boolean | null>(null);
 
@@ -60,14 +61,14 @@ export default function ConfirmationPage() {
                     <div className="inline-flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full bg-[#16A34A]" aria-hidden />
                         <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                            {t(uiLanguage, "confirmStep")}
+                            {t("confirmStep")}
                         </span>
                     </div>
                     <h1 className="text-3xl font-semibold tracking-[-0.025em] text-[#111111] sm:text-4xl">
-                        {t(uiLanguage, "confirmTitle")}
+                        {t("confirmTitle")}
                     </h1>
                     <p className="text-sm font-light text-[#6B6A68] mt-1">
-                        {t(uiLanguage, "confirmBody")}
+                        {t("confirmBody")}
                     </p>
                 </div>
 
@@ -81,10 +82,10 @@ export default function ConfirmationPage() {
                         {/* Text */}
                         <div className="flex flex-col gap-2">
                             <p className="text-lg font-semibold text-[#111111]">
-                                {t(uiLanguage, "confirmTitle")}
+                                {t("confirmTitle")}
                             </p>
                             <p className="text-sm font-light text-[#6B6A68] leading-relaxed max-w-xs mx-auto">
-                                {t(uiLanguage, "confirmBody")}
+                                {t("confirmBody")}
                             </p>
                         </div>
 
@@ -98,7 +99,7 @@ export default function ConfirmationPage() {
                         >
                             <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
                             <span className="text-[12px] font-medium text-[#16A34A] tracking-[0.04em]">
-                                {t(uiLanguage, "confirmTitle")}
+                                {t("confirmTitle")}
                             </span>
                         </div>
                     </div>
@@ -111,13 +112,13 @@ export default function ConfirmationPage() {
                     className="w-full touch-manipulation"
                     onClick={handleSubmitAnother}
                 >
-                    {t(uiLanguage, "confirmSubAnotherQuery")}
+                    {t("confirmSubAnotherQuery")}
                 </Button>
 
                 {/* Bottom ticker */}
                 <div className="border-t border-[#E8E5DF] pt-3 flex items-center justify-between">
                     <span className="text-[11px] font-medium text-[#9CA3AF] tracking-[0.05em] uppercase">
-                        {t(uiLanguage, "confirmStep")}
+                        {t("confirmStep")}
                     </span>
                     <span className="text-[11px] text-[#D5D0C4] tracking-widest">/ / / / /</span>
                 </div>

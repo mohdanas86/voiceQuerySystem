@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryStore } from "@/store/useQueryStore";
-import type { SupportedLang } from "@/lib/i18n";
+import { SupportedLang, LANGUAGE_OPTIONS } from "@/lib/i18n";
 import { ChevronDown, Languages } from "lucide-react";
 
 export const Footer = () => {
@@ -27,15 +27,11 @@ export const Footer = () => {
                             }}
                             className="appearance-none pr-7 pl-2.5 py-1 text-[10px] font-semibold text-brand-text bg-white border border-brand-border rounded-lg hover:border-brand-accent/50 focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/20 outline-none shadow-sm transition-all cursor-pointer"
                         >
-                            <option value="auto">Auto-detect</option>
-                            <option value="en">English</option>
-                            <option value="hi">हिंदी (Hindi)</option>
-                            <option value="ta">தமிழ் (Tamil)</option>
-                            <option value="te">తెలుగు (Telugu)</option>
-                            <option value="kn">ಕನ್ನಡ (Kannada)</option>
-                            <option value="ml">മലയാളം (Malayalam)</option>
-                            <option value="bn">বাংলা (Bengali)</option>
-                            <option value="mr">मराठी (Marathi)</option>
+                            {LANGUAGE_OPTIONS.map((lang) => (
+                                <option key={lang.code} value={lang.code}>
+                                    {lang.nameNative} {lang.nameEn !== lang.nameNative ? `(${lang.nameEn})` : ""}
+                                </option>
+                            ))}
                         </select>
                         <ChevronDown className="pointer-events-none absolute top-1/2 right-2 w-3 h-3 -translate-y-1/2 text-brand-muted" aria-hidden />
                     </div>

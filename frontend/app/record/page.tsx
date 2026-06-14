@@ -9,8 +9,9 @@ import { RecordingTimer } from "@/components/speech/RecordingTimer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useQueryStore } from "@/store/useQueryStore";
-import { t } from "@/lib/i18n";
+import { LANGUAGE_OPTIONS } from "@/lib/i18n";
 import type { SupportedLang } from "@/lib/i18n";
+import { useTranslation } from "@/hooks/useTranslation";
 import { LanguagePicker } from "@/components/language/LanguagePicker";
 import { Languages } from "lucide-react";
 
@@ -33,6 +34,8 @@ export default function RecordPage() {
         setTranslatedTranscript, setIsTranslating, setErrorMessage,
         uiLanguage, setUiLanguage, setAudioUrl, setDetectedLanguage,
     } = useQueryStore();
+
+    const { t } = useTranslation();
 
     const hasMounted = useSyncExternalStore(
         () => () => { },
@@ -116,7 +119,7 @@ export default function RecordPage() {
     };
 
     const handleStart = useCallback(async () => {
-        if (!mediaSupported) { setErrorMessage(t(uiLanguage, "errorBrowserNoMic")); return; }
+        if (!mediaSupported) { setErrorMessage(t("errorBrowserNoMic")); return; }
         if (!window.isSecureContext) { setErrorMessage("Recording is only available on secure connections."); return; }
         if (isRecording) return;
 
@@ -158,7 +161,7 @@ export default function RecordPage() {
                         // This path shouldn't normally be reached anymore since the server now
                         // returns 422 for empty transcripts — but keep it as a safety net.
                         setRetryCount((c) => c + 1);
-                        setErrorMessage(t(uiLanguage, "errorNoSpeech"));
+                        setErrorMessage(t("errorNoSpeech"));
                         setRecordingStatus("idle");
                         return;
                     }
@@ -170,9 +173,10 @@ export default function RecordPage() {
 
                     // Auto-detect UI Language Switch
                     if (uiLanguage === 'auto' && result.language_code) {
-                        const detected = result.language_code as SupportedLang;
-                        const SUPPORTED_LANGUAGES: SupportedLang[] = ['en', 'hi', 'ta', 'te', 'kn', 'ml', 'bn', 'mr'];
-                        if (SUPPORTED_LANGUAGES.includes(detected)) {
+                        const detectedBase = result.language_code.split("-")[0].split("_")[0].toLowerCase();
+                        const detected = detectedBase as SupportedLang;
+                        const isSupported = LANGUAGE_OPTIONS.some((lang) => lang.code === detected);
+                        if (isSupported) {
                             setDetectedLanguage(detected);
                         }
                     }
@@ -192,9 +196,9 @@ export default function RecordPage() {
                         // Expected user-behaviour: no speech in clip. Warn, not error.
                         console.warn("[transcribe] no speech detected, duration:", dur);
                         if (dur > 0 && dur < 4) {
-                            setErrorMessage(t(uiLanguage, "errorTooShort"));
+                            setErrorMessage(t("errorTooShort"));
                         } else {
-                            setErrorMessage(t(uiLanguage, "errorNoSpeech"));
+                            setErrorMessage(t("errorNoSpeech"));
                         }
                     } else if (e.code === "RATE_LIMITED") {
                         console.warn("[transcribe] rate limited");
@@ -202,7 +206,7 @@ export default function RecordPage() {
                     } else {
                         // Genuinely unexpected: log as error for debugging.
                         console.error("[transcribe] unexpected failure", e);
-                        setErrorMessage(t(uiLanguage, "errorGeneral"));
+                        setErrorMessage(t("errorGeneral"));
                     }
                     setRecordingStatus("idle");
                 } finally {
@@ -213,17 +217,17 @@ export default function RecordPage() {
             recorder.start();
             setIsRecording(true);
         } catch {
-            setErrorMessage(t(uiLanguage, "errorMicBlocked"));
+            setErrorMessage(t("errorMicBlocked"));
             setRecordingStatus("idle");
             stopTracks();
         }
-    }, [isRecording, mediaSupported, sourceLanguage, setErrorMessage, setIsTranslating, setOriginalTranscript, setRecordingStatus, setSourceLanguage, setTranslatedTranscript, uiLanguage, setDetectedLanguage, setAudioUrl]);
+    }, [isRecording, mediaSupported, sourceLanguage, setErrorMessage, setIsTranslating, setOriginalTranscript, setRecordingStatus, setSourceLanguage, setTranslatedTranscript, uiLanguage, setDetectedLanguage, setAudioUrl, t]);
 
     const handleStop = useCallback(() => {
         if (!mediaRecorderRef.current || !isRecording) return;
         // Enforce minimum recording length — don't waste an API call on a near-empty clip.
         if (elapsedRef.current < MIN_RECORD_SECONDS) {
-            setErrorMessage(t(uiLanguage, "recordMinSeconds"));
+            setErrorMessage(t("recordMinSeconds"));
             // Still stop the recorder and free tracks, but go back to idle.
             mediaRecorderRef.current.onstop = () => {
                 stopTracks();
@@ -237,7 +241,7 @@ export default function RecordPage() {
         setRecordingStatus("processing");
         mediaRecorderRef.current.stop();
         setIsRecording(false);
-    }, [isRecording, setRecordingStatus, setErrorMessage, uiLanguage]);
+    }, [isRecording, setRecordingStatus, setErrorMessage, t]);
 
     useEffect(() => {
         if (elapsedSeconds >= maxSeconds && isRecording) handleStop();
@@ -266,14 +270,14 @@ export default function RecordPage() {
                     <div className="inline-flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full bg-[#E85D22]" aria-hidden />
                         <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                            {t(uiLanguage, "recordStep")}
+                            {t("recordStep")}
                         </span>
                     </div>
                     <h1 className="text-3xl font-semibold tracking-[-0.025em] text-[#111111] sm:text-4xl">
-                        {t(uiLanguage, "recordTitle")}
+                        {t("recordTitle")}
                     </h1>
                     <p className="text-sm font-light text-[#6B6A68] mt-1">
-                        {t(uiLanguage, "recordSubtitle")}
+                        {t("recordSubtitle")}
                     </p>
                 </div>
 
@@ -318,7 +322,6 @@ export default function RecordPage() {
                             }
                             onClick={handleToggle}
                             disabled={!hasMounted || !mediaSupported || recordingStatus === "processing"}
-                            lang={uiLanguage}
                         />
                     </div>
 
@@ -328,7 +331,7 @@ export default function RecordPage() {
                     {/* Status row */}
                     <div className="flex items-center justify-between">
                         <span className="text-[12px] font-medium text-[#6B6A68]">
-                            {t(uiLanguage, "recordTimer")}
+                            {t("recordTimer")}
                         </span>
                         <span
                             className="text-[12px] font-semibold transition-colors duration-150"
@@ -354,7 +357,7 @@ export default function RecordPage() {
                         <div className="flex items-center gap-2">
                             <span className="h-1.5 w-1.5 rounded-full bg-[#6B6A68]" aria-hidden />
                             <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                                {t(uiLanguage, "recordTranscriptPreview")}
+                                {t("recordTranscriptPreview")}
                             </span>
                         </div>
                         <Card accent padding="md">
@@ -373,7 +376,7 @@ export default function RecordPage() {
                         disabled={!canContinue}
                         onClick={() => router.push("/details")}
                     >
-                        {t(uiLanguage, "recordContinue")}
+                        {t("recordContinue")}
                     </Button>
                     {!canContinue && (
                         <p className="text-[12px] font-light text-[#6B6A68] text-center">
@@ -385,7 +388,7 @@ export default function RecordPage() {
                 {/* Bottom ticker */}
                 <div className="border-t border-brand-border pt-3 flex items-center justify-between">
                     <span className="text-[11px] font-medium text-brand-muted tracking-caps uppercase">
-                        {t(uiLanguage, "recordStep")}
+                        {t("recordStep")}
                     </span>
                     <span className="text-[11px] text-[#D5D0C4] tracking-widest">/ / / / /</span>
                 </div>
@@ -395,16 +398,16 @@ export default function RecordPage() {
             {/* Language Modal Popup Overlay */}
             {showLanguageModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl border border-brand-border p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col items-center gap-6 reveal">
+                    <div className="bg-white rounded-3xl border border-brand-border p-8 w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col items-center gap-6 reveal">
                         <div className="flex flex-col items-center text-center max-w-md">
                             <div className="h-12 w-12 rounded-2xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center mb-4 shadow-sm">
                                 <Languages className="w-6 h-6 text-brand-accent" />
                             </div>
                             <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
-                                {t(uiLanguage, "langPickerTitle") || "Select your language"}
+                                {t("langPickerTitle")}
                             </h2>
                             <p className="text-sm text-gray-500">
-                                {t(uiLanguage, "langPickerSubtitle") || "All screens will adapt to your choice."}
+                                {t("langPickerSubtitle")}
                             </p>
                         </div>
 

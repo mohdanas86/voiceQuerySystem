@@ -15,7 +15,7 @@ import { BudgetStarSelector, budgetRatingToString } from "@/components/popups/Bu
 import { ApiError, submitQuery } from "@/services/api";
 import { useQueryStore } from "@/store/useQueryStore";
 import { getClientTimestamp } from "@/lib/time";
-import { t } from "@/lib/i18n";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // Parsers for passenger counts (adults, children)
 function parsePassengerCounts(passengersString: string) {
@@ -82,7 +82,7 @@ export default function ReviewPage() {
         userName, sourceLanguage, originalTranscript, translatedTranscript,
         phoneCountryCode, phoneNumber, isTranslating, isSubmitting, errorMessage,
         setUserName, setTranslatedTranscript, setPhoneCountryCode, setPhoneNumber,
-        setIsSubmitting, setErrorMessage, reset, uiLanguage,
+        setIsSubmitting, setErrorMessage, reset,
         // New fields (Phase 3)
         tripCity, setTripCity,
         tripDatesFrom, setTripDatesFrom,
@@ -92,6 +92,8 @@ export default function ReviewPage() {
         userEmail, setUserEmail,
         audioUrl,
     } = useQueryStore();
+
+    const { t, uiLanguage } = useTranslation();
 
     // ── All hooks must be declared before any early return ────────────────────
     const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -134,7 +136,7 @@ export default function ReviewPage() {
     const budgetStarCount = useMemo(() => parseBudgetStarCount(tripBudget), [tripBudget]);
 
     function handleBudgetChange(rating: number): void {
-        setTripBudget(budgetRatingToString(rating, uiLanguage));
+        setTripBudget(budgetRatingToString(rating, t));
     }
 
     const phoneSchema = useMemo(() => z.object({
@@ -184,19 +186,19 @@ export default function ReviewPage() {
 
         const nameResult = nameSchema.safeParse(userName);
         if (!nameResult.success) {
-            setNameError(t(uiLanguage, "errorName"));
+            setNameError(t("errorName"));
             return;
         }
         if (!emailValidation) {
-            setEmailError(t(uiLanguage, "errorEmail"));
+            setEmailError(t("errorEmail"));
             return;
         }
         if (!phoneValidation) {
-            setPhoneError(t(uiLanguage, "errorPhone"));
+            setPhoneError(t("errorPhone"));
             return;
         }
         if (!translatedTranscript.trim()) {
-            setErrorMessage(t(uiLanguage, "errorTranscript"));
+            setErrorMessage(t("errorTranscript"));
             return;
         }
 
@@ -256,7 +258,7 @@ export default function ReviewPage() {
         const value = e.target.value;
         setUserEmail(value);
         if (value.trim().length > 0 && !emailSchema.safeParse(value.trim()).success) {
-            setEmailError(t(uiLanguage, "errorEmail"));
+            setEmailError(t("errorEmail"));
         } else {
             setEmailError(null);
         }
@@ -275,14 +277,14 @@ export default function ReviewPage() {
                     <div className="inline-flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full bg-[#E85D22]" aria-hidden />
                         <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                            {t(uiLanguage, "reviewStep")}
+                            {t("reviewStep")}
                         </span>
                     </div>
                     <h1 className="text-3xl font-semibold tracking-[-0.025em] text-[#111111] sm:text-4xl">
-                        {t(uiLanguage, "reviewTitle")}
+                        {t("reviewTitle")}
                     </h1>
                     <p className="text-sm font-light text-[#6B6A68] mt-1">
-                        {t(uiLanguage, "reviewSubtitle")}
+                        {t("reviewSubtitle")}
                     </p>
                 </div>
 
@@ -297,7 +299,7 @@ export default function ReviewPage() {
                         {originalTranscript && (
                             <div className="flex flex-col gap-1.5">
                                 <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                                    {t(uiLanguage, "reviewTranscriptLabel")}
+                                    {t("reviewTranscriptLabel")}
                                 </span>
                                 <div className="rounded-xl border border-[#E8E5DF] bg-[#F9F8F5] overflow-hidden flex">
                                     <div className="w-[3px] bg-[#E85D22] shrink-0" />
@@ -331,13 +333,13 @@ export default function ReviewPage() {
                         {/* Destination */}
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="review-trip-city" className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                                {t(uiLanguage, "reviewCityLabel")}
+                                {t("reviewCityLabel")}
                             </label>
                             <input
                                 id="review-trip-city"
                                 type="text"
                                 className="h-11 w-full rounded-xl border border-[#E8E5DF] bg-white px-4 text-sm font-light text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#E85D22] focus:ring-2 focus:ring-[#E85D22]/20 transition-colors"
-                                placeholder={t(uiLanguage, "reviewNotProvided")}
+                                placeholder={t("reviewNotProvided")}
                                 value={tripCity}
                                 onChange={(e) => setTripCity(e.target.value)}
                             />
@@ -346,7 +348,7 @@ export default function ReviewPage() {
                         {/* Travel dates */}
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                                {t(uiLanguage, "reviewDatesLabel")}
+                                {t("reviewDatesLabel")}
                             </label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="flex flex-col gap-1">
@@ -377,17 +379,17 @@ export default function ReviewPage() {
                         {/* Passengers */}
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                                {t(uiLanguage, "reviewPassengersLabel")}
+                                {t("reviewPassengersLabel")}
                             </label>
                             <div className="flex flex-col gap-4 w-full bg-[#F9F8F5] p-5 rounded-2xl border border-[#E8E5DF] shadow-sm">
                                 {/* Adults Row */}
                                 <div className="flex items-center justify-between">
                                     <div className="flex flex-col text-left">
                                         <span className="text-sm font-semibold text-[#111111]">
-                                            {t(uiLanguage, 'popupAdultsLabel')}
+                                            {t('popupAdultsLabel')}
                                         </span>
                                         <span className="text-[11px] text-[#6B6A68] font-light mt-0.5">
-                                            {uiLanguage === 'hi' ? '12 वर्ष से अधिक' : uiLanguage === 'ta' ? '12 வயதிற்கு மேல்' : 'Ages 13 or above'}
+                                            {t('popupAdultsSub')}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-4 bg-white border border-[#E8E5DF] rounded-xl px-2 py-1 shadow-sm">
@@ -422,10 +424,10 @@ export default function ReviewPage() {
                                 <div className="flex items-center justify-between">
                                     <div className="flex flex-col text-left">
                                         <span className="text-sm font-semibold text-[#111111]">
-                                            {t(uiLanguage, 'popupChildrenLabel')}
+                                            {t('popupChildrenLabel')}
                                         </span>
                                         <span className="text-[11px] text-[#6B6A68] font-light mt-0.5">
-                                            {uiLanguage === 'hi' ? '0 से 12 वर्ष' : uiLanguage === 'ta' ? '0 முதல் 12 வயது' : 'Ages 0 to 12'}
+                                            {t('popupChildrenSub')}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-4 bg-white border border-[#E8E5DF] rounded-xl px-2 py-1 shadow-sm">
@@ -458,13 +460,12 @@ export default function ReviewPage() {
                         {/* Budget Star Selector */}
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                                {t(uiLanguage, "reviewBudgetLabel")}
+                                {t("reviewBudgetLabel")}
                             </label>
                             <div className="rounded-xl border border-[#E8E5DF] bg-[#F9F8F5] p-4 flex flex-col items-center shadow-sm">
                                 <BudgetStarSelector
                                     value={budgetStarCount}
                                     onChange={handleBudgetChange}
-                                    lang={uiLanguage}
                                 />
                             </div>
                         </div>
@@ -482,14 +483,14 @@ export default function ReviewPage() {
                         {/* Name */}
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="review-user-name" className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                                {t(uiLanguage, "reviewNameLabel")}
+                                {t("reviewNameLabel")}
                             </label>
                             <input
                                 id="review-user-name"
                                 name="user_name"
                                 type="text"
                                 autoComplete="name"
-                                placeholder={t(uiLanguage, "reviewNameLabel")}
+                                placeholder={t("reviewNameLabel")}
                                 aria-invalid={nameError ? true : undefined}
                                 className="h-11 w-full rounded-xl border border-[#E8E5DF] bg-white px-4 text-sm font-light text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#E85D22] focus:ring-2 focus:ring-[#E85D22]/20 transition-colors"
                                 value={userName}
@@ -506,14 +507,14 @@ export default function ReviewPage() {
                         {/* Email Address */}
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="review-user-email" className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                                {t(uiLanguage, "reviewEmailLabel")}
+                                {t("reviewEmailLabel")}
                             </label>
                             <input
                                 id="review-user-email"
                                 name="user_email"
                                 type="email"
                                 autoComplete="email"
-                                placeholder={t(uiLanguage, "reviewEmailPlaceholder")}
+                                placeholder={t("reviewEmailPlaceholder")}
                                 aria-invalid={emailError ? true : undefined}
                                 className="h-11 w-full rounded-xl border border-[#E8E5DF] bg-white px-4 text-sm font-light text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#E85D22] focus:ring-2 focus:ring-[#E85D22]/20 transition-colors"
                                 value={userEmail}
@@ -548,19 +549,19 @@ export default function ReviewPage() {
                         onClick={handleSubmit}
                         aria-busy={isSubmitting}
                     >
-                        {isSubmitting ? t(uiLanguage, "reviewSending") : t(uiLanguage, "reviewSend")}
+                        {isSubmitting ? t("reviewSending") : t("reviewSend")}
                     </Button>
                     <Link
                         href="/record"
                         className="flex items-center justify-center sm:justify-start gap-1 text-sm font-medium text-[#6B6A68] hover:text-[#E85D22] transition-colors whitespace-nowrap px-2 py-2"
                     >
-                        {t(uiLanguage, "reviewBack")}
+                        {t("reviewBack")}
                     </Link>
                 </div>
 
                 {/* Bottom ticker */}
                 <div className="border-t border-[#E8E5DF] pt-3 flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-[#9CA3AF] tracking-[0.05em] uppercase">{t(uiLanguage, "reviewStep")}</span>
+                    <span className="text-[11px] font-medium text-[#9CA3AF] tracking-[0.05em] uppercase">{t("reviewStep")}</span>
                     <span className="text-[11px] text-[#D5D0C4] tracking-widest">/ / / / /</span>
                 </div>
 

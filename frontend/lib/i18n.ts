@@ -5,15 +5,7 @@
  */
 
 export type SupportedLang =
-  | 'en'   // English
-  | 'hi'   // Hindi
-  | 'ta'   // Tamil
-  | 'te'   // Telugu
-  | 'kn'   // Kannada
-  | 'ml'   // Malayalam
-  | 'bn'   // Bengali
-  | 'mr'   // Marathi
-  | 'auto'; // Auto-detect — shows English UI until language is known
+  | 'auto' | 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'hi' | 'ta' | 'te' | 'kn' | 'ml' | 'bn' | 'mr' | 'gu' | 'pa' | 'or' | 'as' | 'ur' | 'ja' | 'ko' | 'zh' | 'ru' | 'ar' | 'tr' | 'nl' | 'pl' | 'sv' | 'da' | 'fi' | 'no' | 'cs' | 'el' | 'he' | 'id' | 'ms' | 'th' | 'vi' | 'uk' | 'ro' | 'hu' | 'sk' | 'bg' | 'hr' | 'sr' | 'sl' | 'et' | 'lv' | 'lt' | 'fa' | 'hy' | 'ka' | 'af' | 'sq' | 'am' | 'az' | 'eu' | 'be' | 'bs' | 'ca' | 'gl' | 'is' | 'kk' | 'ky' | 'mk' | 'mn' | 'ne' | 'si' | 'sw' | 'uz' | 'cy' | 'yo' | 'zu';
 
 export interface LangStrings {
   // ── Language Picker Screen ─────────────────────────────────────────────────
@@ -99,9 +91,14 @@ export interface LangStrings {
   errorGeneral: string;
   errorMicBlocked: string;
   errorBrowserNoMic: string;
+  detailsAnalysing: string;
+  detailsAllDetected: string;
+  detailsRedirecting: string;
+  popupAdultsSub: string;
+  popupChildrenSub: string;
 }
 
-const enStrings: LangStrings = {
+export const enStrings: LangStrings = {
   langPickerTitle: "Select your language",
   langPickerSubtitle: "All screens will be shown in your selected language",
   langPickerAutoDetect: "Auto-detect",
@@ -170,6 +167,11 @@ const enStrings: LangStrings = {
   errorGeneral: "Something went wrong. Please try recording again.",
   errorMicBlocked: "Microphone access is blocked. Please allow mic permissions and try again.",
   errorBrowserNoMic: "Audio recording is not supported in this browser.",
+  detailsAnalysing: "Analysing your query...",
+  detailsAllDetected: "Great! We found all your trip details.",
+  detailsRedirecting: "Redirecting you to review...",
+  popupAdultsSub: "Ages 13 or above",
+  popupChildrenSub: "Ages 0 to 12",
 };
 
 const hiStrings: LangStrings = {
@@ -241,6 +243,11 @@ const hiStrings: LangStrings = {
   errorGeneral: "कुछ गड़बड़ हो गई। कृपया फिर से रिकॉर्ड करने का प्रयास करें।",
   errorMicBlocked: "माइक्रोफ़ोन एक्सेस ब्लॉक है। कृपया माइक्रोफ़ोन अनुमति दें और फिर से प्रयास करें।",
   errorBrowserNoMic: "इस ब्राउज़र में ऑडियो रिकॉर्डिंग समर्थित नहीं है।",
+  detailsAnalysing: "आपकी क्वेरी का विश्लेषण किया जा रहा है...",
+  detailsAllDetected: "बहुत बढ़िया! हमें आपकी यात्रा के सभी विवरण मिल गए हैं।",
+  detailsRedirecting: "समीक्षा पर ले जाया जा रहा है...",
+  popupAdultsSub: "12 वर्ष से अधिक",
+  popupChildrenSub: "0 से 12 वर्ष",
 };
 
 const taStrings: LangStrings = {
@@ -312,6 +319,11 @@ const taStrings: LangStrings = {
   errorGeneral: "ஏதோ தவறு நடந்துவிட்டது. தயவுசெய்து மீண்டும் பதிவு செய்ய முயற்சிக்கவும்.",
   errorMicBlocked: "ஒலிவாங்கி அணுகல் தடுக்கப்பட்டுள்ளது. தயவுசெய்து ஒலிவாங்கி அனுமதியை வழங்கி மீண்டும் முயற்சிக்கவும்.",
   errorBrowserNoMic: "இந்த ஒலிப்பதிவு உலாவியால் ஆதரிக்கப்படவில்லை.",
+  detailsAnalysing: "உங்கள் கேள்வி பகுப்பாய்வு செய்யப்படுகிறது...",
+  detailsAllDetected: "அருமை! உங்களின் அனைத்து பயண விவரங்களையும் கண்டறிந்துவிட்டோம்.",
+  detailsRedirecting: "மதிப்பாய்வுக்கு திருப்பி விடப்படுகிறது...",
+  popupAdultsSub: "12 வயதிற்கு மேல்",
+  popupChildrenSub: "0 முதல் 12 வயது",
 };
 
 const strings: Record<string, LangStrings> = {
@@ -337,3 +349,80 @@ const strings: Record<string, LangStrings> = {
 export function t(lang: SupportedLang, key: keyof LangStrings): string {
   return strings[lang]?.[key] ?? strings['en'][key];
 }
+
+/** Global list of all AssemblyAI supported languages with their symbols, English, and native names. */
+export const LANGUAGE_OPTIONS = [
+  { code: "auto", nameEn: "Auto-detect", nameNative: "Auto-detect", symbol: "Auto" },
+  { code: "en", nameEn: "English", nameNative: "English", symbol: "EN" },
+  { code: "es", nameEn: "Spanish", nameNative: "Español", symbol: "ES" },
+  { code: "fr", nameEn: "French", nameNative: "Français", symbol: "FR" },
+  { code: "de", nameEn: "German", nameNative: "Deutsch", symbol: "DE" },
+  { code: "it", nameEn: "Italian", nameNative: "Italiano", symbol: "IT" },
+  { code: "pt", nameEn: "Portuguese", nameNative: "Português", symbol: "PT" },
+  { code: "hi", nameEn: "Hindi", nameNative: "हिंदी", symbol: "हि" },
+  { code: "ta", nameEn: "Tamil", nameNative: "தமிழ்", symbol: "த" },
+  { code: "te", nameEn: "Telugu", nameNative: "తెలుగు", symbol: "తె" },
+  { code: "kn", nameEn: "Kannada", nameNative: "ಕನ್ನಡ", symbol: "ಕ" },
+  { code: "ml", nameEn: "Malayalam", nameNative: "മലയാളம்", symbol: "ம" },
+  { code: "bn", nameEn: "Bengali", nameNative: "বাংলা", symbol: "বা" },
+  { code: "mr", nameEn: "Marathi", nameNative: "मराठी", symbol: "म" },
+  { code: "gu", nameEn: "Gujarati", nameNative: "ગુજરાતી", symbol: "ગુ" },
+  { code: "pa", nameEn: "Punjabi", nameNative: "ਪੰਜਾਬੀ", symbol: "ਪੰ" },
+  { code: "or", nameEn: "Odia", nameNative: "ଓଡ଼ିଆ", symbol: "ଓ" },
+  { code: "as", nameEn: "Assamese", nameNative: "অসমীயா", symbol: "অ" },
+  { code: "ur", nameEn: "Urdu", nameNative: "اردو", symbol: "ار" },
+  { code: "ja", nameEn: "Japanese", nameNative: "日本語", symbol: "JA" },
+  { code: "ko", nameEn: "Korean", nameNative: "한국어", symbol: "KO" },
+  { code: "zh", nameEn: "Chinese", nameNative: "中文", symbol: "ZH" },
+  { code: "ru", nameEn: "Russian", nameNative: "Русский", symbol: "RU" },
+  { code: "ar", nameEn: "Arabic", nameNative: "العربية", symbol: "AR" },
+  { code: "tr", nameEn: "Turkish", nameNative: "Türkçe", symbol: "TR" },
+  { code: "nl", nameEn: "Dutch", nameNative: "Nederlands", symbol: "NL" },
+  { code: "pl", nameEn: "Polish", nameNative: "Polski", symbol: "PL" },
+  { code: "sv", nameEn: "Swedish", nameNative: "Svenska", symbol: "SV" },
+  { code: "da", nameEn: "Danish", nameNative: "Dansk", symbol: "DA" },
+  { code: "fi", nameEn: "Finnish", nameNative: "Suomi", symbol: "FI" },
+  { code: "no", nameEn: "Norwegian", nameNative: "Norsk", symbol: "NO" },
+  { code: "cs", nameEn: "Czech", nameNative: "Čeština", symbol: "CS" },
+  { code: "el", nameEn: "Greek", nameNative: "Ελληνικά", symbol: "EL" },
+  { code: "he", nameEn: "Hebrew", nameNative: "עברית", symbol: "HE" },
+  { code: "id", nameEn: "Indonesian", nameNative: "Bahasa Indonesia", symbol: "ID" },
+  { code: "ms", nameEn: "Malay", nameNative: "Bahasa Melayu", symbol: "MS" },
+  { code: "th", nameEn: "Thai", nameNative: "ไทย", symbol: "TH" },
+  { code: "vi", nameEn: "Vietnamese", nameNative: "Tiếng Việt", symbol: "VI" },
+  { code: "uk", nameEn: "Ukrainian", nameNative: "Українська", symbol: "UK" },
+  { code: "ro", nameEn: "Romanian", nameNative: "Română", symbol: "RO" },
+  { code: "hu", nameEn: "Hungarian", nameNative: "Magyar", symbol: "HU" },
+  { code: "sk", nameEn: "Slovak", nameNative: "Slovenčina", symbol: "SK" },
+  { code: "bg", nameEn: "Bulgarian", nameNative: "Български", symbol: "BG" },
+  { code: "hr", nameEn: "Croatian", nameNative: "Hrvatski", symbol: "HR" },
+  { code: "sr", nameEn: "Serbian", nameNative: "Српски", symbol: "SR" },
+  { code: "sl", nameEn: "Slovenian", nameNative: "Slovenščina", symbol: "SL" },
+  { code: "et", nameEn: "Estonian", nameNative: "Eesti", symbol: "ET" },
+  { code: "lv", nameEn: "Latvian", nameNative: "Latviešu", symbol: "LV" },
+  { code: "lt", nameEn: "Lithuanian", nameNative: "Lietuvių", symbol: "LT" },
+  { code: "fa", nameEn: "Persian", nameNative: "فارسی", symbol: "FA" },
+  { code: "hy", nameEn: "Armenian", nameNative: "Հայերեն", symbol: "HY" },
+  { code: "ka", nameEn: "Georgian", nameNative: "ქართული", symbol: "KA" },
+  { code: "af", nameEn: "Afrikaans", nameNative: "Afrikaans", symbol: "AF" },
+  { code: "sq", nameEn: "Albanian", nameNative: "Shqip", symbol: "SQ" },
+  { code: "am", nameEn: "Amharic", nameNative: "አማርኛ", symbol: "AM" },
+  { code: "az", nameEn: "Azerbaijani", nameNative: "Azərbaycanca", symbol: "AZ" },
+  { code: "eu", nameEn: "Basque", nameNative: "Euskara", symbol: "EU" },
+  { code: "be", nameEn: "Belarusian", nameNative: "Беларуская", symbol: "BE" },
+  { code: "bs", nameEn: "Bosnian", nameNative: "Bosanski", symbol: "BS" },
+  { code: "ca", nameEn: "Catalan", nameNative: "Català", symbol: "CA" },
+  { code: "gl", nameEn: "Galician", nameNative: "Galego", symbol: "GL" },
+  { code: "is", nameEn: "Icelandic", nameNative: "Íslenska", symbol: "IS" },
+  { code: "kk", nameEn: "Kazakh", nameNative: "Қазақ тілі", symbol: "KK" },
+  { code: "ky", nameEn: "Kyrgyz", nameNative: "Кыргызча", symbol: "KY" },
+  { code: "mk", nameEn: "Macedonian", nameNative: "Македонски", symbol: "MK" },
+  { code: "mn", nameEn: "Mongolian", nameNative: "Монгол", symbol: "MN" },
+  { code: "ne", nameEn: "Nepali", nameNative: "नेपाली", symbol: "NE" },
+  { code: "si", nameEn: "Sinhala", nameNative: "சிங்களம்", symbol: "SI" },
+  { code: "sw", nameEn: "Swahili", nameNative: "Kiswahili", symbol: "SW" },
+  { code: "uz", nameEn: "Uzbek", nameNative: "Oʻzbekcha", symbol: "UZ" },
+  { code: "cy", nameEn: "Welsh", nameNative: "Cymraeg", symbol: "CY" },
+  { code: "yo", nameEn: "Yoruba", nameNative: "Yorùbá", symbol: "YO" },
+  { code: "zu", nameEn: "Zulu", nameNative: "isiZulu", symbol: "ZU" }
+] as const;

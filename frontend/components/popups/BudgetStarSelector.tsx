@@ -8,8 +8,8 @@
 
 import { useState } from 'react';
 import { Star } from 'lucide-react';
-import { t } from '@/lib/i18n';
-import type { SupportedLang, LangStrings } from '@/lib/i18n';
+import { useTranslation } from '@/hooks/useTranslation';
+import type { LangStrings } from '@/lib/i18n';
 
 /** Minimum touch target size in pixels (mobile accessibility standard). */
 const MIN_TOUCH_TARGET_PX = 44;
@@ -50,11 +50,11 @@ const BUDGET_TIERS: readonly {
  * @returns A formatted string like "⭐⭐⭐ Mid-range (₹25,000 – ₹50,000/person)",
  *          or an empty string if rating is 0.
  */
-export function budgetRatingToString(rating: number, lang: SupportedLang): string {
+export function budgetRatingToString(rating: number, tFn: (key: keyof LangStrings) => string): string {
   if (rating === 0 || rating > BUDGET_TIERS.length) return '';
   const tier = BUDGET_TIERS[rating - 1]; // Convert 1-based rating to 0-based index
-  const tierLabel = t(lang, tier.labelKey);
-  const tierRange = t(lang, tier.rangeKey);
+  const tierLabel = tFn(tier.labelKey);
+  const tierRange = tFn(tier.rangeKey);
   return `${'⭐'.repeat(rating)} ${tierLabel} (${tierRange})`;
 }
 
@@ -68,15 +68,14 @@ interface BudgetStarSelectorProps {
    * Called with 0 if the user taps the already-selected star (deselect).
    */
   onChange: (rating: number) => void;
-  /** Language code — used to render tier labels in the correct language. */
-  lang: SupportedLang;
 }
 
 /**
  * BudgetStarSelector component.
  * Displays 5 stars for the user to select their budget tier, with descriptive text underneath.
  */
-export function BudgetStarSelector({ value, onChange, lang }: BudgetStarSelectorProps) {
+export function BudgetStarSelector({ value, onChange }: BudgetStarSelectorProps) {
+  const { t } = useTranslation();
   // hoverRating tracks which star the user is hovering over (desktop).
   // 0 = no hover. Used to show a preview of the selection.
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -99,7 +98,7 @@ export function BudgetStarSelector({ value, onChange, lang }: BudgetStarSelector
   const activeTier = displayRating > 0 ? BUDGET_TIERS[displayRating - 1] : null;
 
   return (
-    <div role="group" aria-label={t(lang, 'popupBudgetQuestion')} className="w-full flex flex-col items-center">
+    <div role="group" aria-label={t('popupBudgetQuestion')} className="w-full flex flex-col items-center">
       {/* Stars row */}
       <div className="flex gap-2 justify-center items-center">
         {Array.from({ length: 5 }, (_, i) => i + 1).map((starIndex) => {
@@ -145,15 +144,15 @@ export function BudgetStarSelector({ value, onChange, lang }: BudgetStarSelector
         {activeTier ? (
           <div className="reveal">
             <p className="font-bold text-brand-text text-sm uppercase tracking-wide">
-              {t(lang, activeTier.labelKey)}
+              {t(activeTier.labelKey)}
             </p>
             <p className="text-brand-muted text-xs mt-1 font-light">
-              {t(lang, activeTier.rangeKey)}
+              {t(activeTier.rangeKey)}
             </p>
           </div>
         ) : (
           <p className="text-gray-400 text-xs font-light mt-1">
-            {t(lang, 'budgetStarPlaceholder')}
+            {t('budgetStarPlaceholder')}
           </p>
         )}
       </div>

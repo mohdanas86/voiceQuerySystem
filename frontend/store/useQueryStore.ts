@@ -43,6 +43,9 @@ export interface QueryState {
     // ── Ephemeral Language State ─────────────────────────────────────────────
     uiLanguage: SupportedLang;
 
+    // ── Ephemeral Translated UI State ────────────────────────────────────────
+    uiTranslations: Record<string, string>;
+
     // ── Setters ──────────────────────────────────────────────────────────────
     setRecordingStatus: (status: RecordingStatus) => void;
     setUserName: (value: string) => void;
@@ -71,6 +74,7 @@ export interface QueryState {
     // Setter for persisted language
     setUiLanguage: (lang: SupportedLang) => void;
     setDetectedLanguage: (lang: SupportedLang) => void;
+    setUiTranslations: (translations: Record<string, string>) => void;
 
     // ── Actions ──────────────────────────────────────────────────────────────
     /** Resets all ephemeral user entry fields to initial state (preserves persisted preferredLanguage). */
@@ -96,6 +100,7 @@ const initialEphemeralState = {
     userEmail: "",
     audioUrl: "",
     uiLanguage: "auto" as SupportedLang,
+    uiTranslations: {} as Record<string, string>,
 };
 
 export const useQueryStore = create<QueryState>()(
@@ -136,6 +141,7 @@ export const useQueryStore = create<QueryState>()(
                 preferredLanguage: uiLanguage,
                 uiLanguage,
                 sourceLanguage: uiLanguage,
+                uiTranslations: {}, // clear previous dynamic translations when language updates
             }),
 
             setDetectedLanguage: (detectedLanguage) => set((state) => {
@@ -143,16 +149,20 @@ export const useQueryStore = create<QueryState>()(
                     return {
                         uiLanguage: detectedLanguage,
                         sourceLanguage: detectedLanguage,
+                        uiTranslations: {}, // clear previous dynamic translations
                     };
                 }
                 return {};
             }),
+
+            setUiTranslations: (uiTranslations) => set({ uiTranslations }),
 
             // Reset action
             reset: () => set((state) => ({
                 ...initialEphemeralState,
                 uiLanguage: state.preferredLanguage || "auto",
                 sourceLanguage: state.preferredLanguage || "auto",
+                uiTranslations: {}, // reset dynamic translations
             })),
         }),
         {

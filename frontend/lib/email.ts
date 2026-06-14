@@ -11,6 +11,21 @@
 
 import { t } from '@/lib/i18n';
 import type { SupportedLang } from '@/lib/i18n';
+import { translateText } from '@/lib/translate';
+
+/** Helper to translate a key or dynamic text to target lang on the server. */
+async function translateLabel(text: string, targetLang: string): Promise<string> {
+  if (targetLang === 'en' || targetLang === 'hi' || targetLang === 'ta' || targetLang === 'auto') {
+    return text;
+  }
+  try {
+    const result = await translateText(text, 'en', targetLang);
+    return result || text;
+  } catch (err) {
+    console.warn(`[email] Failed to translate "${text}" to ${targetLang}:`, err);
+    return text;
+  }
+}
 
 /** EmailJS REST API endpoint for sending emails. */
 const EMAILJS_API_URL = 'https://api.emailjs.com/api/v1.0/email/send';
@@ -94,7 +109,19 @@ interface OpsEmailParams {
  */
 export async function sendCustomerEmail(params: CustomerEmailParams): Promise<void> {
   const lang = params.ui_language;
-  const notProvided = t(lang, 'reviewNotProvided');
+  
+  // Resolve labels (translated or static)
+  const notProvided = await translateLabel(t(lang, 'reviewNotProvided'), lang);
+  const confirmBodyText = await translateLabel(t(lang, 'confirmBody'), lang);
+  const transcriptLabel = await translateLabel(t(lang, 'reviewTranscriptLabel'), lang);
+  const cityLabel = await translateLabel(t(lang, 'reviewCityLabel'), lang);
+  const datesLabel = await translateLabel(t(lang, 'reviewDatesLabel'), lang);
+  const passengersLabel = await translateLabel(t(lang, 'reviewPassengersLabel'), lang);
+  const budgetLabel = await translateLabel(t(lang, 'reviewBudgetLabel'), lang);
+  const emailLabel = await translateLabel(t(lang, 'reviewEmailLabel'), lang);
+  const phoneLabel = await translateLabel(t(lang, 'reviewPhoneLabel'), lang);
+  const outreachLabel = await translateLabel('Our team will reach out to you very soon.', lang);
+  const subjectLine = await translateLabel("We've received your travel query — Ulavi Technologies", lang);
 
   // Build the date range display string
   const datesDisplay = params.trip_dates_from
@@ -104,23 +131,23 @@ export async function sendCustomerEmail(params: CustomerEmailParams): Promise<vo
   // Build body as an array of lines, then join with newlines
   // (Avoids template literal indentation issues)
   const bodyLines = [
-    t(lang, 'confirmBody'),
+    confirmBodyText,
     '',
     EMAIL_SEPARATOR,
-    `${t(lang, 'reviewTranscriptLabel')}:`,
+    `${transcriptLabel}:`,
     params.original_query,
     '',
     EMAIL_SEPARATOR,
-    `${t(lang, 'reviewCityLabel')}: ${params.trip_city || notProvided}`,
-    `${t(lang, 'reviewDatesLabel')}: ${datesDisplay}`,
-    `${t(lang, 'reviewPassengersLabel')}: ${params.trip_passengers || notProvided}`,
-    `${t(lang, 'reviewBudgetLabel')}: ${params.trip_budget || notProvided}`,
+    `${cityLabel}: ${params.trip_city || notProvided}`,
+    `${datesLabel}: ${datesDisplay}`,
+    `${passengersLabel}: ${params.trip_passengers || notProvided}`,
+    `${budgetLabel}: ${params.trip_budget || notProvided}`,
     '',
     EMAIL_SEPARATOR,
-    `${t(lang, 'reviewEmailLabel')}: ${params.to_email}`,
-    `${t(lang, 'reviewPhoneLabel')}: ${params.phone}`,
+    `${emailLabel}: ${params.to_email}`,
+    `${phoneLabel}: ${params.phone}`,
     '',
-    'Our team will reach out to you very soon.',
+    outreachLabel,
   ];
 
   const bodyText = bodyLines.join('\n');
@@ -131,7 +158,7 @@ export async function sendCustomerEmail(params: CustomerEmailParams): Promise<vo
       to_email: params.to_email,
       user_name: params.user_name,
       body_text: bodyText,
-      subject_line: "We've received your travel query — Ulavi Technologies",
+      subject_line: subjectLine,
     },
   });
 }
