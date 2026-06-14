@@ -27,6 +27,22 @@ async function translateLabel(text: string, targetLang: string): Promise<string>
   }
 }
 
+/** Helper to translate text to English for Ops Email if the source UI language is not English. */
+async function translateToEnglish(text: string, uiLang: string): Promise<string> {
+  const trimmed = text.trim();
+  if (!trimmed || uiLang === 'en') {
+    return text;
+  }
+  try {
+    const source = (uiLang === 'auto' || !uiLang) ? 'auto' : uiLang;
+    const result = await translateText(trimmed, source, 'en');
+    return result || text;
+  } catch (err) {
+    console.warn(`[email] Failed to translate "${text}" to en:`, err);
+    return text;
+  }
+}
+
 /** EmailJS REST API endpoint for sending emails. */
 const EMAILJS_API_URL = 'https://api.emailjs.com/api/v1.0/email/send';
 
@@ -92,6 +108,8 @@ interface OpsEmailParams {
   phone: string;
   /** ISO 8601 timestamp. */
   submitted_at: string;
+  /** User's UI language. */
+  ui_language?: string;
 }
 
 // ── Customer Email ────────────────────────────────────────────────────────────
@@ -180,6 +198,13 @@ export async function sendCustomerEmail(params: CustomerEmailParams): Promise<vo
  *         Callers must wrap this in a try-catch and treat it as non-fatal.
  */
 export async function sendOpsEmail(params: OpsEmailParams): Promise<void> {
+  const uiLang = params.ui_language || 'en';
+
+  // Translate trip details to English for the support/ops team if the UI language was not English
+  const englishTripCity = await translateToEnglish(params.trip_city, uiLang);
+  const englishTripPassengers = await translateToEnglish(params.trip_passengers, uiLang);
+  const englishTripBudget = await translateToEnglish(params.trip_budget, uiLang);
+
   // Build the audio line — show the URL if available, otherwise a note
   const audioLine = params.audio_url
     ? `<a href="${params.audio_url}" target="_blank" style="color:#E85D22;font-weight:700;text-decoration:underline;">Listen to Voice Recording</a>`
@@ -199,10 +224,10 @@ export async function sendOpsEmail(params: OpsEmailParams): Promise<void> {
       english_translation: params.english_translation,
       audio_url: params.audio_url,
       audio_line: audioLine,
-      trip_city: params.trip_city || NOT_PROVIDED_EN,
+      trip_city: englishTripCity || NOT_PROVIDED_EN,
       trip_dates: tripDatesDisplay,
-      trip_passengers: params.trip_passengers || NOT_PROVIDED_EN,
-      trip_budget: params.trip_budget || NOT_PROVIDED_EN,
+      trip_passengers: englishTripPassengers || NOT_PROVIDED_EN,
+      trip_budget: englishTripBudget || NOT_PROVIDED_EN,
       user_email: params.user_email,
       phone: params.phone,
       submitted_at: params.submitted_at,

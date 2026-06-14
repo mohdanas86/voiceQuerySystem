@@ -196,6 +196,7 @@ export async function POST(request: Request) {
             user_email:              payload.user_email.trim(),
             phone:                   payload.phone_full.trim(),
             submitted_at:            payload.client_timestamp,
+            ui_language:             payload.ui_language,
         });
 
         try {
