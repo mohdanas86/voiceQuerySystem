@@ -2,7 +2,7 @@
  * tripExtractor.ts — Heuristic scanner that detects trip details from raw voice transcripts.
  * Runs client-side only. Zero API cost. Conservative detection — misses are ok, false
  * positives skip necessary pop-ups and lose data.
- * VoiceBerry | Ulavi Technologies
+ * Ulavi Technologies
  */
 
 /**

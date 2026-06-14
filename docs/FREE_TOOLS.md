@@ -1,4 +1,4 @@
-# VoiceBerry — Free Tools Policy
+# Voice Query System — Free Tools Policy
 
 > **This project uses ONLY free-tier services. No credit card required for any service.**  
 > If you are asked to enter payment details, stop and check the free tier options first.
@@ -9,10 +9,10 @@
 
 | Service | What It Does in This Project | Free Tier Limit | Sign-Up |
 |---|---|---|---|
-| **AssemblyAI** | Converts voice recordings to text. Also detects language. | 5 hours audio/month | assemblyai.com |
+| **AssemblyAI** | Converts voice recordings to text. Detects language (72 languages). Returns English translation when available. | 5 hours audio/month | assemblyai.com |
 | **MongoDB Atlas** | Stores all query submissions permanently. | 512MB storage | mongodb.com/atlas |
-| **EmailJS** | Sends emails from server-side code without an SMTP server. | 200 emails/month | emailjs.com |
-| **MyMemory** | Translates transcripts from local language to English. | 5,000 words/day | mymemory.translated.net |
+| **EmailJS** | Sends emails server-side (Node.js SDK). Two templates: customer confirmation + ops notification. | 200 emails/month | emailjs.com |
+| **MyMemory** | Translates original transcripts to English and translates ops-email field values (city, budget, passengers) to English. | 5,000 words/day | mymemory.translated.net |
 | **Upstash Redis** | Rate-limits API routes across multiple serverless instances. | 10,000 commands/day | upstash.com |
 | **Supabase Storage** | Stores voice recording `.webm` files, gives a public URL for ops emails. | 1GB storage + 2GB bandwidth/month | supabase.com |
 | **Vercel** | Hosts the Next.js app. Serverless functions. Edge network. | Free hobby tier (no custom domain sleep) | vercel.com |
@@ -40,12 +40,16 @@ Watch these in production. If any limit is close to being hit, alert the team:
 
 ### MyMemory — 5,000 words/day
 - An average voice query = ~50 words. Limit = ~100 translations/day
-- The app only translates ONCE per submission (not per pop-up)
-- Monitor at: mymemory.translated.net (no dashboard — watch for 429 responses in logs)
+- MyMemory is used in TWO places:
+  1. Translating the original voice transcript to English (primary path when AssemblyAI doesn't provide `translated_texts.en`)
+  2. Translating ops-email field values (city, budget tier, passenger counts) to English before sending the support team notification
+- Monitor at: mymemory.translated.net (no dashboard — watch for 429 responses in server logs)
 - Action when limit hit: Translation step returns original text. Ops team reads in original language.
 
 ### EmailJS — 200 emails/month
 - 200 emails = 100 submissions (customer email + ops email per submission)
+- Email is sent **server-side** via the Node.js `emailjs` SDK — not from the browser
+- Two templates are required: `customer_confirmation` (user's language) and `ops_notification` (always English)
 - At scale: switch to Brevo (formerly Sendinblue — 300 free emails/day, no card needed)
 - Monitor at: emailjs.com > Dashboard > Statistics
 
@@ -81,14 +85,14 @@ Follow this order. Each service takes 5–10 minutes to set up.
 
 ### Step 2 — MongoDB Atlas
 1. Go to mongodb.com/atlas, click "Try Free"
-2. Create an account, then create a new project named `voiceberry`
+2. Create an account, then create a new project named `voice-query-system`
 3. Create a free cluster (M0 tier — always free)
 4. Database Access > Add a database user (username + password)
 5. Network Access > Allow access from anywhere (for Vercel: `0.0.0.0/0`)
    - NOTE: Restrict to Vercel IPs in production for better security
 6. Clusters > Connect > Connect your application > Copy the connection string
 7. Add to `.env.local`: `MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/`
-8. Add to `.env.local`: `MONGODB_DB=voiceberry`
+8. Add to `.env.local`: `MONGODB_DB=voice_query_system`
 
 ### Step 3 — EmailJS
 1. Go to emailjs.com, click "Sign Up Free"
@@ -111,7 +115,7 @@ Follow this order. Each service takes 5–10 minutes to set up.
 ### Step 4 — Supabase
 1. Go to supabase.com, click "Start your project"
 2. Sign up with GitHub
-3. New project > Name: `voiceberry` > Region: choose nearest to your users
+3. New project > Name: `voice-query-system` > Region: choose nearest to your users
 4. Wait for project to provision (~2 minutes)
 5. Storage > Create a new bucket:
    - Name: `voice-recordings`
@@ -128,7 +132,7 @@ Follow this order. Each service takes 5–10 minutes to set up.
 ### Step 5 — Upstash Redis
 1. Go to upstash.com, click "Get Started"
 2. Sign up with GitHub or Google
-3. Create Database > Name: `voiceberry-ratelimit` > Region: nearest
+3. Create Database > Name: `voice-query-ratelimit` > Region: nearest
 4. REST API tab > Copy URL and Token
 5. Add to `.env.local`:
    ```
@@ -165,7 +169,7 @@ EMAILJS_OPS_TEMPLATE_ID=ops_notification
 
 # ── MongoDB Atlas ─────────────────────────────────────────────────────────────
 MONGODB_URI=
-MONGODB_DB=voiceberry
+MONGODB_DB=voice_query_system
 
 # ── Supabase Storage ──────────────────────────────────────────────────────────
 # Project URL is safe to expose to the browser (it's the API endpoint, not a secret).

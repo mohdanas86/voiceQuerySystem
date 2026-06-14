@@ -1,8 +1,8 @@
-# VoiceBerry — Developer Documentation
+# Voice Query System — Developer Documentation
 
 **Project:** Voice-Based Travel Query Submission System  
 **Company:** Ulavi Technologies  
-**Author:** Anas Alam — SDE  
+**Author:** [Anas Alam](https://linkedin.com/in/anas86/) — SDE  
 **Target:** 100,000+ concurrent users | Zero paid services (free tiers only)
 
 ---
@@ -31,12 +31,14 @@ Then implement phase by phase — **do not skip ahead**:
 User Opens App
      |
      v
-[Screen 1: /]  Language Picker
+[Screen 1: /]  Language Picker (72 languages + auto-detect, searchable)
      |  Stores language in Zustand + localStorage
      v
 [Screen 2: /record]  Record Voice Query (max 60s)
      |  MediaRecorder -> POST /api/aai/transcribe
-     |  Returns: original transcript + English translation
+     |  AssemblyAI detects language + returns English translation
+     |  Normalises detected language code (e.g. "hi-IN" -> "hi")
+     |  Falls back to MyMemory /api/translate if no AssemblyAI translation
      |  Also: POST /api/audio/upload (fire-and-forget -> Supabase)
      v
 [Screen 3: /details]  Smart Pop-ups (1 at a time)
@@ -45,15 +47,18 @@ User Opens App
      |  All stored in Zustand
      v
 [Screen 4: /review]  Review + Contact Details
-     |  Shows editable: transcript, all 4 trip fields, budget stars
+     |  Shows editable original transcript (user's local language)
+     |  Auto-translates original transcript to English with 800ms debounce
+     |    (no manual button — translation fires automatically when user stops typing)
+     |  Shows all 4 trip fields, budget stars
      |  Collects: name, email (Zod validated), phone
-     |  POST /api/queries
+     |  POST /api/queries (with ui_language for ops email translation)
      v
      |-- MongoDB Atlas: Full document saved
-     |-- EmailJS Template A: Customer email (in user's language, with query copy)
-     +-- EmailJS Template B: Ops email (English, with audio link)
+     |-- EmailJS Template A: Customer confirmation email (in user's selected language)
+     +-- EmailJS Template B: Ops/support email (always English — fields translated server-side)
      v
-[Screen 5: /confirmation]  Success (in user's language)
+[Screen 5: /confirmation]  Success (in user's selected language)
 ```
 
 ---
@@ -75,6 +80,24 @@ User Opens App
 
 ---
 
+## Language Support
+
+The app currently supports **72 languages** (71 explicit + 1 auto-detect), covering all languages available on AssemblyAI:
+
+- **Indian languages:** Hindi, Tamil, Telugu, Kannada, Malayalam, Bengali, Marathi, Gujarati, Punjabi, Odia, Assamese, Urdu, Nepali, Sinhala
+- **East Asian:** Japanese, Korean, Chinese
+- **European:** Spanish, French, German, Italian, Portuguese, Dutch, Polish, Swedish, Danish, Finnish, Norwegian, Czech, Greek, Hebrew, Ukrainian, Romanian, Hungarian, Slovak, Bulgarian, Croatian, Serbian, Slovenian, Estonian, Latvian, Lithuanian, Russian, Turkish, Albanian, Armenian, Georgian, Basque, Belarusian, Bosnian, Catalan, Galician, Icelandic, Macedonian, Welsh
+- **Middle Eastern / Central Asian:** Arabic, Persian, Azerbaijani, Kazakh, Kyrgyz, Uzbek
+- **African:** Afrikaans, Amharic, Swahili, Yoruba, Zulu
+- **Southeast Asian:** Indonesian, Malay, Thai, Vietnamese
+- **Other:** Mongolian
+
+The language picker includes a **search field** so users can find their language without scrolling.
+
+UI strings are fully localised for each language; pages are dynamically translated server-side via the `useTranslation` hook backed by the `i18n.ts` dictionary and MyMemory fallback.
+
+---
+
 ## Ground Rules
 
 > **Rule 1** — Add, don't delete. Every existing feature must keep working after each phase.  
@@ -85,4 +108,4 @@ User Opens App
 ---
 
 *Ulavi Technologies — Confidential*  
-*Questions: Anas Alam — SDE*
+*Questions: [Anas Alam](https://linkedin.com/in/anas86/) — SDE*

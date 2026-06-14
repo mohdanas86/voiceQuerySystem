@@ -1,109 +1,170 @@
 # Voice-Based Query Submission System
 
-Notes and maintainer details (Anas Alam — SDE)
+> A mobile-first web app by **[Anas Alam](https://linkedin.com/in/anas86/)** — speak your travel query in any of **72 languages**, get it transcribed and translated to English, and submit it to a support team in seconds.
 
-This is a mobile-first web app that lets visitors submit support queries by voice. Users record up to 60 seconds, review an English translation, enter a validated mobile number, and send a structured email to support.
-
-Each successful submission is also stored in MongoDB Atlas through the local `POST /api/queries` route.
-
----
-
-## What it does
-
-1. Voice input on `/record` (60s limit)
-2. Speech-to-text via AssemblyAI (`POST /api/aai/transcribe`) with server-side polling
-3. English translation: prefer AssemblyAI's `translated_texts.en`, fallback to `/api/translate` (MyMemory)
-4. Name + mobile number input on `/review` with country code dropdown
-5. Email submission via EmailJS from the client (template variables below)
-6. Confirmation screen with required thank-you message
+[![Built with Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Free Tier Only](https://img.shields.io/badge/services-free%20tier%20only-green)](./docs/FREE_TOOLS.md)
+[![Ulavi Technologies](https://img.shields.io/badge/Ulavi-Technologies-orange)](https://ulavitech.com)
 
 ---
 
-## Screens
+## ✨ What It Does
 
-- `/record` — language select, mic, timer, transcript preview
-- `/review` — edit English transcript, name, mobile number, Send
-- `/confirmation` — success message after send
+Users who struggle to type long queries — especially in their own language — get a simple 5-step flow:
 
-The root route redirects to `/record`.
+1. 🌍 **Select language** from 72 supported languages (searchable picker)
+2. 🎙️ **Record** up to 60 seconds in their language
+3. 🤖 **AI transcribes** speech to text via AssemblyAI
+4. 🔁 **Auto-translates** to English with 800ms debounce (no manual button)
+5. ✅ **Reviews & sends** — support team gets a clean English email; customer gets a confirmation in their language
 
----
-
-## Tech stack
-
-- Framework: Next.js 16 (App Router), React, TypeScript
-- Styling: Tailwind CSS
-- State: Zustand (`store/useQueryStore.ts`)
-- Speech: Browser `MediaRecorder` + AssemblyAI
-- Email: EmailJS (`@emailjs/browser`)
-- Translation fallback: MyMemory via `/api/translate`
+**Example:** A user in Tamil Nadu opens the app in Tamil, speaks for 30 seconds. The app transcribes, translates to English, and the ops team receives a structured English email. The customer sees the thank-you message in Tamil.
 
 ---
 
-## Quick start
+## 🖥️ Screens
 
-Prerequisites: Node.js 20+, AssemblyAI key, EmailJS account.
+| Screen | Route | Description |
+|---|---|---|
+| Language Picker | `/` | Searchable list of 72 languages |
+| Record | `/record` | Mic button, 60s timer, transcript preview |
+| Details | `/details` | Smart pop-ups for city, dates, passengers, budget |
+| Review | `/review` | Editable transcript, auto-translate, contact form |
+| Confirmation | `/confirmation` | Localised thank-you message |
 
-Install and run:
+---
+
+## 🌐 Language Support
+
+**72 languages** — all AssemblyAI-supported languages, with a searchable picker:
+
+- **Indian:** Hindi, Tamil, Telugu, Kannada, Malayalam, Bengali, Marathi, Gujarati, Punjabi, Odia, Assamese, Urdu, Nepali, Sinhala
+- **European:** Spanish, French, German, Italian, Portuguese, Dutch, Polish, Swedish, Danish, Finnish, Norwegian, Czech, Greek, Ukrainian, Romanian, Hungarian, Slovak, Bulgarian, Croatian, Serbian, Slovenian, Estonian, Latvian, Lithuanian, Russian, Turkish, Albanian, Armenian, Georgian, Basque, Belarusian, Bosnian, Catalan, Galician, Icelandic, Macedonian, Welsh, Hebrew
+- **East Asian:** Japanese, Korean, Chinese
+- **Middle Eastern / Central Asian:** Arabic, Persian, Azerbaijani, Kazakh, Kyrgyz, Uzbek
+- **African:** Afrikaans, Amharic, Swahili, Yoruba, Zulu
+- **Southeast Asian:** Indonesian, Malay, Thai, Vietnamese
+- **Other:** Mongolian + auto-detect
+
+---
+
+## 🛠️ Tech Stack (All Free Tier)
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript (strict) |
+| State | Zustand 5 + persist |
+| Speech-to-text | AssemblyAI |
+| Translation | MyMemory API |
+| Database | MongoDB Atlas |
+| Email | EmailJS (server-side Node SDK) |
+| Audio storage | Supabase Storage |
+| Rate limiting | Upstash Redis |
+| Error monitoring | Sentry |
+| Hosting | Vercel |
+
+> **Zero paid services.** All services run on free tiers. See [docs/FREE_TOOLS.md](./docs/FREE_TOOLS.md) for limits.
+
+---
+
+## 🚀 Quick Start
+
+**Prerequisites:** Node.js 20+, AssemblyAI key, EmailJS account, MongoDB Atlas cluster.
 
 ```bash
-cd frontend
+git clone <repository-url>
+cd voiceQuerySystem/frontend
 cp .env.example .env.local
-# fill in keys
+# fill in your keys (see docs/SETUP.md)
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000 — allow microphone permissions.
+Open **http://localhost:3000** — allow microphone permission when prompted.
+
+> Recording requires a secure context. `localhost` is treated as secure for development. Production deployments must use HTTPS.
 
 ---
 
-## Environment variables
+## 🔑 Environment Variables
 
-Required:
+```env
+# AssemblyAI (server-side)
+ASSEMBLYAI_API_KEY=
 
-- `ASSEMBLYAI_API_KEY` — AssemblyAI server-side key
-- `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY` — EmailJS public key
-- `NEXT_PUBLIC_EMAILJS_SERVICE_ID` — EmailJS service ID
-- `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` — EmailJS template ID
-- `MONGODB_URI` — MongoDB Atlas connection string
-- `MONGODB_DB` — MongoDB database name
+# EmailJS (server-side — never use NEXT_PUBLIC_ prefix)
+EMAILJS_SERVICE_ID=
+EMAILJS_PUBLIC_KEY=
+EMAILJS_PRIVATE_KEY=
+EMAILJS_CUSTOMER_TEMPLATE_ID=customer_confirmation
+EMAILJS_OPS_TEMPLATE_ID=ops_notification
 
-Optional:
+# MongoDB Atlas
+MONGODB_URI=
+MONGODB_DB=
 
-- `NEXT_PUBLIC_API_BASE_URL` — retained for older integrations; the current submit flow posts directly to `/api/queries`
+# Supabase Storage
+NEXT_PUBLIC_SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
 
-See `docs/SETUP.md` for details.
+# Upstash Redis (rate limiting)
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
 
----
+# Sentry (error tracking)
+NEXT_PUBLIC_SENTRY_DSN=
+```
 
-## Email template (EmailJS)
-
-Include these variables in your EmailJS template:
-
-- `name` — User name
-- `translated_query` — English query (editable on review)
-- `original_query` — Original-language transcript
-- `phone` — Full phone with country code
-- `submitted_at` — ISO timestamp from client
-
----
-
-## API routes (Next.js)
-
-- `POST /api/aai/transcribe` — uploads audio to AssemblyAI, returns transcript + translations when ready
-- `POST /api/queries` — stores accepted submissions in MongoDB Atlas and returns the submitted record ID
+Full setup instructions: [docs/SETUP.md](./docs/SETUP.md)
 
 ---
 
-## Documentation
+## 📡 API Routes
 
-- [docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md)
-- [docs/SETUP.md](docs/SETUP.md)
-- [docs/USER_FLOW.md](docs/USER_FLOW.md)
-- [docs/TESTING.md](docs/TESTING.md)
+| Route | Method | Description |
+|---|---|---|
+| `/api/aai/transcribe` | POST | Uploads audio to AssemblyAI, polls until done, returns transcript + translation |
+| `/api/translate` | GET | Proxies MyMemory translation API |
+| `/api/queries` | POST | Saves submission to MongoDB Atlas, sends dual EmailJS notifications |
+| `/api/audio/upload` | POST | Fire-and-forget upload to Supabase Storage |
 
 ---
 
-If you want, I can also run a quick local sanity check (start dev server and test mic/upload flow). Ask and I will run it.
+## 📧 Dual Email System
 
+| Email | Recipient | Language |
+|---|---|---|
+| Customer confirmation | User's email | User's selected UI language |
+| Ops notification | Support team inbox | Always English (fields translated server-side) |
+
+---
+
+## 📖 Documentation
+
+| Document | Description |
+|---|---|
+| [docs/SETUP.md](./docs/SETUP.md) | Full environment and service setup guide |
+| [docs/USER_FLOW.md](./docs/USER_FLOW.md) | Detailed screen-by-screen user flow |
+| [docs/TESTING.md](./docs/TESTING.md) | Demo checklist and regression tests |
+| [docs/PROJECT_BRIEF.md](./docs/PROJECT_BRIEF.md) | Project requirements and feature spec |
+| [docs/FREE_TOOLS.md](./docs/FREE_TOOLS.md) | Approved services and free tier limits |
+| [docs/CODE_STANDARDS.md](./docs/CODE_STANDARDS.md) | Mandatory coding standards for all contributors |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | How to contribute to this project |
+
+---
+
+## 🤝 Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on submitting issues and pull requests.
+
+---
+
+## 📄 License
+
+See [LICENSE](./LICENSE.md) for details.
+
+---
+
+**Built by [Anas Alam](https://linkedin.com/in/anas86/) · Ulavi Technologies**

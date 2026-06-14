@@ -1,138 +1,136 @@
-# Internship Project Brief — Voice-Based Query Submission System
+# Project Brief — Voice-Based Query Submission System
 
-**Ulavi Technologies · 4 weeks · Web platform**
+**Ulavi Technologies · Web platform**  
+**Author:** [Anas Alam](https://linkedin.com/in/anas86/) — SDE
 
 ---
 
-## What you will build
+## What this app does
 
-A web app that lets users speak their query in any language, converts it to text, translates it to English, collects their mobile number with country code, and sends everything as a structured email to the support team.
+A web app that lets users speak their travel query in **any supported language** (72 total), converts it to text, translates it to English, collects contact details, and sends a structured email to the support team while storing the submission in MongoDB Atlas.
 
-- **Platform:** Web — any phone or computer, no install  
+- **Platform:** Web — any phone or computer, no install required
 - **Approach:** AI-assisted development (Vibe Coding)
 
 ---
 
-## 1. What are we building?
+## 1. Core flow
 
-Users who struggle to type long queries — especially in their own language — get a simple flow:
+1. User selects a UI language from the language picker (searchable, 72 options)
+2. User taps mic and speaks (max 60 seconds, any supported language)
+3. App converts speech to text via AssemblyAI
+4. App translates transcript to English (AssemblyAI `translated_texts.en` or MyMemory fallback)
+5. User reviews trip details via smart pop-ups (city, dates, passengers, budget)
+6. User reviews and edits the original transcript — translation auto-updates with 800ms debounce
+7. User enters name, email, and mobile number with country code
+8. User taps **Send** — MongoDB saves the submission; two emails are dispatched:
+   - **Customer email** — in the user's selected UI language
+   - **Ops/support email** — always in English (field values translated server-side)
+9. User sees a confirmation message in their selected language
 
-1. Tap mic and speak (any language, max 60 seconds)
-2. App converts speech to text
-3. App translates to English
-4. User reviews and edits the English text
-5. User enters name and mobile number with country code
-6. User taps **Send** — support receives a structured email and the submission is stored in MongoDB Atlas
-7. User sees a confirmation message
-
-**Example:** A user in Tamil Nadu speaks in Tamil for 30 seconds. The app transcribes, translates to English, captures `+91` phone number, and ops receives a clean English email.
+**Example:** A user in Tamil Nadu opens the app in Tamil, speaks for 30 seconds. The app transcribes in Tamil, translates to English, and ops receives a clean English email. The user sees the confirmation in Tamil.
 
 ---
 
 ## 2. Who uses it?
 
-| User                       | Need                                                |
+| User | Need |
 | -------------------------- | --------------------------------------------------- |
-| Website visitor / customer | Open app, record, review, enter number, send        |
-| Support team               | Receive emails with query, mobile number, timestamp |
+| Website visitor / customer | Open app, select language, record, review, send |
+| Support team | Receive English emails with query, contact, timestamp |
 
 The UI must stay simple for non-technical users.
 
 ---
 
-## 3. Required features (6)
+## 3. Required features
 
-| #   | Feature          | Requirement                                                          |
+| # | Feature | Requirement |
 | --- | ---------------- | -------------------------------------------------------------------- |
-| 1   | Voice input      | Mic button, max 60 seconds                                           |
-| 2   | Speech-to-text   | Text in the language spoken                                          |
-| 3   | Auto-translation | English before send                                                  |
-| 4   | Mobile number    | Country code + number, validated before submit                       |
-| 5   | Email submission | Name, English query, full phone, timestamp to support + MongoDB save |
-| 6   | Confirmation     | *"Thank you for your query. Our team will get back to you shortly."* |
+| 1 | Voice input | Mic button, max 60 seconds |
+| 2 | Speech-to-text | Text in the language spoken |
+| 3 | Auto-translation | Automatic English translation with 800ms debounce — no manual button |
+| 4 | Mobile number | Country code + number, validated before submit |
+| 5 | Email submission | Name, English query, full phone, timestamp to support + MongoDB save |
+| 6 | Confirmation | Translated thank-you message in user's language |
+| 7 | 72-language support | UI and transcription in all AssemblyAI-supported languages |
+| 8 | Language search | Searchable language picker — no need to scroll through 72 options |
 
 ---
 
-## 4. Mobile number field
+## 4. Language support
 
-| Requirement | Detail                                                         |
-| ----------- | -------------------------------------------------------------- |
-| Screen      | Review — below transcript, above Send                          |
-| Label       | **Your Mobile Number**                                         |
-| Layout      | Country code dropdown + number field side by side              |
-| Placeholder | e.g. `98765 43210`                                             |
-| Validation  | Not empty; valid format; inline error; block submit if invalid |
-| Email       | Full number with code, e.g. `+91 98765 43210`                  |
+The app ships with support for **72 languages** covering all languages provided by AssemblyAI:
 
-Send must stay disabled or show an error until the number is valid.
+- Indian regional languages (Hindi, Tamil, Telugu, Kannada, Malayalam, Bengali, Marathi, Gujarati, Punjabi, Odia, Assamese, Urdu, Nepali, Sinhala)
+- European languages (Spanish, French, German, Italian, Portuguese, Dutch, Polish, Swedish, Danish, Finnish, Norwegian, Czech, Greek, Hebrew, Ukrainian, Romanian, Hungarian, Slovak, Bulgarian, Croatian, Serbian, Slovenian, Estonian, Latvian, Lithuanian, Russian, Turkish, Albanian, Armenian, Georgian, Basque, Belarusian, Bosnian, Catalan, Galician, Icelandic, Macedonian, Welsh)
+- East Asian (Japanese, Korean, Chinese)
+- Middle Eastern / Central Asian (Arabic, Persian, Azerbaijani, Kazakh, Kyrgyz, Uzbek)
+- African (Afrikaans, Amharic, Swahili, Yoruba, Zulu)
+- Southeast Asian (Indonesian, Malay, Thai, Vietnamese)
+- Other (Mongolian)
 
 ---
 
-## 5. Screens (3)
+## 5. Screens (5)
 
-| Screen     | Content                                                          |
+| Screen | Content |
 | ---------- | ---------------------------------------------------------------- |
-| **Record** | Mic, status (idle / recording / done), timer (max 60s)           |
-| **Review** | Editable English text, mobile field, Send (disabled until valid) |
-# Internship Project Brief — Voice-Based Query Submission System
-
-Ulavi Technologies · Web platform
-
----
-
-Notes from my implementation (Anas Alam — SDE):
-
-I implemented a mobile-first web app that lets users speak their query in a supported language, converts speech to text, translates to English, collects a mobile number with country code, and sends a structured email to support.
-
-Key points:
-
-- Recording is limited to 60 seconds in the UI.
-- Server-side transcription uses AssemblyAI via `/api/aai/transcribe` and the server polls the transcript endpoint until the job completes (the poll window is ~90 seconds in my implementation).
-- If AssemblyAI doesn't provide a translated English text, the client can request `/api/translate` which proxies MyMemory as a fallback.
+| **Language Picker** (`/`) | Searchable language list; sets global UI language |
+| **Record** (`/record`) | Mic, timer, status, language select |
+| **Details** (`/details`) | Smart pop-ups: city, dates, passengers, budget |
+| **Review** (`/review`) | Editable original transcript, auto-translated English field, contact form (name, email, phone), Send |
+| **Confirmation** (`/confirmation`) | Checkmark and localised thank-you text |
 
 ---
 
-## What I built
+## 6. Mobile number & contact fields
 
-Core flow the app implements:
-
-1. Tap mic and speak (max 60s)
-2. App uploads audio and requests transcription/translation
-3. User reviews and edits the English text on `/review`
-4. User enters mobile number with country code
-5. User taps **Send** and the app attempts to deliver the payload (EmailJS + optional backend)
-6. Confirmation screen appears with a success message
-
----
-
-## Mobile number & email
-
-- The Review screen contains the `Your Mobile Number` field (country code + national number). The default country code in the store is `+91`.
-- The Review screen also contains a `Your Name` field above the transcript preview.
-- I included a small set of country codes in the dropdown: `+91`, `+1`, `+44`, `+61`, `+81`.
-- Email content (via EmailJS template) should include labeled lines for the user name, English query, mobile number, and `submitted_at` timestamp.
+| Requirement | Detail |
+| ----------- | -------------------------------------------------------------- |
+| Screen | Review — below trip details, above Send |
+| Labels | **Your Name**, **Your Email**, **Your Mobile Number** |
+| Layout | Country code dropdown + number field side by side |
+| Validation | Name: not empty; Email: valid format; Phone: valid format; inline errors; block submit if invalid |
+| Email | Full number with code, e.g. `+91 98765 43210` |
 
 ---
 
-## Screens
+## 7. Auto-translation behaviour (Review screen)
 
-- **Record** — mic, timer, status, language select
-- **Review** — editable English transcript, phone input, Send
-- **Confirmation** — checkmark and required thank-you text
-
----
-
-## Development notes
-
-- The client now posts directly to the built-in `POST /api/queries` route, which stores accepted submissions in MongoDB Atlas.
-- Translation fallback is kept intentionally simple (MyMemory) for demos; replace with a paid translation API for production-quality translation.
+- The original transcript field is **editable** — users can correct transcription errors in their own language.
+- When the user stops typing (800ms debounce), translation fires automatically to `/api/translate`.
+- A **"Translating…" inline spinner** appears during the API call.
+- The English translation field updates with the result — no manual button needed.
+- Re-translation always uses the **latest edited original text** for accuracy.
 
 ---
 
-## Deliverables
+## 8. Email behaviour
+
+| Email | Recipient | Language |
+| --- | --- | --- |
+| Customer confirmation | User's email address | User's selected UI language |
+| Ops notification | Support team inbox | Always English (server-side translation enforced) |
+
+The ops email template variables (city, budget tier, passenger label) are translated to English before dispatch even if the user's UI language is non-English.
+
+---
+
+## 9. Development notes
+
+- The app posts to the built-in `POST /api/queries` route, which stores accepted submissions in MongoDB Atlas.
+- All translation (UI strings and field translation for ops email) goes through the `translateText` server-side helper backed by MyMemory, with English as the target language.
+- Language code normalisation: AssemblyAI may return codes like `hi-IN`; these are reduced to the base code (`hi`) before storage and translation.
+- Debounce constant `DEBOUNCE_DELAY_MS = 800` is declared at module scope in `review/page.tsx`.
+- The `useTranslation` hook wraps `i18n.ts` lookups and is the single source of truth for all client-side UI strings.
+
+---
+
+## 10. Deliverables
 
 - Working web app (deployable to Vercel)
-- Documentation and demo checklist in `docs/`
+- Documentation in `docs/` kept up to date with all changes
 
 ---
 

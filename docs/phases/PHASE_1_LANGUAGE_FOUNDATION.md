@@ -1,9 +1,9 @@
-# Phase 1 — Language System Foundation
+﻿# Phase 1 â€” Language System Foundation
 
 **Goal:** Build the i18n dictionary, extend the Zustand store, create the language picker screen, and update all existing screens to use localized strings.
 
-**Duration:** 2–3 days  
-**Depends on:** Nothing — this is the first phase.  
+**Duration:** 2â€“3 days  
+**Depends on:** Nothing â€” this is the first phase.  
 **Rule:** This phase does NOT change the recording logic, review logic, or email logic. Only the language infrastructure.
 
 **Must read before starting:**
@@ -29,7 +29,7 @@
 
 ---
 
-## Step 1.1 — Install No New Packages
+## Step 1.1 â€” Install No New Packages
 
 Phase 1 requires no new npm packages. The i18n dictionary is a plain TypeScript file.
 
@@ -43,7 +43,7 @@ The build must pass before you make any changes. If it doesn't, fix existing err
 
 ---
 
-## Step 1.2 — Create `frontend/lib/i18n.ts`
+## Step 1.2 â€” Create `frontend/lib/i18n.ts`
 
 This is the most important file in Phase 1. Everything in the UI reads from this dictionary.
 
@@ -51,9 +51,9 @@ This is the most important file in Phase 1. Everything in the UI reads from this
 
 ```ts
 /**
- * i18n.ts — Static localisation dictionary for all 8 supported languages.
- * All UI strings live here. Never hardcode text in JSX — always use t().
- * VoiceBerry | Ulavi Technologies
+ * i18n.ts â€” Static localisation dictionary for all 8 supported languages.
+ * All UI strings live here. Never hardcode text in JSX â€” always use t().
+ * Voice Query System | Ulavi Technologies
  */
 ```
 
@@ -69,32 +69,32 @@ export type SupportedLang =
   | 'ml'   // Malayalam
   | 'bn'   // Bengali
   | 'mr'   // Marathi
-  | 'auto'; // Auto-detect — shows English UI until language is known
+  | 'auto'; // Auto-detect â€” shows English UI until language is known
 ```
 
 ### Full Key List (Every Key Required for Every Language)
 
 ```ts
 export interface LangStrings {
-  // ── Language Picker Screen ─────────────────────────────────────────────────
+  // â”€â”€ Language Picker Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   langPickerTitle: string;         // "Select your language"
   langPickerSubtitle: string;      // "All screens will be shown in your selected language"
   langPickerAutoDetect: string;    // "Auto-detect"
 
-  // ── Record Screen ─────────────────────────────────────────────────────────
+  // â”€â”€ Record Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   recordStep: string;              // "Step 1 of 4"
   recordTitle: string;             // "Record your query."
   recordSubtitle: string;          // "Speak about your travel plan..."
   recordIdle: string;              // "Tap to start speaking"
-  recordRecording: string;         // "Recording — tap to stop"
-  recordProcessing: string;        // "Converting speech…"
-  recordDone: string;              // "Done — tap to record again"
+  recordRecording: string;         // "Recording â€” tap to stop"
+  recordProcessing: string;        // "Converting speechâ€¦"
+  recordDone: string;              // "Done â€” tap to record again"
   recordTimer: string;             // "Max 60 seconds"
-  recordContinue: string;          // "Continue →"
+  recordContinue: string;          // "Continue â†’"
   recordTranscriptPreview: string; // "Transcript preview"
   recordMinSeconds: string;        // "Please record for at least 3 seconds."
 
-  // ── Pop-up Questions ──────────────────────────────────────────────────────
+  // â”€â”€ Pop-up Questions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   popupTitle: string;              // "A quick question"
   popupSkip: string;               // "Skip"
   popupNext: string;               // "Next"
@@ -108,20 +108,20 @@ export interface LangStrings {
   popupBudgetQuestion: string;     // "What is your approximate budget?"
   popupBudgetPlaceholder: string;  // (not used for stars, but keep for consistency)
 
-  // ── Budget Star Tier Labels ────────────────────────────────────────────────
+  // â”€â”€ Budget Star Tier Labels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   budgetTier1Label: string;    // "Economy"
-  budgetTier1Range: string;    // "Under ₹10,000 per person"
+  budgetTier1Range: string;    // "Under â‚¹10,000 per person"
   budgetTier2Label: string;    // "Budget"
-  budgetTier2Range: string;    // "₹10,000 – ₹25,000 per person"
+  budgetTier2Range: string;    // "â‚¹10,000 â€“ â‚¹25,000 per person"
   budgetTier3Label: string;    // "Mid-range"
-  budgetTier3Range: string;    // "₹25,000 – ₹50,000 per person"
+  budgetTier3Range: string;    // "â‚¹25,000 â€“ â‚¹50,000 per person"
   budgetTier4Label: string;    // "Premium"
-  budgetTier4Range: string;    // "₹50,000 – ₹1,00,000 per person"
+  budgetTier4Range: string;    // "â‚¹50,000 â€“ â‚¹1,00,000 per person"
   budgetTier5Label: string;    // "Luxury"
-  budgetTier5Range: string;    // "₹1,00,000+ per person"
+  budgetTier5Range: string;    // "â‚¹1,00,000+ per person"
   budgetStarPlaceholder: string; // "Tap a star to select your budget"
 
-  // ── Review Screen ─────────────────────────────────────────────────────────
+  // â”€â”€ Review Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   reviewStep: string;          // "Step 3 of 4"
   reviewTitle: string;         // "Review & submit."
   reviewSubtitle: string;      // "Check your details before sending."
@@ -135,25 +135,25 @@ export interface LangStrings {
   reviewPhoneLabel: string;        // "Your Mobile Number"
   reviewNameLabel: string;         // "Your Name"
   reviewNotProvided: string;       // "Not provided"
-  reviewSend: string;              // "Send query →"
-  reviewSending: string;           // "Sending…"
-  reviewBack: string;              // "← Back"
+  reviewSend: string;              // "Send query â†’"
+  reviewSending: string;           // "Sendingâ€¦"
+  reviewBack: string;              // "â† Back"
 
-  // ── Validation Errors ─────────────────────────────────────────────────────
+  // â”€â”€ Validation Errors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   errorEmail: string;      // "Please enter a valid email address."
   errorPhone: string;      // "Please enter a valid phone number with country code."
   errorName: string;       // "Please enter your name."
   errorTranscript: string; // "Please provide a transcript before sending."
 
-  // ── Confirmation Screen ───────────────────────────────────────────────────
-  confirmStep: string;             // "Step 4 of 4 — Complete"
+  // â”€â”€ Confirmation Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  confirmStep: string;             // "Step 4 of 4 â€” Complete"
   confirmTitle: string;            // "Query submitted."
   confirmBody: string;             // "Thank you! Our team will get back to you very soon."
   confirmSubAnotherQuery: string;  // "Submit another query"
 
-  // ── Recording/System Errors ───────────────────────────────────────────────
+  // â”€â”€ Recording/System Errors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   errorNoSpeech: string;       // "No speech was detected. Please speak more clearly."
-  errorTooShort: string;       // "Recording too short — please speak for a few seconds."
+  errorTooShort: string;       // "Recording too short â€” please speak for a few seconds."
   errorGeneral: string;        // "Something went wrong. Please try recording again."
   errorMicBlocked: string;     // "Microphone access is blocked. Please allow mic permissions."
   errorBrowserNoMic: string;   // "Audio recording is not supported in this browser."
@@ -189,13 +189,13 @@ en: {
   langPickerAutoDetect: "Auto-detect",
   recordStep: "Step 1 of 4",
   recordTitle: "Record your query.",
-  recordSubtitle: "Speak about your travel plan in your language — up to 60 seconds.",
+  recordSubtitle: "Speak about your travel plan in your language â€” up to 60 seconds.",
   recordIdle: "Tap to start speaking",
-  recordRecording: "Recording — tap to stop",
-  recordProcessing: "Converting speech…",
-  recordDone: "Done — tap to record again",
+  recordRecording: "Recording â€” tap to stop",
+  recordProcessing: "Converting speechâ€¦",
+  recordDone: "Done â€” tap to record again",
   recordTimer: "Max 60 seconds",
-  recordContinue: "Continue →",
+  recordContinue: "Continue â†’",
   recordTranscriptPreview: "Transcript preview",
   recordMinSeconds: "Please record for at least 3 seconds.",
   popupTitle: "A quick question",
@@ -211,15 +211,15 @@ en: {
   popupBudgetQuestion: "What is your approximate budget for this trip?",
   popupBudgetPlaceholder: "Select a star rating below",
   budgetTier1Label: "Economy",
-  budgetTier1Range: "Under ₹10,000 per person",
+  budgetTier1Range: "Under â‚¹10,000 per person",
   budgetTier2Label: "Budget",
-  budgetTier2Range: "₹10,000 – ₹25,000 per person",
+  budgetTier2Range: "â‚¹10,000 â€“ â‚¹25,000 per person",
   budgetTier3Label: "Mid-range",
-  budgetTier3Range: "₹25,000 – ₹50,000 per person",
+  budgetTier3Range: "â‚¹25,000 â€“ â‚¹50,000 per person",
   budgetTier4Label: "Premium",
-  budgetTier4Range: "₹50,000 – ₹1,00,000 per person",
+  budgetTier4Range: "â‚¹50,000 â€“ â‚¹1,00,000 per person",
   budgetTier5Label: "Luxury",
-  budgetTier5Range: "₹1,00,000+ per person",
+  budgetTier5Range: "â‚¹1,00,000+ per person",
   budgetStarPlaceholder: "Tap a star to select your budget",
   reviewStep: "Step 3 of 4",
   reviewTitle: "Review & submit.",
@@ -234,19 +234,19 @@ en: {
   reviewPhoneLabel: "Your Mobile Number",
   reviewNameLabel: "Your Name",
   reviewNotProvided: "Not provided",
-  reviewSend: "Send query →",
-  reviewSending: "Sending…",
-  reviewBack: "← Back",
+  reviewSend: "Send query â†’",
+  reviewSending: "Sendingâ€¦",
+  reviewBack: "â† Back",
   errorEmail: "Please enter a valid email address.",
   errorPhone: "Please enter a valid phone number with country code.",
   errorName: "Please enter your name.",
   errorTranscript: "Please provide a transcript before sending.",
-  confirmStep: "Step 4 of 4 — Complete",
+  confirmStep: "Step 4 of 4 â€” Complete",
   confirmTitle: "Query submitted.",
   confirmBody: "Thank you for reaching out! Our operations team has received your travel request and will get back to you very soon.",
   confirmSubAnotherQuery: "Submit another query",
   errorNoSpeech: "No speech was detected. Please speak louder and more clearly.",
-  errorTooShort: "Recording too short — please speak for at least a few seconds.",
+  errorTooShort: "Recording too short â€” please speak for at least a few seconds.",
   errorGeneral: "Something went wrong. Please try recording again.",
   errorMicBlocked: "Microphone access is blocked. Please allow mic permissions and try again.",
   errorBrowserNoMic: "Audio recording is not supported in this browser.",
@@ -255,40 +255,40 @@ en: {
 
 **`auto` entry:** Copy the `en` entry exactly. The `auto` language shows English until a language is detected from speech.
 
-**Other languages:** Write translations for `hi`, `ta`, `te`, `kn`, `ml`, `bn`, `mr`. Use the key structure above. For budget tier labels, translate the tier names (Economy, Budget, Mid-range, Premium, Luxury) and keep the ₹ amounts in all languages (₹ is universally understood for Indian users).
+**Other languages:** Write translations for `hi`, `ta`, `te`, `kn`, `ml`, `bn`, `mr`. Use the key structure above. For budget tier labels, translate the tier names (Economy, Budget, Mid-range, Premium, Luxury) and keep the â‚¹ amounts in all languages (â‚¹ is universally understood for Indian users).
 
 ---
 
-## Step 1.3 — Extend `frontend/store/useQueryStore.ts`
+## Step 1.3 â€” Extend `frontend/store/useQueryStore.ts`
 
 **Do not remove or rename any existing fields.** Only ADD to the store.
 
 ### New Fields to Add
 
 ```ts
-// ── Language ──────────────────────────────────────────────────────────────────
+// â”€â”€ Language â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 uiLanguage: SupportedLang;        // default: 'auto'
 setUiLanguage: (lang: SupportedLang) => void;
 
-// ── Trip Details (from pop-ups, Phase 2) ─────────────────────────────────────
+// â”€â”€ Trip Details (from pop-ups, Phase 2) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 tripCity: string;                  // default: ''
 tripDatesFrom: string;             // default: ''
 tripDatesTo: string;               // default: ''
 tripPassengers: string;            // default: ''
-tripBudget: string;                // default: '' — star string after Phase 2
+tripBudget: string;                // default: '' â€” star string after Phase 2
 
-// ── Contact ───────────────────────────────────────────────────────────────────
+// â”€â”€ Contact â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 userEmail: string;                 // default: ''
 setUserEmail: (email: string) => void;
 
-// ── Audio ─────────────────────────────────────────────────────────────────────
-audioUrl: string;                  // default: '' — Supabase URL after Phase 3
+// â”€â”€ Audio â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+audioUrl: string;                  // default: '' â€” Supabase URL after Phase 3
 setAudioUrl: (url: string) => void;
 ```
 
-### Persist Middleware — Language Only
+### Persist Middleware â€” Language Only
 
-Wrap the store with Zustand `persist` middleware. Only persist `uiLanguage`. **Never persist transcripts, phone numbers, or emails — those are sensitive.**
+Wrap the store with Zustand `persist` middleware. Only persist `uiLanguage`. **Never persist transcripts, phone numbers, or emails â€” those are sensitive.**
 
 ```ts
 import { create } from 'zustand';
@@ -330,7 +330,7 @@ export const useQueryStore = create<QueryState>()(
       name: 'vb-query-store',
       // ONLY persist language selection across page refreshes.
       // All other state (transcript, trip details, contact info) is intentionally
-      // ephemeral — it should not survive a page refresh for privacy reasons.
+      // ephemeral â€” it should not survive a page refresh for privacy reasons.
       partialize: (state) => ({ uiLanguage: state.uiLanguage }),
     },
   ),
@@ -351,19 +351,19 @@ reset: () => set({
   tripBudget: '',
   userEmail: '',
   audioUrl: '',
-  // NOTE: do NOT reset uiLanguage — user's language choice should persist
+  // NOTE: do NOT reset uiLanguage â€” user's language choice should persist
 }),
 ```
 
 ---
 
-## Step 1.4 — Create `frontend/components/language/LanguagePicker.tsx`
+## Step 1.4 â€” Create `frontend/components/language/LanguagePicker.tsx`
 
 ```
 /**
- * LanguagePicker.tsx — Grid of language selection cards for the app entry screen.
+ * LanguagePicker.tsx â€” Grid of language selection cards for the app entry screen.
  * Tapping a card immediately sets uiLanguage in the store and navigates to /record.
- * VoiceBerry | Ulavi Technologies
+ * Voice Query System | Ulavi Technologies
  */
 'use client';
 // Client component: uses Zustand store and next/navigation.
@@ -376,15 +376,15 @@ Define this constant array (one object per card):
 ```ts
 /** List of all selectable languages. The Auto-detect entry must be first. */
 const LANGUAGE_OPTIONS = [
-  { code: 'auto', nameEn: 'Auto-detect', nameNative: '🔍 Auto', icon: '✨' },
-  { code: 'en',   nameEn: 'English',     nameNative: 'English',  icon: '🇬🇧' },
-  { code: 'hi',   nameEn: 'Hindi',       nameNative: 'हिंदी',    icon: '🇮🇳' },
-  { code: 'ta',   nameEn: 'Tamil',       nameNative: 'தமிழ்',    icon: '🇮🇳' },
-  { code: 'te',   nameEn: 'Telugu',      nameNative: 'తెలుగు',   icon: '🇮🇳' },
-  { code: 'kn',   nameEn: 'Kannada',     nameNative: 'ಕನ್ನಡ',    icon: '🇮🇳' },
-  { code: 'ml',   nameEn: 'Malayalam',   nameNative: 'മലയാളം',   icon: '🇮🇳' },
-  { code: 'bn',   nameEn: 'Bengali',     nameNative: 'বাংলা',    icon: '🇮🇳' },
-  { code: 'mr',   nameEn: 'Marathi',     nameNative: 'मराठी',    icon: '🇮🇳' },
+  { code: 'auto', nameEn: 'Auto-detect', nameNative: 'ðŸ” Auto', icon: 'âœ¨' },
+  { code: 'en',   nameEn: 'English',     nameNative: 'English',  icon: 'ðŸ‡¬ðŸ‡§' },
+  { code: 'hi',   nameEn: 'Hindi',       nameNative: 'à¤¹à¤¿à¤‚à¤¦à¥€',    icon: 'ðŸ‡®ðŸ‡³' },
+  { code: 'ta',   nameEn: 'Tamil',       nameNative: 'à®¤à®®à®¿à®´à¯',    icon: 'ðŸ‡®ðŸ‡³' },
+  { code: 'te',   nameEn: 'Telugu',      nameNative: 'à°¤à±†à°²à±à°—à±',   icon: 'ðŸ‡®ðŸ‡³' },
+  { code: 'kn',   nameEn: 'Kannada',     nameNative: 'à²•à²¨à³à²¨à²¡',    icon: 'ðŸ‡®ðŸ‡³' },
+  { code: 'ml',   nameEn: 'Malayalam',   nameNative: 'à´®à´²à´¯à´¾à´³à´‚',   icon: 'ðŸ‡®ðŸ‡³' },
+  { code: 'bn',   nameEn: 'Bengali',     nameNative: 'à¦¬à¦¾à¦‚à¦²à¦¾',    icon: 'ðŸ‡®ðŸ‡³' },
+  { code: 'mr',   nameEn: 'Marathi',     nameNative: 'à¤®à¤°à¤¾à¤ à¥€',    icon: 'ðŸ‡®ðŸ‡³' },
 ] as const;
 ```
 
@@ -399,7 +399,7 @@ interface LanguagePickerProps {
 
 ### Visual Requirements
 
-- 2-column grid on mobile (≤640px), 3 columns on tablet, 4 columns on desktop
+- 2-column grid on mobile (â‰¤640px), 3 columns on tablet, 4 columns on desktop
 - Each card is a `<button>` with:
   - Icon/emoji top center
   - `nameNative` below (large, bold)
@@ -413,18 +413,18 @@ interface LanguagePickerProps {
 
 - Each card must be a `<button>` element (not a `<div>`)
 - `aria-label="Select English"` (or the correct language name) on each button
-- The grid must be keyboard-navigable with Tab → Enter
+- The grid must be keyboard-navigable with Tab â†’ Enter
 
 ---
 
-## Step 1.5 — Replace `frontend/app/page.tsx`
+## Step 1.5 â€” Replace `frontend/app/page.tsx`
 
-The root route becomes Screen 1 — the Language Picker.
+The root route becomes Screen 1 â€” the Language Picker.
 
 ```tsx
 /**
- * page.tsx — Root route (/). Renders the language picker as the first screen.
- * VoiceBerry | Ulavi Technologies
+ * page.tsx â€” Root route (/). Renders the language picker as the first screen.
+ * Voice Query System | Ulavi Technologies
  */
 'use client';
 // Client component: uses Zustand store and next/navigation for routing.
@@ -452,7 +452,7 @@ export default function HomePage() {
   return (
     <main>
       {/* App name / logo */}
-      <h1>VoiceBerry</h1>
+      <h1>Voice Query System</h1>
       <p>Select your language to get started</p>
       <LanguagePicker onSelect={handleLanguageSelect} />
     </main>
@@ -462,7 +462,7 @@ export default function HomePage() {
 
 ---
 
-## Step 1.6 — Update Existing Pages to Use `t()`
+## Step 1.6 â€” Update Existing Pages to Use `t()`
 
 For each file below, replace ALL hard-coded English text strings with `t(uiLanguage, 'key')` calls.
 
@@ -484,7 +484,7 @@ Then replace strings:
 <h1>{t(uiLanguage, 'recordTitle')}</h1>
 ```
 
-### `app/record/page.tsx` — strings to replace
+### `app/record/page.tsx` â€” strings to replace
 
 | Hard-coded string (or equivalent) | i18n key |
 |---|---|
@@ -492,12 +492,12 @@ Then replace strings:
 | "Record your query." | `recordTitle` |
 | "Speak about your travel plan..." | `recordSubtitle` |
 | "Tap to start speaking" (mic idle) | `recordIdle` |
-| "Recording — tap to stop" | `recordRecording` |
-| "Converting speech…" | `recordProcessing` |
-| "Done — tap to record again" | `recordDone` |
+| "Recording â€” tap to stop" | `recordRecording` |
+| "Converting speechâ€¦" | `recordProcessing` |
+| "Done â€” tap to record again" | `recordDone` |
 | "Max 60 seconds" | `recordTimer` |
 | "Transcript preview" | `recordTranscriptPreview` |
-| "Continue to review →" | `recordContinue` |
+| "Continue to review â†’" | `recordContinue` |
 | "Please record for at least 3 seconds" | `recordMinSeconds` |
 | "No speech was detected..." | `errorNoSpeech` |
 | "Recording too short..." | `errorTooShort` |
@@ -515,7 +515,7 @@ onClick={() => router.push('/review')}
 onClick={() => router.push('/details')}
 ```
 
-### `app/review/page.tsx` — strings to replace
+### `app/review/page.tsx` â€” strings to replace
 
 | Hard-coded string | i18n key |
 |---|---|
@@ -527,25 +527,25 @@ onClick={() => router.push('/details')}
 | "you@example.com" | `reviewEmailPlaceholder` |
 | "Your Mobile Number" | `reviewPhoneLabel` |
 | "Your Name" | `reviewNameLabel` |
-| "Send query →" | `reviewSend` |
-| "Sending…" | `reviewSending` |
-| "← Back" | `reviewBack` |
+| "Send query â†’" | `reviewSend` |
+| "Sendingâ€¦" | `reviewSending` |
+| "â† Back" | `reviewBack` |
 | Email error message | `errorEmail` |
 | Phone error message | `errorPhone` |
 | Name error message | `errorName` |
 
-### `app/confirmation/page.tsx` — strings to replace
+### `app/confirmation/page.tsx` â€” strings to replace
 
 | Hard-coded string | i18n key |
 |---|---|
-| "Step 4 of 4 — Complete" | `confirmStep` |
+| "Step 4 of 4 â€” Complete" | `confirmStep` |
 | "Query submitted." | `confirmTitle` |
 | "Thank you for reaching out!..." | `confirmBody` |
 | "Submit another query" | `confirmSubAnotherQuery` |
 
 Also change: "Submit another query" navigation destination from `/record` to `/` (language picker).
 
-### `components/speech/MicButton.tsx` — changes
+### `components/speech/MicButton.tsx` â€” changes
 
 Add `lang: SupportedLang` to the props interface and replace the status label string lookup:
 
@@ -566,7 +566,7 @@ const STATUS_TO_I18N_KEY: Record<MicStatus, keyof LangStrings> = {
 
 ---
 
-## Phase 1 Testing — Full Verification Checklist
+## Phase 1 Testing â€” Full Verification Checklist
 
 Run through EVERY item before moving to Phase 2. Do not skip any.
 
@@ -585,36 +585,36 @@ npm run lint      # Must return 0 errors
 - [ ] Language picker shows 9 cards: Auto-detect + 8 languages
 - [ ] Each card shows the language name in English AND in its native script
 - [ ] Tapping any card navigates immediately to `/record`
-- [ ] No submit button — selection is instant
+- [ ] No submit button â€” selection is instant
 
-**Language Propagation — English:**
-- [ ] Select "English" → all text on `/record` is in English
+**Language Propagation â€” English:**
+- [ ] Select "English" â†’ all text on `/record` is in English
 - [ ] All labels, buttons, error messages, and status labels are in English
-- [ ] Complete the recording → `/record` still shows English
+- [ ] Complete the recording â†’ `/record` still shows English
 
-**Language Propagation — Hindi:**
-- [ ] Go back to `/` → select "Hindi" → all text on `/record` is in Hindi (हिंदी)
+**Language Propagation â€” Hindi:**
+- [ ] Go back to `/` â†’ select "Hindi" â†’ all text on `/record` is in Hindi (à¤¹à¤¿à¤‚à¤¦à¥€)
 - [ ] Status label "Tap to start speaking" appears in Hindi
 - [ ] Error messages appear in Hindi
 
-**Language Propagation — Tamil:**
-- [ ] Go back to `/` → select "Tamil" → all text on `/record` is in Tamil (தமிழ்)
+**Language Propagation â€” Tamil:**
+- [ ] Go back to `/` â†’ select "Tamil" â†’ all text on `/record` is in Tamil (à®¤à®®à®¿à®´à¯)
 
-**Language Propagation — Auto-detect:**
-- [ ] Select "Auto-detect" → `/record` shows English
-- [ ] Record a few seconds → English text throughout
+**Language Propagation â€” Auto-detect:**
+- [ ] Select "Auto-detect" â†’ `/record` shows English
+- [ ] Record a few seconds â†’ English text throughout
 
 **Persistence:**
-- [ ] Select Hindi → navigate to `/record`
-- [ ] Refresh the page (F5) → language stays as Hindi (from localStorage)
-- [ ] Open a new tab at `localhost:3000` → still shows Hindi selected? (No — picker shows, but Hindi is pre-highlighted if applicable)
+- [ ] Select Hindi â†’ navigate to `/record`
+- [ ] Refresh the page (F5) â†’ language stays as Hindi (from localStorage)
+- [ ] Open a new tab at `localhost:3000` â†’ still shows Hindi selected? (No â€” picker shows, but Hindi is pre-highlighted if applicable)
 
 **Existing Flow (Regression Test):**
 - [ ] Complete a full recording in English
 - [ ] Transcript appears on the record screen
 - [ ] "Continue" button is present and clickable
-- [ ] Clicking "Continue" navigates to `/details` (not `/review` — this is intentional; `/details` will be built in Phase 2)
-  - At this stage, `/details` will show a 404 — this is expected and acceptable
+- [ ] Clicking "Continue" navigates to `/details` (not `/review` â€” this is intentional; `/details` will be built in Phase 2)
+  - At this stage, `/details` will show a 404 â€” this is expected and acceptable
 
 **Console:**
 - [ ] Zero `console.error` messages during normal usage
@@ -622,9 +622,9 @@ npm run lint      # Must return 0 errors
 
 ### Completeness Check
 
-- [ ] Every string on the record screen comes from `t()` — no raw strings
-- [ ] Every string on the review screen comes from `t()` — no raw strings
-- [ ] Every string on the confirmation screen comes from `t()` — no raw strings
+- [ ] Every string on the record screen comes from `t()` â€” no raw strings
+- [ ] Every string on the review screen comes from `t()` â€” no raw strings
+- [ ] Every string on the confirmation screen comes from `t()` â€” no raw strings
 - [ ] MicButton status label uses `t()` via the `lang` prop
 - [ ] `i18n.ts` has ALL keys from `LangStrings` filled in for ALL 9 language entries
 - [ ] No missing keys (TypeScript will enforce this if the interface is correct)
@@ -645,20 +645,20 @@ npm run lint      # Must return 0 errors
 | Mistake | Correct Approach |
 |---|---|
 | Forgetting `'use client'` on components that use `useQueryStore` | Add `'use client'` at the top of any component using hooks or browser APIs |
-| Using `strings['en']` directly instead of `t()` | Always use `t(uiLanguage, key)` — fallback to English is built into `t()` |
+| Using `strings['en']` directly instead of `t()` | Always use `t(uiLanguage, key)` â€” fallback to English is built into `t()` |
 | Persisting more than `uiLanguage` in localStorage | Only persist language. Transcripts and contact info are private. |
-| Changing the "Continue" button to go to `/details` and then breaking the review | Phase 2 builds `/details` — the 404 at this stage is temporary and expected |
-| Missing keys in one language entry | TypeScript will catch this — `LangStrings` interface enforces all keys |
+| Changing the "Continue" button to go to `/details` and then breaking the review | Phase 2 builds `/details` â€” the 404 at this stage is temporary and expected |
+| Missing keys in one language entry | TypeScript will catch this â€” `LangStrings` interface enforces all keys |
 
 ---
 
 ## What Happens if You Run the App After Phase 1 (Without Phase 2)
 
 The app will work like this:
-1. User opens `/` — sees language picker ✅
-2. Selects a language — navigates to `/record` ✅
-3. Records a voice query — transcript appears ✅
-4. Clicks "Continue" — gets a 404 (because `/details` doesn't exist yet) ⚠️
+1. User opens `/` â€” sees language picker âœ…
+2. Selects a language â€” navigates to `/record` âœ…
+3. Records a voice query â€” transcript appears âœ…
+4. Clicks "Continue" â€” gets a 404 (because `/details` doesn't exist yet) âš ï¸
 
 This is expected. Phase 2 builds the `/details` screen.
 
@@ -666,8 +666,9 @@ This is expected. Phase 2 builds the `/details` screen.
 
 **Phase 1 is complete when:** Every item in the verification checklist above is checked, `npm run build` passes, and the language picker is working with localized strings on all existing screens.
 
-**Next: [Phase 2 → Trip Detail Pop-ups](./PHASE_2_TRIP_DETAILS_POPUPS.md)**
+**Next: [Phase 2 â†’ Trip Detail Pop-ups](./PHASE_2_TRIP_DETAILS_POPUPS.md)**
 
 ---
 
-*Ulavi Technologies — Confidential*
+*Ulavi Technologies â€” Confidential*
+

@@ -1,4 +1,4 @@
-# VoiceBerry — Code Writing Standards
+# Ulavi Technologies — Code Writing Standards
 
 > **Mandatory for every file in this project.**  
 > These are not preferences. They are hard requirements for code review.  
@@ -47,6 +47,7 @@ export function containsNumericDetail(transcript: string): boolean {
 ```
 
 **JSDoc format:**
+
 - `@param name - description` (dash, not colon)
 - `@returns description`
 - `@throws description` — for functions that can throw
@@ -69,7 +70,7 @@ const filename = `${Date.now()}-${id.slice(0, 8)}.webm`;
 const MAX_RECORD_SECONDS = 60;
 const POST_DETECTION_DELAY_MS = 1_000;
 const AUDIO_ID_LENGTH = 8;
-const AUDIO_FILE_EXTENSION = '.webm';
+const AUDIO_FILE_EXTENSION = ".webm";
 
 if (elapsed >= MAX_RECORD_SECONDS) stopRecording();
 setTimeout(navigate, POST_DETECTION_DELAY_MS);
@@ -128,14 +129,19 @@ Every function parameter and every `await` result must have an explicit type.
 
 ```ts
 // BAD
-const result = await fetch(url).then(r => r.json());
-function buildPayload(data) { return { ...data }; }
+const result = await fetch(url).then((r) => r.json());
+function buildPayload(data) {
+  return { ...data };
+}
 const handleChange = (e) => setValue(e.target.value);
 
 // GOOD
 const result = (await fetch(url).then((r) => r.json())) as TranscriptResponse;
-function buildPayload(data: ReviewFormState): QueryPayload { return { ...data }; }
-const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => setValue(e.target.value);
+function buildPayload(data: ReviewFormState): QueryPayload {
+  return { ...data };
+}
+const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void =>
+  setValue(e.target.value);
 ```
 
 **When to use `as`:**  
@@ -165,12 +171,16 @@ try {
 try {
   await sendCustomerEmail(params);
   // Mark as sent so the ops dashboard shows correct status
-  await markEmailSent(insertedId, 'customer');
+  await markEmailSent(insertedId, "customer");
 } catch (err: unknown) {
   // Email failure is NON-FATAL — the submission is already saved in MongoDB.
   // The ops team can manually follow up using the MongoDB record if needed.
   // Log enough detail to diagnose the failure: submission ID + the error.
-  console.error('[api/queries] customer email failed — submission id:', insertedId, err);
+  console.error(
+    "[api/queries] customer email failed — submission id:",
+    insertedId,
+    err,
+  );
 }
 ```
 
@@ -189,7 +199,7 @@ function BudgetSelector({ value, onChange }: { value: number; onChange: (v: numb
 // GOOD — named interface with JSDoc on every prop
 /**
  * BudgetStarSelectorProps — props for the star-based budget rating widget.
- * VoiceBerry | Ulavi Technologies
+ *  Ulavi Technologies
  */
 interface BudgetStarSelectorProps {
   /** Currently selected star count (1–5). 0 = nothing selected yet. */
@@ -235,7 +245,7 @@ Every new `.ts` or `.tsx` file must start with this header:
 ```ts
 /**
  * [exact-filename.ts] — [one-line description of what this file does]
- * VoiceBerry | Ulavi Technologies
+ *  Ulavi Technologies
  */
 ```
 
@@ -244,14 +254,14 @@ Every new `.ts` or `.tsx` file must start with this header:
 ```ts
 /**
  * trip-extractor.ts — Heuristic scanner that detects trip details from raw transcripts.
- * VoiceBerry | Ulavi Technologies
+ *  Ulavi Technologies
  */
 ```
 
 ```tsx
 /**
  * BudgetStarSelector.tsx — Star-rating widget for selecting travel budget tier.
- * VoiceBerry | Ulavi Technologies
+ *  Ulavi Technologies
  */
 ```
 
@@ -274,13 +284,13 @@ Every API route file (`route.ts` inside `/app/api/`) must start with this commen
 Every component file that uses browser APIs must start with:
 
 ```ts
-'use client';
+"use client";
 ```
 
 and include a comment explaining WHY it needs to be a client component:
 
 ```tsx
-'use client';
+"use client";
 // Client component: uses MediaRecorder API and Zustand store.
 ```
 
@@ -292,30 +302,30 @@ Group and order imports as follows (enforced by ESLint):
 
 ```ts
 // 1. React / Next.js
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 // 2. Third-party libraries
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { Star } from 'lucide-react';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { Star } from "lucide-react";
 
 // 3. Internal — types
-import type { SupportedLang, LangStrings } from '@/lib/i18n';
-import type { TripDetails } from '@/lib/tripExtractor';
+import type { SupportedLang, LangStrings } from "@/lib/i18n";
+import type { TripDetails } from "@/lib/tripExtractor";
 
 // 4. Internal — lib / utilities
-import { t } from '@/lib/i18n';
-import { extractTripDetails } from '@/lib/tripExtractor';
+import { t } from "@/lib/i18n";
+import { extractTripDetails } from "@/lib/tripExtractor";
 
 // 5. Internal — components
-import { BudgetStarSelector } from '@/components/popups/BudgetStarSelector';
+import { BudgetStarSelector } from "@/components/popups/BudgetStarSelector";
 
 // 6. Internal — store
-import { useQueryStore } from '@/store/useQueryStore';
+import { useQueryStore } from "@/store/useQueryStore";
 
 // 7. Styles (if any)
-import styles from './page.module.css';
+import styles from "./page.module.css";
 ```
 
 ---
@@ -324,18 +334,24 @@ import styles from './page.module.css';
 
 **Never commit a `console.log` in production code.**
 
-| What you want to log | Use instead |
-|---|---|
-| Debug during development | `console.log` — remove before commit |
-| Recoverable error (non-fatal) | `console.warn('[module] message', context)` |
-| Fatal error / unexpected failure | `console.error('[module] message', context)` |
-| Sensitive data (email, phone, transcript) | **Never log — remove entirely** |
+| What you want to log                      | Use instead                                  |
+| ----------------------------------------- | -------------------------------------------- |
+| Debug during development                  | `console.log` — remove before commit         |
+| Recoverable error (non-fatal)             | `console.warn('[module] message', context)`  |
+| Fatal error / unexpected failure          | `console.error('[module] message', context)` |
+| Sensitive data (email, phone, transcript) | **Never log — remove entirely**              |
 
 Format: always prefix with the module name in square brackets:
 
 ```ts
-console.warn('[api/audio/upload] Supabase upload failed — continuing without audio URL');
-console.error('[api/queries] ops email failed — submission id:', insertedId, err);
+console.warn(
+  "[api/audio/upload] Supabase upload failed — continuing without audio URL",
+);
+console.error(
+  "[api/queries] ops email failed — submission id:",
+  insertedId,
+  err,
+);
 ```
 
 ---
@@ -358,4 +374,4 @@ Run through this before committing any file:
 
 ---
 
-*Ulavi Technologies — Confidential*
+_Ulavi Technologies — Confidential_

@@ -1,6 +1,6 @@
 /**
  * rateLimitRedis.ts — Redis-based sliding window rate limiter using Upstash.
- * VoiceBerry | Ulavi Technologies
+ * Ulavi Technologies
  */
 
 // ── SERVER ONLY ───────────────────────────────────────────────────────────────

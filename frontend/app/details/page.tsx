@@ -15,35 +15,9 @@ import { extractTripDetails, type TripDetailField, type TripDetails } from '@/li
 import { TripDetailPopup } from '@/components/popups/TripDetailPopup';
 import { SuccessCheckmark } from '@/components/feedback/SuccessCheckmark';
 import { Card } from '@/components/ui/card';
-import { t, type SupportedLang } from '@/lib/i18n';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type DetailsPageStatus = 'analysing' | 'popups' | 'all-detected' | 'done';
-
-/** Localised strings for the analysis and success steps (keeping i18n.ts untouched). */
-const LOCAL_TRANSLATIONS: Record<string, { analysing: string; allDetected: string; redirecting: string }> = {
-  en: {
-    analysing: 'Analysing your query...',
-    allDetected: 'Great! We found all your trip details.',
-    redirecting: 'Redirecting you to review...',
-  },
-  hi: {
-    analysing: 'आपकी क्वेरी का विश्लेषण किया जा रहा है...',
-    allDetected: 'बहुत बढ़िया! हमें आपकी यात्रा के सभी विवरण मिल गए हैं।',
-    redirecting: 'समीक्षा पर ले जाया जा रहा है...',
-  },
-  ta: {
-    analysing: 'உங்கள் கேள்வி பகுப்பாய்வு செய்யப்படுகிறது...',
-    allDetected: 'அருமை! உங்களின் அனைத்து பயண விவரங்களையும் கண்டறிந்துவிட்டோம்.',
-    redirecting: 'மதிப்பாய்வுக்கு திருப்பி விடப்படுகிறது...',
-  },
-};
-
-/** Retrieves local translated string based on selected UI language. */
-function getLocalText(lang: SupportedLang, key: 'analysing' | 'allDetected' | 'redirecting'): string {
-  const fallback = LOCAL_TRANSLATIONS['en'][key];
-  const dictionary = LOCAL_TRANSLATIONS[lang];
-  return dictionary ? dictionary[key] : fallback;
-}
 
 /** Delay before showing the first pop-up after analysis completes. */
 const ANALYSIS_DISPLAY_DELAY_MS = 500;
@@ -77,13 +51,14 @@ export default function DetailsPage() {
   
   const {
     originalTranscript,
-    uiLanguage,
     setTripCity,
     setTripDatesFrom,
     setTripDatesTo,
     setTripPassengers,
     setTripBudget,
   } = useQueryStore();
+
+  const { t } = useTranslation();
 
   const [status, setStatus] = useState<DetailsPageStatus>('analysing');
   const [missingQueue, setMissingQueue] = useState<TripDetailField[]>([]);
@@ -188,11 +163,11 @@ export default function DetailsPage() {
           <div className="inline-flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-[#E85D22]" />
             <span className="text-[11px] font-semibold tracking-caps uppercase text-[#6B6A68]">
-              {t(uiLanguage, 'recordStep')}
+              {t('recordStep')}
             </span>
           </div>
           <h1 className="text-3xl font-semibold tracking-[-0.025em] text-[#111111] sm:text-4xl">
-            {t(uiLanguage, 'recordTitle')}
+            {t('recordTitle')}
           </h1>
         </div>
 
@@ -211,7 +186,7 @@ export default function DetailsPage() {
           <div className="bg-white rounded-3xl border border-brand-border p-8 shadow-2xl flex flex-col items-center gap-4 text-center reveal">
             <Loader2 className="w-8 h-8 text-brand-accent animate-spin" />
             <p className="text-sm font-semibold text-brand-text">
-              {getLocalText(uiLanguage, 'analysing')}
+              {t('detailsAnalysing')}
             </p>
           </div>
         </div>
@@ -223,10 +198,10 @@ export default function DetailsPage() {
             <SuccessCheckmark />
             <div className="flex flex-col gap-1.5">
               <p className="text-base font-bold text-brand-text">
-                {getLocalText(uiLanguage, 'allDetected')}
+                {t('detailsAllDetected')}
               </p>
               <p className="text-xs text-brand-muted font-light">
-                {getLocalText(uiLanguage, 'redirecting')}
+                {t('detailsRedirecting')}
               </p>
             </div>
           </div>
@@ -235,7 +210,6 @@ export default function DetailsPage() {
 
       {status === 'popups' && missingQueue.length > 0 && (
         <TripDetailPopup
-          lang={uiLanguage}
           field={missingQueue[currentIndex]}
           currentStep={currentIndex + 1}
           totalSteps={missingQueue.length}

@@ -1,22 +1,69 @@
 /**
  * email.ts — Server-side email sending via EmailJS REST API.
- * Exports: sendCustomerEmail (user's language), sendOpsEmail (always English).
- * Ulavi Technologies
+ 
  */
 
 // ── SERVER ONLY ───────────────────────────────────────────────────────────────
-// 1. Never import this file from client components.
-// 2. Never prefix keys used here with NEXT_PUBLIC_.
-// 3. Never log email addresses, phone numbers, or transcript content.
+// This file runs on the server (Next.js API route). Rules:
+// 1. Do NOT import any browser APIs (window, document, navigator, MediaRecorder).
+// 2. Do NOT prefix environment variables with NEXT_PUBLIC_ — they will be
+//    exposed to the browser bundle and that is a security vulnerability.
+// 3. Do NOT import Zustand store — server has no access to client state.
+// 4. Keep secrets (ASSEMBLYAI_API_KEY, MONGODB_URI, etc.) in process.env only.
 
 import { t } from '@/lib/i18n';
 import type { SupportedLang } from '@/lib/i18n';
+import { translateText } from '@/lib/translate';
+
+/**
+ * Translates a static localization key or dynamic text to the target language on the server.
+ *
+ * @param text - The text to translate
+ * @param targetLang - The destination language code
+ * @returns The translated string, or the original text if target language is English or statically mapped
+ */
+async function translateLabel(text: string, targetLang: string): Promise<string> {
+  if (targetLang === 'en' || targetLang === 'hi' || targetLang === 'ta' || targetLang === 'auto') {
+    return text;
+  }
+  try {
+    const result = await translateText(text, 'en', targetLang);
+    return result || text;
+  } catch (err: unknown) {
+    console.warn(`[lib/email] Failed to translate "${text}" to ${targetLang}:`, err);
+    return text;
+  }
+}
+
+/**
+ * Translates a given user-input field (such as city name or passenger counts) to English.
+ *
+ * @param text - The raw text content in the user's language
+ * @param uiLang - The user's active UI language code
+ * @returns The translated English string, or original text if the UI language is already English or translation fails
+ */
+async function translateToEnglish(text: string, uiLang: string): Promise<string> {
+  const trimmed = text.trim();
+  if (!trimmed || uiLang === 'en') {
+    return text;
+  }
+  try {
+    const source = (uiLang === 'auto' || !uiLang) ? 'auto' : uiLang;
+    const result = await translateText(trimmed, source, 'en');
+    return result || text;
+  } catch (err: unknown) {
+    console.warn(`[lib/email] Failed to translate "${text}" to en:`, err);
+    return text;
+  }
+}
 
 /** EmailJS REST API endpoint for sending emails. */
 const EMAILJS_API_URL = 'https://api.emailjs.com/api/v1.0/email/send';
 
+const EMAIL_SEPARATOR_LENGTH = 45;
+
 /** Separator line used in email body formatting. */
-const EMAIL_SEPARATOR = '─'.repeat(45);
+const EMAIL_SEPARATOR = '─'.repeat(EMAIL_SEPARATOR_LENGTH);
 
 /** Placeholder shown when a field was not provided by the user. */
 const NOT_PROVIDED_EN = 'Not provided';
@@ -77,6 +124,8 @@ interface OpsEmailParams {
   phone: string;
   /** ISO 8601 timestamp. */
   submitted_at: string;
+  /** User's UI language. */
+  ui_language?: string;
 }
 
 // ── Customer Email ────────────────────────────────────────────────────────────
@@ -94,7 +143,19 @@ interface OpsEmailParams {
  */
 export async function sendCustomerEmail(params: CustomerEmailParams): Promise<void> {
   const lang = params.ui_language;
-  const notProvided = t(lang, 'reviewNotProvided');
+
+  // Resolve labels (translated or static)
+  const notProvided = await translateLabel(t(lang, 'reviewNotProvided'), lang);
+  const confirmBodyText = await translateLabel(t(lang, 'confirmBody'), lang);
+  const transcriptLabel = await translateLabel(t(lang, 'reviewTranscriptLabel'), lang);
+  const cityLabel = await translateLabel(t(lang, 'reviewCityLabel'), lang);
+  const datesLabel = await translateLabel(t(lang, 'reviewDatesLabel'), lang);
+  const passengersLabel = await translateLabel(t(lang, 'reviewPassengersLabel'), lang);
+  const budgetLabel = await translateLabel(t(lang, 'reviewBudgetLabel'), lang);
+  const emailLabel = await translateLabel(t(lang, 'reviewEmailLabel'), lang);
+  const phoneLabel = await translateLabel(t(lang, 'reviewPhoneLabel'), lang);
+  const outreachLabel = await translateLabel('Our team will reach out to you very soon.', lang);
+  const subjectLine = await translateLabel("We've received your travel query — Ulavi Technologies", lang);
 
   // Build the date range display string
   const datesDisplay = params.trip_dates_from
@@ -104,23 +165,23 @@ export async function sendCustomerEmail(params: CustomerEmailParams): Promise<vo
   // Build body as an array of lines, then join with newlines
   // (Avoids template literal indentation issues)
   const bodyLines = [
-    t(lang, 'confirmBody'),
+    confirmBodyText,
     '',
     EMAIL_SEPARATOR,
-    `${t(lang, 'reviewTranscriptLabel')}:`,
+    `${transcriptLabel}:`,
     params.original_query,
     '',
     EMAIL_SEPARATOR,
-    `${t(lang, 'reviewCityLabel')}: ${params.trip_city || notProvided}`,
-    `${t(lang, 'reviewDatesLabel')}: ${datesDisplay}`,
-    `${t(lang, 'reviewPassengersLabel')}: ${params.trip_passengers || notProvided}`,
-    `${t(lang, 'reviewBudgetLabel')}: ${params.trip_budget || notProvided}`,
+    `${cityLabel}: ${params.trip_city || notProvided}`,
+    `${datesLabel}: ${datesDisplay}`,
+    `${passengersLabel}: ${params.trip_passengers || notProvided}`,
+    `${budgetLabel}: ${params.trip_budget || notProvided}`,
     '',
     EMAIL_SEPARATOR,
-    `${t(lang, 'reviewEmailLabel')}: ${params.to_email}`,
-    `${t(lang, 'reviewPhoneLabel')}: ${params.phone}`,
+    `${emailLabel}: ${params.to_email}`,
+    `${phoneLabel}: ${params.phone}`,
     '',
-    'Our team will reach out to you very soon.',
+    outreachLabel,
   ];
 
   const bodyText = bodyLines.join('\n');
@@ -131,7 +192,7 @@ export async function sendCustomerEmail(params: CustomerEmailParams): Promise<vo
       to_email: params.to_email,
       user_name: params.user_name,
       body_text: bodyText,
-      subject_line: "We've received your travel query — Ulavi Technologies",
+      subject_line: subjectLine,
     },
   });
 }
@@ -153,6 +214,13 @@ export async function sendCustomerEmail(params: CustomerEmailParams): Promise<vo
  *         Callers must wrap this in a try-catch and treat it as non-fatal.
  */
 export async function sendOpsEmail(params: OpsEmailParams): Promise<void> {
+  const uiLang = params.ui_language || 'en';
+
+  // Translate trip details to English for the support/ops team if the UI language was not English
+  const englishTripCity = await translateToEnglish(params.trip_city, uiLang);
+  const englishTripPassengers = await translateToEnglish(params.trip_passengers, uiLang);
+  const englishTripBudget = await translateToEnglish(params.trip_budget, uiLang);
+
   // Build the audio line — show the URL if available, otherwise a note
   const audioLine = params.audio_url
     ? `<a href="${params.audio_url}" target="_blank" style="color:#E85D22;font-weight:700;text-decoration:underline;">Listen to Voice Recording</a>`
@@ -172,10 +240,10 @@ export async function sendOpsEmail(params: OpsEmailParams): Promise<void> {
       english_translation: params.english_translation,
       audio_url: params.audio_url,
       audio_line: audioLine,
-      trip_city: params.trip_city || NOT_PROVIDED_EN,
+      trip_city: englishTripCity || NOT_PROVIDED_EN,
       trip_dates: tripDatesDisplay,
-      trip_passengers: params.trip_passengers || NOT_PROVIDED_EN,
-      trip_budget: params.trip_budget || NOT_PROVIDED_EN,
+      trip_passengers: englishTripPassengers || NOT_PROVIDED_EN,
+      trip_budget: englishTripBudget || NOT_PROVIDED_EN,
       user_email: params.user_email,
       phone: params.phone,
       submitted_at: params.submitted_at,

@@ -6,14 +6,13 @@
 
 import { Loader2, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { t } from "@/lib/i18n";
-import type { SupportedLang, LangStrings } from "@/lib/i18n";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { LangStrings } from "@/lib/i18n";
 
 interface MicButtonProps {
     status?: "idle" | "recording" | "done" | "processing";
     onClick?: () => void;
     disabled?: boolean;
-    lang?: SupportedLang;
 }
 
 const STATUS_TO_I18N_KEY: Record<NonNullable<MicButtonProps["status"]>, keyof LangStrings> = {
@@ -23,7 +22,8 @@ const STATUS_TO_I18N_KEY: Record<NonNullable<MicButtonProps["status"]>, keyof La
     done:       "recordDone",
 };
 
-export function MicButton({ status = "idle", onClick, disabled, lang = "auto" }: MicButtonProps) {
+export function MicButton({ status = "idle", onClick, disabled }: MicButtonProps) {
+    const { t } = useTranslation();
     const isRecording  = status === "recording";
     const isProcessing = status === "processing";
     const isDone       = status === "done";
@@ -162,7 +162,7 @@ export function MicButton({ status = "idle", onClick, disabled, lang = "auto" }:
                     )}
                     aria-live="polite"
                 >
-                    {t(lang, STATUS_TO_I18N_KEY[status])}
+                    {t(STATUS_TO_I18N_KEY[status])}
                 </p>
 
                 {/* Recording bounce dots */}

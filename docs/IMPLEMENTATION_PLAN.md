@@ -1,7 +1,7 @@
-# VoiceBerry — Implementation Plan
+# Voice Query System — Implementation Plan
 ### Upgrading the Voice Query System to the Full Travel Query Platform
 
-**Author:** Anas Alam — SDE  
+**Author:** [Anas Alam](https://linkedin.com/in/anas86/) — SDE  
 **Target:** 100,000+ concurrent users  
 **Base project:** `voiceQuerySystem` (Next.js 16, Zustand, AssemblyAI, MongoDB, EmailJS)
 
@@ -42,7 +42,7 @@ export function check(t: string) {
  * @returns true if a number pattern is found, false otherwise
  */
 export function containsNumericDetail(transcript: string): boolean {
-  return /\d+/.test(transcript);
+  return /\d+/.test(t);
 }
 ```
 
@@ -148,7 +148,7 @@ Every new file must start with a 3-line header:
 ```ts
 /**
  * [filename] — [one-line description of what this file does]
- * VoiceBerry | Ulavi Technologies
+ * Voice Query System | Ulavi Technologies
  */
 ```
 
@@ -157,7 +157,7 @@ Every new file must start with a 3-line header:
 Every API route file must have a comment at the top clarifying the boundary:
 
 ```ts
-// ── SERVER ONLY ───────────────────────────────────────────────────────────────
+// ————————————————————————————————————————————————————————————————————————————————————————
 // This file runs on the server (Next.js API route). Do NOT import browser APIs.
 // Do NOT prefix env vars used here with NEXT_PUBLIC_.
 ```
@@ -422,7 +422,7 @@ Also add `tripCity`, `tripDatesFrom`, `tripDatesTo`, `tripPassengers`, `tripBudg
 The root `/` route becomes Screen 1 — the Language Picker — instead of redirecting to `/record`.
 
 UI Requirements:
-- Show app name/logo at top: "VoiceBerry"
+- Show app name/logo at top: "Voice Query System"
 - Subtitle: "Select your language to get started"
 - Grid of language cards (2 columns on mobile, 4 columns on desktop)
 - Each card shows:
@@ -437,7 +437,7 @@ Languages to display (in order):
 
 ```
 Auto-detect | English | हिंदी (Hindi) | தமிழ் (Tamil)
-తెలుగు (Telugu) | ಕನ್ನಡ (Kannada) | മലയാളം (Malayalam) | বাংলা (Bengali) | मराठी (Marathi)
+తెలుగు (Telugu) | కన్నడ (Kannada) | മലയാളം (Malayalam) | বাংলা (Bengali) | मराठी (Marathi)
 ```
 
 **File to create:** `frontend/components/language/LanguagePicker.tsx`
@@ -558,11 +558,11 @@ This replaces the free-text budget input for the budget pop-up only. Instead of 
 
 | Stars | Label | Budget Range (approx.) |
 |---|---|---|
-| ⭐ | Economy | Under ₹10,000 per person |
-| ⭐⭐ | Budget | ₹10,000 – ₹25,000 per person |
-| ⭐⭐⭐ | Mid-range | ₹25,000 – ₹50,000 per person |
-| ⭐⭐⭐⭐ | Premium | ₹50,000 – ₹1,00,000 per person |
-| ⭐⭐⭐⭐⭐ | Luxury | ₹1,00,000+ per person |
+| ★ | Economy | Under ₹10,000 per person |
+| ★★ | Budget | ₹10,000 – ₹25,000 per person |
+| ★★★ | Mid-range | ₹25,000 – ₹50,000 per person |
+| ★★★★ | Premium | ₹50,000 – ₹1,00,000 per person |
+| ★★★★★ | Luxury | ₹1,00,000+ per person |
 
 The label and budget range text MUST come from the i18n dictionary so they appear in the user's language.
 
@@ -571,7 +571,7 @@ The label and budget range text MUST come from the i18n dictionary so they appea
 ```ts
 /**
  * BudgetStarSelectorProps — props for the star-based budget rating widget.
- * VoiceBerry | Ulavi Technologies
+ * Voice Query System | Ulavi Technologies
  */
 interface BudgetStarSelectorProps {
   /** Currently selected star count. 0 = nothing selected yet. */
@@ -614,14 +614,14 @@ interface BudgetStarSelectorProps {
  *
  * @param rating - Star count selected by the user (1–5). 0 = not selected.
  * @param lang   - UI language used for label localisation.
- * @returns A formatted string like "⭐⭐⭐ Mid-range (₹25,000 – ₹50,000/person)"
+ * @returns A formatted string like "★★★ Mid-range (₹25,000 – ₹50,000/person)"
  */
 function budgetRatingToString(rating: number, lang: SupportedLang): string {
   if (rating === 0) return '';
   const tier = BUDGET_TIERS[rating - 1]; // array index 0–4
   const tierLabel = t(lang, tier.labelKey);
   const tierRange = t(lang, tier.rangeKey);
-  return `${'⭐'.repeat(rating)} ${tierLabel} (${tierRange})`;
+  return `${'★'.repeat(rating)} ${tierLabel} (${tierRange})`;
 }
 ```
 
@@ -649,7 +649,7 @@ A bottom-sheet modal component. The `budget` field uses `BudgetStarSelector` ins
 ```ts
 /**
  * TripDetailPopupProps — props for the single-field trip detail modal.
- * VoiceBerry | Ulavi Technologies
+ * Voice Query System | Ulavi Technologies
  */
 interface TripDetailPopupProps {
   /** Language code for all displayed text. */
@@ -685,7 +685,7 @@ interface TripDetailPopupProps {
 ```
 role="dialog"
 aria-modal="true"
-aria-labelledby="popup-question-text"   ← id on the <p> element containing the question
+aria-labelledby="popup-question-text"   — id on the <p> element containing the question
 Focus: first interactive element receives focus on open
 Escape key: calls onSkip() (same as tapping Skip)
 Focus trap: Tab/Shift+Tab stay inside the modal
@@ -720,7 +720,7 @@ This is a `"use client"` page. No server component is needed here.
 ### Logic on Mount
 
 1. Read `originalTranscript` from the Zustand store
-2. If `originalTranscript` is empty → redirect to `/record` (direct visit guard)
+2. If `originalTranscript` is empty — redirect to `/record` (direct visit guard)
 3. Run `extractTripDetails(originalTranscript)` — runs instantly, client-side, zero API cost
 4. Build a queue of ONLY the missing fields:
 
@@ -747,9 +747,9 @@ function buildMissingFieldQueue(extracted: TripDetails): Array<TripDetailField> 
 
 5. Show a 500ms "Analysing your query..." loading state before the first pop-up (prevents jarring immediate pop-up)
 6. Show pop-ups one at a time, using `currentStep` and `totalSteps` from the queue index
-7. On submit → store the value in Zustand → advance the queue
-8. On skip → store `''` in Zustand → advance the queue
-9. When queue is empty → navigate to `/review`
+7. On submit — store the value in Zustand — advance the queue
+8. On skip — store `''` in Zustand — advance the queue
+9. When queue is empty — navigate to `/review`
 
 ### Visual Design
 
@@ -779,15 +779,15 @@ onClick={() => router.push("/details")}
 ## Phase 2 — Verification Checklist
 
 - [ ] `npm run build` with zero errors
-- [ ] Speaking "trip to Goa for 2 people" → city (Goa) + passengers detected → only dates + budget pop-ups appear (2 pop-ups)
-- [ ] Speaking with no specific trip details → all 4 pop-ups appear
+- [ ] Speaking "trip to Goa for 2 people" — city (Goa) + passengers detected — only dates + budget pop-ups appear (2 pop-ups)
+- [ ] Speaking with no specific trip details — all 4 pop-ups appear
 - [ ] Budget pop-up shows star selector (NOT a text input)
-- [ ] Tapping 3 stars → shows "Mid-range" label + budget range in user's language
-- [ ] Tapping same star again → deselects (resets to 0)
+- [ ] Tapping 3 stars — shows "Mid-range" label + budget range in user's language
+- [ ] Tapping same star again — deselects (resets to 0)
 - [ ] "Next" button in budget pop-up stays disabled until at least 1 star is tapped (or Skip is used)
-- [ ] Skipping a pop-up → field stored as empty string → navigates to next pop-up
-- [ ] After last pop-up → navigates to `/review`
-- [ ] Direct visit to `/details` without transcript → redirected to `/record`
+- [ ] Skipping a pop-up — field stored as empty string — navigates to next pop-up
+- [ ] After last pop-up — navigates to `/review`
+- [ ] Direct visit to `/details` without transcript — redirected to `/record`
 - [ ] All pop-up text in Hindi when Hindi is selected
 - [ ] All pop-up text in Tamil when Tamil is selected
 - [ ] Budget tier labels appear in Hindi when Hindi is selected
@@ -814,7 +814,7 @@ This is setup work, not coding. Do this before writing any code.
 
 1. Create a free Supabase account at supabase.com
 2. Create a new project (free tier)
-3. In the Supabase dashboard: go to Storage → Create a new bucket
+3. In the Supabase dashboard: go to Storage — Create a new bucket
    - Bucket name: `voice-recordings`
    - Public bucket: YES (so the audio URL in the ops email is accessible without auth)
 4. Copy these two values to `.env.local`:
@@ -832,7 +832,7 @@ This is setup work, not coding. Do this before writing any code.
 This is a server-side API route that receives the raw audio Blob from the client and uploads it to Supabase Storage, returning the public URL.
 
 ```ts
-// ── SERVER ONLY ───────────────────────────────────────────────────────────────
+// ————————————————————————————————————————————————————————————————————————————————————————
 // This file runs on the server (Next.js API route). Do NOT import browser APIs.
 // Do NOT prefix env vars used here with NEXT_PUBLIC_.
 
@@ -876,7 +876,7 @@ Logic inside the handler:
 5. Return `{ audioUrl }` to the client
 
 **Error handling:**
-- If Supabase upload fails → return `{ error: 'Audio upload failed', code: 'AUDIO_UPLOAD_ERROR' }` with status 502
+- If Supabase upload fails — return `{ error: 'Audio upload failed', code: 'AUDIO_UPLOAD_ERROR' }` with status 502
 - Audio upload failure is non-fatal for the overall submission — the client must continue even if this fails
 - Log the failure: `console.error('[api/audio/upload] Supabase upload failed', error)`
 
@@ -931,7 +931,7 @@ trip_city: string;            // "" if not provided (skipped or not detected)
 trip_dates_from: string;      // "" if not provided
 trip_dates_to: string;        // "" if not provided
 trip_passengers: string;      // "" if not provided
-trip_budget: string;          // Star rating string e.g. "⭐⭐⭐ Mid-range (₹25,000 – ₹50,000/person)" or "" if skipped
+trip_budget: string;          // Star rating string e.g. "★★★ Mid-range (₹25,000 – ₹50,000/person)" or "" if skipped
 ```
 
 ---
@@ -1048,7 +1048,7 @@ Variables the ops template needs:
 {{trip_city}}                 - "Not provided" if empty
 {{trip_dates}}                - "Not provided" if empty
 {{trip_passengers}}           - "Not provided" if empty
-{{trip_budget}}               - e.g. "⭐⭐⭐ Mid-range (₹25,000 – ₹50,000/person)" or "Not provided"
+{{trip_budget}}               - e.g. "★★★ Mid-range (₹25,000 – ₹50,000/person)" or "Not provided"
 {{user_email}}                - customer's email
 {{phone}}                     - full phone with country code
 {{submitted_at}}              - ISO timestamp + timezone
@@ -1059,7 +1059,7 @@ Variables the ops template needs:
 
 ```
 New Travel Query Received
-─────────────────────────
+—————————————————————————
 Customer: [customer_name]
 Language: [original_query_language]
 
@@ -1071,25 +1071,25 @@ English Translation:
 
 🎙 Voice Recording: [Listen to recording] (clickable link)
 
-─────────────────────────
+—————————————————————————
 Trip Details
-─────────────────────────
+—————————————————————————
 Destination:          [trip_city]
 Travel Dates:         [trip_dates]
 Passengers:           [trip_passengers]
 Budget:               [trip_budget]
 
-─────────────────────────
+—————————————————————————
 Contact Details
-─────────────────────────
+—————————————————————————
 Email:  [user_email]
 Phone:  [phone]
 
 Submitted at: [submitted_at]
 
-─────────────────────────
+—————————————————————————
 ⚡ [action_prompt]
-─────────────────────────
+—————————————————————————
 ```
 
 ---
@@ -1104,16 +1104,16 @@ Replace the single `sendSubmissionEmail()` function with two dedicated functions
 /**
  * email.ts — Server-side email sending via EmailJS REST API.
  * Two functions: one for the customer copy, one for the ops team.
- * VoiceBerry | Ulavi Technologies
+ * Voice Query System | Ulavi Technologies
  */
 
-// ── SERVER ONLY ───────────────────────────────────────────────────────────────
+// ————————————————————————————————————————————————————————————————————————————————————————
 // Never import this file from client components.
 // Keys used here must NOT have the NEXT_PUBLIC_ prefix.
 
 const EMAILJS_API_URL = 'https://api.emailjs.com/api/v1.0/email/send';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ————————————————————————————————————————————————————————————————————————————————————————
 
 interface CustomerEmailParams {
   to_email: string;
@@ -1124,7 +1124,7 @@ interface CustomerEmailParams {
   trip_dates_from: string;
   trip_dates_to: string;
   trip_passengers: string;
-  trip_budget: string;      // Star string e.g. "⭐⭐⭐ Mid-range (₹25,000 – ₹50,000/person)"
+  trip_budget: string;      // Star string e.g. "★★★ Mid-range (₹25,000 – ₹50,000/person)"
   phone: string;
   submitted_at: string;
 }
@@ -1145,7 +1145,7 @@ interface OpsEmailParams {
   submitted_at: string;
 }
 
-// ── Customer email ────────────────────────────────────────────────────────────
+// ————————————————————————————————————————————————————————————————————————————————————————
 
 /**
  * Sends the customer a copy of their submitted travel query,
@@ -1166,11 +1166,11 @@ export async function sendCustomerEmail(params: CustomerEmailParams): Promise<vo
   const bodyText = [
     t(lang, 'confirmBody'),
     '',
-    '─'.repeat(40),
+    '—'.repeat(40),
     `${t(lang, 'reviewTranscriptLabel')}:`,
     params.original_query,
     '',
-    '─'.repeat(40),
+    '—'.repeat(40),
     `${t(lang, 'reviewCityLabel')}: ${params.trip_city || notProvided}`,
     `${t(lang, 'reviewDatesLabel')}: ${params.trip_dates_from || notProvided}${params.trip_dates_to ? ' — ' + params.trip_dates_to : ''}`,
     `${t(lang, 'reviewPassengersLabel')}: ${params.trip_passengers || notProvided}`,
@@ -1191,7 +1191,7 @@ export async function sendCustomerEmail(params: CustomerEmailParams): Promise<vo
   });
 }
 
-// ── Ops email ─────────────────────────────────────────────────────────────────
+// ————————————————————————————————————————————————————————————————————————————————————————
 
 /**
  * Sends the ops team a structured English email with all submission details,
@@ -1233,7 +1233,7 @@ export async function sendOpsEmail(params: OpsEmailParams): Promise<void> {
   });
 }
 
-// ── Shared helper ─────────────────────────────────────────────────────────────
+// ————————————————————————————————————————————————————————————————————————————————————————
 
 /**
  * Internal helper that POSTs a template call to the EmailJS REST API.
@@ -1269,6 +1269,7 @@ async function callEmailJsApi(options: {
     throw new Error(`EmailJS responded ${res.status}: ${body}`);
   }
 }
+```
 
 ---
 
@@ -1287,7 +1288,7 @@ Add `user_email` and `audio_url` to the validation check:
 
 ```ts
 await db.collection('query_submissions').insertOne({
-  // ── Existing fields (unchanged) ──
+  // ————————————————————————————————————————————————————————————————————————————————————————
   user_name:             payload.user_name.trim(),
   source_language:       payload.source_language,
   original_transcript:   payload.original_transcript,
@@ -1298,7 +1299,7 @@ await db.collection('query_submissions').insertOne({
   client_timestamp:      payload.client_timestamp,
   client_timezone:       payload.client_timezone,
 
-  // ── New fields ──
+  // ————————————————————————————————————————————————————————————————————————————————————————
   ui_language:           payload.ui_language,
   user_email:            payload.user_email.trim(),
   audio_url:             payload.audio_url,         // Supabase URL or ''
@@ -1308,7 +1309,7 @@ await db.collection('query_submissions').insertOne({
   trip_passengers:       payload.trip_passengers,
   trip_budget:           payload.trip_budget,       // Star string or ''
 
-  // ── Metadata ──
+  // ————————————————————————————————————————————————————————————————————————————————————————
   status:                'accepted',
   customer_email_sent:   false,
   ops_email_sent:        false,
@@ -1322,7 +1323,7 @@ await db.collection('query_submissions').insertOne({
 Both emails are sent AFTER the DB write and INDEPENDENTLY. One failing must never prevent the other from being attempted.
 
 ```ts
-// ── Customer email ────────────────────────────────────────────────────────────
+// ————————————————————————————————————————————————————————————————————————————————————————
 try {
   await sendCustomerEmail({
     to_email:       payload.user_email.trim(),
@@ -1348,7 +1349,7 @@ try {
   console.error('[api/queries] customer email failed — submission id:', insertedId, err);
 }
 
-// ── Ops email ─────────────────────────────────────────────────────────────────
+// ————————————————————————————————————————————————————————————————————————————————————————
 try {
   await sendOpsEmail({
     customer_name:           payload.user_name.trim(),
@@ -1414,9 +1415,9 @@ const LANGUAGE_NAMES: Record<string, string> = {
 - [ ] Budget field shows star selector on review screen (not a text input)
 - [ ] Changing stars on review screen updates `tripBudget` in Zustand immediately
 - [ ] Skipped fields show placeholder text "Not provided" (not an error)
-- [ ] Empty email field → inline error in user's language
-- [ ] Invalid email format → inline error in user's language
-- [ ] Empty phone field → inline error
+- [ ] Empty email field — inline error in user's language
+- [ ] Invalid email format — inline error in user's language
+- [ ] Empty phone field — inline error
 - [ ] After sending:
   - [ ] Audio is uploaded to Supabase before navigating to confirmation
   - [ ] MongoDB document contains: `audio_url`, `user_email`, all `trip_*` fields
@@ -1425,7 +1426,7 @@ const LANGUAGE_NAMES: Record<string, string> = {
   - [ ] Audio URL in MongoDB matches the Supabase public URL
 - [ ] Customer email received with body in user's language
 - [ ] Customer email body includes: greeting, full transcript, all 4 trip fields, contact details
-- [ ] Customer email body shows budget as star string (e.g. "⭐⭐⭐ Mid-range")
+- [ ] Customer email body shows budget as star string (e.g. "★★★ Mid-range")
 - [ ] Ops email received in English
 - [ ] Ops email subject: "New Travel Query — [City] — [Phone]"
 - [ ] Ops email body contains: original language query, English translation, audio link, all 4 trip fields, contact details, action prompt
@@ -1563,31 +1564,31 @@ NEXT_PUBLIC_SENTRY_DSN=https://...@sentry.io/...
 **File to update:** `frontend/.env.example`
 
 ```bash
-# ── AssemblyAI — server-side transcription ──────────────────────────────────
+# ————————————————————————————————————————————————————————————————————————————————————————
 ASSEMBLYAI_API_KEY=
 
-# ── EmailJS — server-side ONLY (never use NEXT_PUBLIC_ prefix here) ─────────
+# ————————————————————————————————————————————————————————————————————————————————————————
 EMAILJS_PUBLIC_KEY=
 EMAILJS_SERVICE_ID=
 EMAILJS_CUSTOMER_TEMPLATE_ID=     # Template A: customer query copy
 EMAILJS_OPS_TEMPLATE_ID=          # Template B: ops notification
 EMAILJS_PRIVATE_KEY=              # Optional: access token for authenticated calls
 
-# ── MongoDB Atlas — free tier (512MB) ───────────────────────────────────────
+# ————————————————————————————————————————————————————————————————————————————————————————
 MONGODB_URI=
-MONGODB_DB=voiceberry
+MONGODB_DB=Voice Query System
 
-# ── Supabase Storage — free tier (1GB) for voice recording uploads ──────────
+# ————————————————————————————————————————————————————————————————————————————————————————
 # NEXT_PUBLIC_ prefix is allowed here because the URL is not a secret.
 NEXT_PUBLIC_SUPABASE_URL=
 # Service role key — server-side ONLY. Never use NEXT_PUBLIC_ prefix on this.
 SUPABASE_SERVICE_ROLE_KEY=
 
-# ── Upstash Redis — free tier (10K commands/day) for rate limiting ───────────
+# ————————————————————————————————————————————————————————————————————————————————————————
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 
-# ── Sentry — free tier (5K errors/month) for error monitoring ───────────────
+# ————————————————————————————————————————————————————————————————————————————————————————
 NEXT_PUBLIC_SENTRY_DSN=
 ```
 
@@ -1599,14 +1600,14 @@ NEXT_PUBLIC_SENTRY_DSN=
 - [ ] Upstash dashboard shows rate limit analytics (requests being counted)
 - [ ] Full flow tested on real iOS Safari (HTTPS required for mic)
 - [ ] Full flow tested on real Android Chrome
-- [ ] Tamil full flow: language pick → record → pop-ups → review → both emails
+- [ ] Tamil full flow: language pick — record — pop-ups — review — send — both emails
 - [ ] Hindi full flow: same
 - [ ] English full flow: same
 - [ ] Both emails arrive correctly after each test
 - [ ] MongoDB Atlas: 5 test documents present with all trip fields
 - [ ] MongoDB Atlas: indexes created and query plan shows index usage
 - [ ] Sentry dashboard: no unhandled errors after clean demo run
-- [ ] Rate limit: submitting 6 times quickly from same IP → 6th attempt gets 429 error
+- [ ] Rate limit: submitting 6 times quickly from same IP — 6th attempt gets 429 error
 
 ---
 
@@ -1661,23 +1662,17 @@ if (uiLanguage === 'auto' && result.language_code) {
 }
 ```
 
----
-
 ## Problem 2: Date format from pop-ups
 
 **Situation:** Users type dates in different formats: "15 Aug", "August 15", "15/8", "15th August 2026".
 
 **Solution:** Accept free-form text — do NOT parse or validate dates on the client. Display exactly what the user typed in the review screen and include it as-is in the ops email. The ops team reads the date and acts accordingly. Parsing multilingual free-form dates reliably is an entire engineering project.
 
----
-
 ## Problem 3: Customer email body in 8 languages
 
 **Situation:** EmailJS templates are static HTML. How to send different language bodies?
 
 **Solution:** Build the body as a pre-composed plain-text string in `lib/email.ts` using the i18n dictionary. Pass it as a single `{{body_text}}` variable to a simple EmailJS template. One template handles all languages.
-
----
 
 ## Problem 4: AssemblyAI accuracy for South Indian languages
 
@@ -1687,15 +1682,11 @@ if (uiLanguage === 'auto' && result.language_code) {
 
 **Additional recommendation:** In the review screen, always show the transcript in an editable field. Users can correct any transcription errors before submitting.
 
----
-
 ## Problem 5: What if ALL 4 pop-up fields are already in the transcript?
 
 **Situation:** A very detailed user says: "I want to go to Kodaikanal on 15th August for 3 people with a budget of 30,000 rupees."
 
 **Expected behaviour:** The extractor detects all 4 fields. No pop-ups appear. The user is navigated directly from `/details` to `/review`. The `/details` page shows a brief "Great! We found all the details from your query." message before navigating automatically after 1 second.
-
----
 
 ## Problem 6: Rate limiting for transcription (AssemblyAI costs)
 
@@ -1718,7 +1709,7 @@ if (uiLanguage === 'auto' && result.language_code) {
 
 ## Performance
 - [ ] `next build` completes with no TypeScript errors and no warnings
-- [ ] No Cumulative Layout Shift (CLS) on mobile during language picker → record transition
+- [ ] No Cumulative Layout Shift (CLS) on mobile during language picker — record transition
 - [ ] Pop-up animation smooth on low-end Android (60fps)
 - [ ] First Contentful Paint < 2s on 4G (test with Chrome DevTools throttling)
 - [ ] Language picker grid does not overflow horizontally on 320px screen width
@@ -1732,10 +1723,10 @@ if (uiLanguage === 'auto' && result.language_code) {
 - [ ] Error messages have `role="alert"` so screen readers announce them
 
 ## Multi-language End-to-End Tests
-- [ ] Tamil: language pick → record → pop-ups → review → send → both emails
+- [ ] Tamil: language pick — record — pop-ups — review — send — both emails
 - [ ] Hindi: same full flow
 - [ ] English: same full flow
-- [ ] Auto-detect with Tamil speech → UI switches to Tamil after transcription
+- [ ] Auto-detect with Tamil speech — UI switches to Tamil after transcription
 - [ ] Ops email ALWAYS in English regardless of selected language
 - [ ] Customer email body in Tamil when Tamil is selected
 - [ ] Customer email body in Hindi when Hindi is selected
@@ -1745,11 +1736,11 @@ if (uiLanguage === 'auto' && result.language_code) {
 - [ ] Ops email subject: `New Travel Query — [City] — [Phone]`
 - [ ] Ops email body contains: original language query, English translation, audio link, trip details, contact details, action prompt
 - [ ] Audio link in ops email is clickable and opens the Supabase-hosted `.webm` file
-- [ ] If audio upload failed: ops email shows "Audio recording: Not available" (no crash, no undefined)
+- [ ] If audio upload failed: ops email shows "Audio recording: Not available" — does NOT crash
 - [ ] Customer email arrives at the user's own email address
 - [ ] Customer email body is in the user's selected language
 - [ ] Customer email body contains: greeting, full transcript, destination, dates, passengers, budget (star string), phone
-- [ ] Budget shown in customer email as star string: e.g. "⭐⭐⭐ Mid-range (₹25,000 – ₹50,000/person)"
+- [ ] Budget shown in customer email as star string: e.g. "★★★ Mid-range (₹25,000 – ₹50,000/person)"
 - [ ] No `undefined`, `null`, or `[object Object]` strings appear in either email body
 - [ ] "Not provided" (or localised equivalent) shown correctly for skipped/empty fields
 
@@ -1765,10 +1756,10 @@ if (uiLanguage === 'auto' && result.language_code) {
 - [ ] No magic numbers — all constants are named
 - [ ] No `any` types — all variables explicitly typed
 - [ ] Every file starts with the 3-line header comment
-- [ ] Every API route file has the `// ── SERVER ONLY` boundary comment
+- [ ] Every API route file has the `// ————————————————————————————————————————————————————————————————————————————————————————` boundary comment
 - [ ] `npm run lint` returns zero errors
 
 ---
 
 *This document is the property of Ulavi Technologies. Confidential.*
-*Questions? Contact Anas Alam — SDE.*
+*Questions? Contact [Anas Alam](https://linkedin.com/in/anas86/) — SDE.*
