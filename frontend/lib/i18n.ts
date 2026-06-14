@@ -96,6 +96,9 @@ export interface LangStrings {
   detailsRedirecting: string;
   popupAdultsSub: string;
   popupChildrenSub: string;
+  reviewOriginalTranscriptLabel: string;
+  reviewTranslateButton: string;
+  reviewTranslatingStatus: string;
 }
 
 export const enStrings: LangStrings = {
@@ -172,6 +175,9 @@ export const enStrings: LangStrings = {
   detailsRedirecting: "Redirecting you to review...",
   popupAdultsSub: "Ages 13 or above",
   popupChildrenSub: "Ages 0 to 12",
+  reviewOriginalTranscriptLabel: "Your query (Original)",
+  reviewTranslateButton: "Translate to English",
+  reviewTranslatingStatus: "Translating...",
 };
 
 const hiStrings: LangStrings = {
@@ -248,6 +254,9 @@ const hiStrings: LangStrings = {
   detailsRedirecting: "समीक्षा पर ले जाया जा रहा है...",
   popupAdultsSub: "12 वर्ष से अधिक",
   popupChildrenSub: "0 से 12 वर्ष",
+  reviewOriginalTranscriptLabel: "आपकी क्वेरी (मूल)",
+  reviewTranslateButton: "अंग्रेजी में अनुवाद करें",
+  reviewTranslatingStatus: "अनुवाद किया जा रहा है...",
 };
 
 const taStrings: LangStrings = {
@@ -324,6 +333,9 @@ const taStrings: LangStrings = {
   detailsRedirecting: "மதிப்பாய்வுக்கு திருப்பி விடப்படுகிறது...",
   popupAdultsSub: "12 வயதிற்கு மேல்",
   popupChildrenSub: "0 முதல் 12 வயது",
+  reviewOriginalTranscriptLabel: "உங்கள் கேள்வி (அசல்)",
+  reviewTranslateButton: "ஆங்கிலத்தில் மொழிபெயர்க்கவும்",
+  reviewTranslatingStatus: "மொழிபெயர்க்கப்படுகிறது...",
 };
 
 const strings: Record<string, LangStrings> = {

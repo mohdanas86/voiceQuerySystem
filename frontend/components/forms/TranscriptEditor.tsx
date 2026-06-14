@@ -1,21 +1,23 @@
 interface TranscriptEditorProps {
+    label?: string;
     placeholder?: string;
     value?: string;
     onChange?: (value: string) => void;
+    id?: string;
 }
 
-export function TranscriptEditor({ placeholder, value, onChange }: TranscriptEditorProps) {
+export function TranscriptEditor({ label, placeholder, value, onChange, id = "transcript-english" }: TranscriptEditorProps) {
     return (
         <div className="flex min-w-0 flex-col gap-1.5">
             <label
-                htmlFor="transcript-english"
+                htmlFor={id}
                 className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]"
             >
-                Transcript (English)
+                {label ?? "Transcript (English)"}
             </label>
             <textarea
-                id="transcript-english"
-                name="transcript"
+                id={id}
+                name={id}
                 rows={5}
                 autoComplete="off"
                 spellCheck

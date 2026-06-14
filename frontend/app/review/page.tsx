@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Loader2 } from "lucide-react";
 
 import { ErrorBanner } from "@/components/feedback/ErrorBanner";
 import { TranscriptEditor } from "@/components/forms/TranscriptEditor";
@@ -81,8 +81,8 @@ export default function ReviewPage() {
     const {
         userName, sourceLanguage, originalTranscript, translatedTranscript,
         phoneCountryCode, phoneNumber, isTranslating, isSubmitting, errorMessage,
-        setUserName, setTranslatedTranscript, setPhoneCountryCode, setPhoneNumber,
-        setIsSubmitting, setErrorMessage, reset,
+        setUserName, setTranslatedTranscript, setOriginalTranscript, setPhoneCountryCode, setPhoneNumber,
+        setIsTranslating, setIsSubmitting, setErrorMessage, reset,
         // New fields (Phase 3)
         tripCity, setTripCity,
         tripDatesFrom, setTripDatesFrom,
@@ -253,6 +253,40 @@ export default function ReviewPage() {
         }
     };
 
+    const handleTranslateQuery = async () => {
+        if (!originalTranscript.trim()) return;
+        setIsTranslating(true);
+        setErrorMessage(null);
+        try {
+            const res = await fetch("/api/translate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    texts: [originalTranscript],
+                    source: sourceLanguage,
+                    target: "en",
+                }),
+            });
+
+            if (!res.ok) {
+                throw new Error("Translation request failed");
+            }
+
+            const data = await res.json();
+            const translatedTexts = data.translatedTexts as string[];
+            if (translatedTexts && translatedTexts.length > 0) {
+                setTranslatedTranscript(translatedTexts[0]);
+            }
+        } catch (err: unknown) {
+            console.error("[translate] Failed to re-translate modified query:", err);
+            setErrorMessage("Failed to translate the query. Please try again.");
+        } finally {
+            setIsTranslating(false);
+        }
+    };
+
     // Show inline email validation error as the user types
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -295,17 +329,33 @@ export default function ReviewPage() {
                 <Card padding="lg">
                     <div className="flex flex-col gap-5">
 
-                        {/* Original transcript (read-only) */}
+                        {/* Original transcript (editable) */}
                         {originalTranscript && (
-                            <div className="flex flex-col gap-1.5">
-                                <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#6B6A68]">
-                                    {t("reviewTranscriptLabel")}
-                                </span>
-                                <div className="rounded-xl border border-[#E8E5DF] bg-[#F9F8F5] overflow-hidden flex">
-                                    <div className="w-[3px] bg-[#E85D22] shrink-0" />
-                                    <p className="flex-1 px-4 py-3 text-sm font-light leading-relaxed text-[#111111] whitespace-pre-wrap break-words">
-                                        {originalTranscript}
-                                    </p>
+                            <div className="flex flex-col gap-3">
+                                <TranscriptEditor
+                                    id="transcript-original"
+                                    label={t("reviewOriginalTranscriptLabel")}
+                                    value={originalTranscript}
+                                    onChange={setOriginalTranscript}
+                                    placeholder="Enter your query in your local language..."
+                                />
+                                <div className="flex justify-end -mt-1">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        disabled={isTranslating || !originalTranscript.trim()}
+                                        onClick={handleTranslateQuery}
+                                        className="h-9 px-4 text-xs font-semibold border-[#E85D22]/30 text-[#E85D22] hover:bg-[#E85D22]/5 transition-colors duration-150"
+                                    >
+                                        {isTranslating ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                                                {t("reviewTranslatingStatus")}
+                                            </>
+                                        ) : (
+                                            t("reviewTranslateButton")
+                                        )}
+                                    </Button>
                                 </div>
                             </div>
                         )}
