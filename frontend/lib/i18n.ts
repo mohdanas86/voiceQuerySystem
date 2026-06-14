@@ -45,6 +45,8 @@ export interface LangStrings {
   popupDatesToPlaceholder: string;
   popupPassengersQuestion: string;
   popupPassengersPlaceholder: string;
+  popupAdultsLabel: string;
+  popupChildrenLabel: string;
   popupBudgetQuestion: string;
   popupBudgetPlaceholder: string;
 
@@ -124,6 +126,8 @@ const enStrings: LangStrings = {
   popupDatesToPlaceholder: "To date (e.g. 20 Aug 2026)",
   popupPassengersQuestion: "How many people will be travelling?",
   popupPassengersPlaceholder: "E.g., 2 adults, 1 child",
+  popupAdultsLabel: "Adults",
+  popupChildrenLabel: "Children (0-12 yrs)",
   popupBudgetQuestion: "What is your approximate budget for this trip?",
   popupBudgetPlaceholder: "Select a star rating below",
   budgetTier1Label: "Economy",
@@ -193,6 +197,8 @@ const hiStrings: LangStrings = {
   popupDatesToPlaceholder: "वापसी की तारीख (जैसे: 20 अगस्त 2026)",
   popupPassengersQuestion: "कितने लोग यात्रा करेंगे?",
   popupPassengersPlaceholder: "जैसे: 2 वयस्क, 1 बच्चा",
+  popupAdultsLabel: "वयस्क",
+  popupChildrenLabel: "बच्चे (0-12 वर्ष)",
   popupBudgetQuestion: "इस यात्रा के लिए आपका अनुमानित बजट क्या है?",
   popupBudgetPlaceholder: "नीचे स्टार रेटिंग चुनें",
   budgetTier1Label: "सस्ता (इकोनॉमी)",
@@ -262,6 +268,8 @@ const taStrings: LangStrings = {
   popupDatesToPlaceholder: "பயண முடிவுத் தேதி (உதா: 20 ஆகஸ்ட் 2026)",
   popupPassengersQuestion: "எத்தனை பேர் பயணம் செய்கிறார்கள்?",
   popupPassengersPlaceholder: "உதா: 2 பெரியவர்கள், 1 குழந்தை",
+  popupAdultsLabel: "பெரியவர்கள்",
+  popupChildrenLabel: "குழந்தைகள் (0-12 வயது)",
   popupBudgetQuestion: "இந்தப் பயணத்திற்கான உங்கள் தோராயமான பட்ஜெட் என்ன?",
   popupBudgetPlaceholder: "கீழே உள்ள நட்சத்திர மதிப்பீட்டைத் தேர்ந்தெடுக்கவும்",
   budgetTier1Label: "மலிவு (எகனாமி)",

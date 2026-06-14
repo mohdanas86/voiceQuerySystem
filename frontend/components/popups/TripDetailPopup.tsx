@@ -8,6 +8,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { Plus, Minus } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import type { SupportedLang, LangStrings } from '@/lib/i18n';
 import { type TripDetailField } from '@/lib/tripExtractor';
@@ -124,6 +125,10 @@ export function TripDetailPopup({
   // Ephemeral budget selection
   const [starRating, setStarRating] = useState(0);
 
+  // Ephemeral passenger counters
+  const [adults, setAdults] = useState(1);
+  const [childrenCount, setChildrenCount] = useState(0);
+
   // Focus trap integration
   useFocusTrap(containerRef, onSkip);
 
@@ -134,6 +139,8 @@ export function TripDetailPopup({
       setDateFrom('');
       setDateTo('');
       setStarRating(0);
+      setAdults(1);
+      setChildrenCount(0);
     }, 0);
   }, [field]);
 
@@ -142,8 +149,18 @@ export function TripDetailPopup({
     let value = '';
     switch (field) {
       case 'city':
-      case 'passengers':
         value = inputValue.trim();
+        break;
+      case 'passengers':
+        const adultText = adults === 1 
+          ? (lang === 'hi' ? '1 वयस्क' : lang === 'ta' ? '1 பெரியவர்' : '1 adult') 
+          : `${adults} ${lang === 'hi' ? 'वयस्क' : lang === 'ta' ? 'பெரியவர்கள்' : 'adults'}`;
+        const childText = childrenCount === 0 
+          ? '' 
+          : childrenCount === 1 
+            ? (lang === 'hi' ? '1 बच्चा' : lang === 'ta' ? '1 குழந்தை' : '1 child')
+            : `${childrenCount} ${lang === 'hi' ? 'बच्चे' : lang === 'ta' ? 'குழந்தைகள்' : 'children'}`;
+        value = childText ? `${adultText}, ${childText}` : adultText;
         break;
       case 'dates':
         const cleanFrom = dateFrom.trim();
@@ -237,14 +254,80 @@ export function TripDetailPopup({
           )}
 
           {field === 'passengers' && (
-            <input
-              type="text"
-              placeholder={t(lang, 'popupPassengersPlaceholder')}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              className="h-11 w-full rounded-xl border border-brand-border bg-white px-4 text-sm font-light text-brand-text placeholder:text-gray-400 focus:outline-none focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 transition-all shadow-sm"
-              autoFocus
-            />
+            <div className="flex flex-col gap-4 w-full bg-[#F9F8F5] p-5 rounded-2xl border border-brand-border">
+              {/* Adults Row */}
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col text-left">
+                  <span className="text-sm font-semibold text-brand-text">
+                    {t(lang, 'popupAdultsLabel')}
+                  </span>
+                  <span className="text-[11px] text-brand-muted font-light mt-0.5">
+                    {lang === 'hi' ? '12 वर्ष से अधिक' : lang === 'ta' ? '12 வயதிற்கு மேல்' : 'Ages 13 or above'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 bg-white border border-brand-border rounded-xl px-2 py-1 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => setAdults(Math.max(1, adults - 1))}
+                    disabled={adults <= 1}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center border border-brand-border text-brand-text hover:bg-brand-accent/5 hover:border-brand-accent/30 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all cursor-pointer font-bold text-lg select-none"
+                    aria-label="Decrease adults"
+                  >
+                    <Minus className="w-4 h-4 text-brand-text" />
+                  </button>
+                  <span className="text-base font-semibold min-w-[20px] text-center font-mono select-none">
+                    {adults}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setAdults(Math.min(10, adults + 1))}
+                    disabled={adults >= 10}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center border border-brand-border text-brand-text hover:bg-brand-accent/5 hover:border-brand-accent/30 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all cursor-pointer font-bold text-lg select-none"
+                    aria-label="Increase adults"
+                  >
+                    <Plus className="w-4 h-4 text-brand-text" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="h-px bg-brand-border/60" />
+
+              {/* Children Row */}
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col text-left">
+                  <span className="text-sm font-semibold text-brand-text">
+                    {t(lang, 'popupChildrenLabel')}
+                  </span>
+                  <span className="text-[11px] text-brand-muted font-light mt-0.5">
+                    {lang === 'hi' ? '0 से 12 वर्ष' : lang === 'ta' ? '0 முதல் 12 வயது' : 'Ages 0 to 12'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 bg-white border border-brand-border rounded-xl px-2 py-1 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => setChildrenCount(Math.max(0, childrenCount - 1))}
+                    disabled={childrenCount <= 0}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center border border-brand-border text-brand-text hover:bg-brand-accent/5 hover:border-brand-accent/30 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all cursor-pointer font-bold text-lg select-none"
+                    aria-label="Decrease children"
+                  >
+                    <Minus className="w-4 h-4 text-brand-text" />
+                  </button>
+                  <span className="text-base font-semibold min-w-[20px] text-center font-mono select-none">
+                    {childrenCount}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setChildrenCount(Math.min(10, childrenCount + 1))}
+                    disabled={childrenCount >= 10}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center border border-brand-border text-brand-text hover:bg-brand-accent/5 hover:border-brand-accent/30 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all cursor-pointer font-bold text-lg select-none"
+                    aria-label="Increase children"
+                  >
+                    <Plus className="w-4 h-4 text-brand-text" />
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
 
           {field === 'budget' && (
